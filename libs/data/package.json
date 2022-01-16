@@ -1,0 +1,21 @@
+{
+	"name": "data",
+	"version": "1.0.0",
+	"scripts": {
+		"create-migration": "ts-node ./src/migration.ts"
+	},
+	"dependencies": {
+		"@nestjs/common": "^8.2.5",
+		"@nestjs/config": "^1.1.6",
+		"@nestjs/core": "^8.2.5",
+		"@nestjs/typeorm": "^8.0.2",
+		"moment": "^2.29.1",
+		"pg": "^8.7.1",
+		"typeorm": "^0.2.41",
+		"umzug": "^3.0.0"
+	},
+	"devDependencies": {
+		"ts-node": "^10.4.0",
+		"minimist": "^1.2.5"
+	}
+}

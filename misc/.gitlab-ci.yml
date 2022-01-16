@@ -1,0 +1,85 @@
+image: node:17-alpine
+
+stages:
+  - install-dependencies
+  - prebuild
+  - build
+  - package-docker
+
+cache:
+  key: $CI_COMMIT_REF_SLUG
+  paths:
+    - .yarn-cache/
+    - node_modules/
+    - .git/
+    - dist/
+
+services:
+  - docker:dind
+
+variables:
+  REGISTRY: git.freshcode.org:4567/pradev/boilerplate-v2
+  BRANCH_IMAGE: $REGISTRY:$CI_COMMIT_REF_SLUG
+  YARN_INSTALL_COMMAND: yarn install --cache-folder .yarn-cache
+
+
+install-dependencies:
+  stage: install-dependencies
+  tags:
+    - builder
+    - docker
+  script:
+    - $YARN_INSTALL_COMMAND
+  only:
+    - master
+    - merge_requests
+
+lint:
+  stage: prebuild
+  tags:
+    - builder
+    - docker
+  script:
+    - yarn nx run-many --all --target=lint
+  only:
+    - master
+    - merge_requests
+
+test:
+  stage: prebuild
+  tags:
+    - builder
+    - docker
+  script:
+    - yarn nx run-many --all --target=test
+  only:
+    - master
+    - merge_requests
+
+build:
+  stage: build
+  artifacts:
+    untracked: true
+  tags:
+    - builder
+    - docker
+  script:
+    - yarn nx run-many --all --target=build
+  only:
+    - master
+    - merge_requests
+
+package-docker:
+  image: docker:stable
+  stage: package-docker
+  dependencies:
+    - build
+  tags:
+    - builder
+    - docker
+  script:
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - docker build -t $BRANCH_IMAGE -f ./misc/Dockerfile .
+    - docker push $BRANCH_IMAGE
+  only:
+    - master
