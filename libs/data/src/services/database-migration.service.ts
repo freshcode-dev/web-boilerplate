@@ -10,9 +10,9 @@ import { ConfigParamsEnum } from '../enums';
 
 @Injectable()
 export class DatabaseMigrationService implements OnModuleInit {
-  private readonly tableName = 'database_migrations';
-
   private static readonly logger = new Logger('DatabaseMigrationService');
+
+  private readonly tableName = 'database_migrations';
 
 	constructor(private readonly connection: Connection,
 							private readonly configService: ConfigService) {
