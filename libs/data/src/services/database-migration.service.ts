@@ -67,12 +67,13 @@ export class DatabaseMigrationService implements OnModuleInit {
 
 			if (pendingMigrations.length) {
 				await umzug.up();
-				await queryRunner.commitTransaction();
 
 				DatabaseMigrationService.logger.log('Migrations complete');
 			} else {
 				DatabaseMigrationService.logger.log('No pending migrations found');
 			}
+
+      await queryRunner.commitTransaction();
 		} catch (e) {
 			DatabaseMigrationService.logger.error('Exception occurred when migrating', e.message);
 			await queryRunner.rollbackTransaction();
