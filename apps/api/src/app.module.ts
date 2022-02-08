@@ -34,6 +34,6 @@ const serveStatic = process.env.NX_SERVE_STATIC === 'true';
 export class AppModule {
   public configure(consumer: MiddlewareConsumer): void {
     consumer.apply(LoggerMiddleware)
-        .forRoutes('/api/');
+        .forRoutes('*');
   }
 }
