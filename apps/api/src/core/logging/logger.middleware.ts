@@ -2,20 +2,22 @@ import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
 
 import { Request, Response, NextFunction } from 'express';
 import { ConfigService } from '@nestjs/config';
-import { ConfigParam } from '../../enums/config-params.enum';
 import { UserDto } from '@boilerplate/shared';
+import { IApiConfigParams } from '../../interfaces/api-config-params';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
   private readonly logger = new Logger('HTTP');
   private readonly isResponseBodyLoggingEnabled: boolean;
+  private readonly isVerboseRequestsLoggingEnabled: boolean;
 
-	constructor(private readonly configService: ConfigService) {
-    this.isResponseBodyLoggingEnabled = this.configService.get(ConfigParam.ENABLE_RESPONSE_BODY_LOGGING) === 'true';
+	constructor(private readonly configService: ConfigService<IApiConfigParams>) {
+    this.isResponseBodyLoggingEnabled = this.configService.get('NX_ENABLE_RESPONSE_BODY_LOGGING') === 'true';
+    this.isVerboseRequestsLoggingEnabled = this.configService.get('NX_ENABLE_VERBOSE_REQUESTS_LOGGING') === 'true';
   }
 
 	public use(request: Request, response: Response, next: NextFunction): void {
-		const { ip, method, path: url, route, body, query } = request;
+		const { ip, method, body, query } = request;
 		const userAgent = request.get('user-agent') || '';
 
     if (this.isResponseBodyLoggingEnabled) {
@@ -35,7 +37,7 @@ export class LoggerMiddleware implements NestMiddleware {
       const path = request.route?.path;
 
 			if (!url.includes('/users')) {
-				if (this.configService.get('NX_ENABLE_VERBOSE_REQUESTS_LOGGING') === 'true') {
+				if (this.isVerboseRequestsLoggingEnabled) {
 					this.logger.log({
 						method,
 						url,

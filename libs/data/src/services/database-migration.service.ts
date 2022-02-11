@@ -6,7 +6,7 @@ import { TypeOrmUmzugStorage } from './type-orm-umzug.storage';
 import { ConfigService } from '@nestjs/config';
 import migrations from '../migrations';
 import { DbMigration } from '../models/db-migration.entity';
-import { ConfigParamsEnum } from '../enums';
+import { IDatabaseConfigParams } from '../interfaces';
 
 @Injectable()
 export class DatabaseMigrationService implements OnModuleInit {
@@ -15,19 +15,15 @@ export class DatabaseMigrationService implements OnModuleInit {
   private readonly tableName = 'database_migrations';
 
 	constructor(private readonly connection: Connection,
-							private readonly configService: ConfigService) {
+							private readonly configService: ConfigService<IDatabaseConfigParams>) {
 	}
 
 	public async onModuleInit(): Promise<void> {
-		if (!(this.configService.get(ConfigParamsEnum.DATABASE_ENABLE_MIGRATIONS) === 'true')) {
-			return;
-		}
-
 		await this.migrateAuto();
 	}
 
 	public async migrateAuto(): Promise<void> {
-		if (!(this.configService.get(ConfigParamsEnum.DATABASE_ENABLE_MIGRATIONS) === 'true')) {
+		if (!(this.configService.get('NX_DATABASE_ENABLE_MIGRATIONS') === 'true')) {
 			return;
 		}
 

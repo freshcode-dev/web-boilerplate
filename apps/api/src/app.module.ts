@@ -2,10 +2,11 @@ import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ControllersModule } from './controllers/controllers.module';
 import { LoggerMiddleware } from './core/logging/logger.middleware';
-import { ConfigParamsEnum, DatabaseModule } from '@boilerplate/data';
+import { DatabaseModule } from '@boilerplate/data';
 import { ServicesModule } from './services/services.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import * as path from 'path';
+import { IApiConfigParams } from './interfaces/api-config-params';
 
 const serveStatic = process.env.NX_SERVE_STATIC === 'true';
 
@@ -17,13 +18,14 @@ const serveStatic = process.env.NX_SERVE_STATIC === 'true';
 		}),
 		DatabaseModule.forRootAsync({
 			imports: [ConfigModule],
-			useFactory: (configService: ConfigService) => ({
+			useFactory: (configService: ConfigService<IApiConfigParams>) => ({
 				type: 'postgres',
-				host: configService.get<string>(ConfigParamsEnum.DATABASE_HOST),
-				port: configService.get<number>(ConfigParamsEnum.DATABASE_PORT),
-				username: configService.get<string>(ConfigParamsEnum.DATABASE_USERNAME),
-				password: configService.get<string>(ConfigParamsEnum.DATABASE_PASSWORD),
-				database: configService.get<string>(ConfigParamsEnum.DATABASE_NAME),
+				host: configService.get('NX_DATABASE_HOST'),
+				port: +configService.get('NX_DATABASE_PORT'),
+				username: configService.get('NX_DATABASE_USERNAME'),
+				password: configService.get('NX_DATABASE_PASSWORD'),
+				database: configService.get('NX_DATABASE_NAME'),
+        logging: configService.get('NX_DATABASE_ENABLE_LOGGING') === 'true',
 			}),
 			inject: [ConfigService]
 		}),
