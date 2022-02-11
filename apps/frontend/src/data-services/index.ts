@@ -1,6 +1,7 @@
-import UsersService from './UsersService';
-import httpClientFactory from './httpClientFactory';
-import configService from '../config/configService';
+import httpClientFactory from "./http-client.factory";
+import configService from '../config/config.service';
+import UsersService from './users.service';
+
 
 export const httpClient = httpClientFactory(configService);
 

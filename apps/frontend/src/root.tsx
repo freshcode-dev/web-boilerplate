@@ -1,14 +1,14 @@
 import React, { FC, Suspense } from 'react';
 import { useRoutes } from 'react-router-dom';
-import RouterSuspense from './components/router-suspense';
 import NotFoundPage from './pages/not-found';
-import RequireAuth from './components/require-auth';
 import { observer } from 'mobx-react-lite';
-import RequireUnauthorized from './components/require-unauthorized';
 import AuthorisedPage from './pages/authorised-page';
+import RequireAuth from './components/require-auth.component';
+import RequireUnauthorized from './components/require-unauthorized.component';
+import RouterSuspense from './components/router-suspense.component';
 
-const AuthorizedArea = React.lazy(async () => import("./areas/authorized-area"));
-const UnauthorizedArea = React.lazy(async () => import("./areas/unauthorized"));
+const AuthorizedArea = React.lazy(async () => import("./areas/authorized-area.component"));
+const UnauthorizedArea = React.lazy(async () => import("./areas/unauthorized-area.component"));
 const LoginPage = React.lazy(async () => import("./pages/login"));
 const SignUpPage = React.lazy(async () => import("./pages/signup"));
 

@@ -6,13 +6,13 @@ import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { sessionStore } from '../../stores';
+import useMobxStoreHook from '../../hooks/use-mobx-store.hook';
 
 const resolver = classValidatorResolver(LoginDto);
 
 const LoginPage: FC = () => {
   const { handleSubmit, register, formState: { errors } } = useForm<LoginDto>({ resolver });
-  const { login } = sessionStore;
+  const { session: { login } } = useMobxStoreHook();
 
   const onConfirm = async (): Promise<void> => {
     await handleSubmit(

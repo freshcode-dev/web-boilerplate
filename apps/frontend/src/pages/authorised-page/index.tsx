@@ -1,9 +1,9 @@
 import { Button } from '@mui/material';
 import React, { FC } from 'react';
-import { sessionStore } from '../../stores';
+import useMobxStoreHook from '../../hooks/use-mobx-store.hook';
 
 const AuthorizedPage: FC = () => {
-  const { logOut } = sessionStore;
+  const { session: { logOut } } = useMobxStoreHook();
 
   const handleLogoutClick = async () => {
     await logOut();

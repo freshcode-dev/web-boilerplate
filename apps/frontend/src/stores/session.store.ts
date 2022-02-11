@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
-import UsersService from '../data-services/UsersService';
 import { LoginDto } from '@boilerplate/shared';
+import UsersService from '../data-services/users.service';
 
 export class SessionStore {
   private accessToken: string | null = null;

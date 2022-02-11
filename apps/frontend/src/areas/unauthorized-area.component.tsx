@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { Outlet, useRoutes } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 
 const UnauthorizedArea: FC = () => <Outlet />;
 

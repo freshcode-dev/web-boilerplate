@@ -1,10 +1,10 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { ConfigService } from '../config/configService';
-import { ConfigParam } from '../enums/config-params.enum';
+import { ConfigService } from '../config/config.service';
+import { IConfigParams } from '../interfaces/config-params';
 
-const httpClientFactory = (configService: ConfigService): AxiosInstance => {
+const httpClientFactory = (configService: ConfigService<IConfigParams>): AxiosInstance => {
   const httpClient = axios.create({
-    baseURL: configService.get<string>(ConfigParam.API_URL),
+    baseURL: configService.get('NX_APP_API_URL'),
     timeout: 30000
   });
 
