@@ -50,3 +50,6 @@ Thumbs.db
 # local configuration
 **/.env*.local
 **/.local*.env
+
+# testing reports
+**/__reports__

@@ -1,79 +1,55 @@
 image: node:17-alpine
 
 stages:
-  - install-dependencies
-  - prebuild
-  - build
+  - lint-test-build
   - package-docker
-
-cache:
-  key: $CI_COMMIT_REF_SLUG
-  paths:
-    - .yarn-cache/
-    - node_modules/
-    - .git/
-    - dist/
-
-services:
-  - docker:dind
 
 variables:
   REGISTRY: git.freshcode.org:4567/pradev/boilerplate-v2
   BRANCH_IMAGE: $REGISTRY:$CI_COMMIT_REF_SLUG
   YARN_INSTALL_COMMAND: yarn install --cache-folder .yarn-cache
+  POSTGRES_DB: testing
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_HOST_AUTH_METHOD: trust
+  REDIS_PASSWORD: Owc1J4cy3DS0TWn0Afed
 
-
-install-dependencies:
-  stage: install-dependencies
+lint-test-build:
+  stage: lint-test-build
+  services:
+    - name: bitnami/redis:latest
+      alias: redis
+    - name: postgres:latest
+      alias: postgres
   tags:
     - builder
     - docker
+  interruptible: true
+  variables:
+    NX_DATABASE_HOST: postgres
+    NX_TEST_DATABASE_NAME: $POSTGRES_DB
   script:
     - $YARN_INSTALL_COMMAND
-  only:
-    - master
-    - merge_requests
-
-lint:
-  stage: prebuild
-  tags:
-    - builder
-    - docker
-  script:
     - yarn nx run-many --all --target=lint
-  only:
-    - master
-    - merge_requests
-
-test:
-  stage: prebuild
-  tags:
-    - builder
-    - docker
-  script:
     - yarn nx run-many --all --target=test
-  only:
-    - master
-    - merge_requests
-
-build:
-  stage: build
-  artifacts:
-    untracked: true
-  tags:
-    - builder
-    - docker
-  script:
     - yarn nx run-many --all --target=build
+  artifacts:
+    when: always
+    paths:
+      - dist
+      - __reports__
+    reports:
+      junit: __reports__/report.xml
   only:
-    - master
+    - main
     - merge_requests
 
 package-docker:
   image: docker:stable
   stage: package-docker
+  interruptible: true
   dependencies:
-    - build
+    - lint-test-build
   tags:
     - builder
     - docker
@@ -82,4 +58,4 @@ package-docker:
     - docker build -t $BRANCH_IMAGE -f ./misc/Dockerfile .
     - docker push $BRANCH_IMAGE
   only:
-    - master
+    - main
