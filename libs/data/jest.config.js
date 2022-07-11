@@ -12,4 +12,7 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   coverageDirectory: '../../coverage/libs/data',
+	reporters: [
+		["jest-junit", {"outputDirectory": "__reports__", "outputName": "data.xml"}]
+	]
 };

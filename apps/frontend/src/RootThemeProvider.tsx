@@ -1,9 +1,7 @@
-import React, { FunctionComponent } from 'react';
+import React, {FunctionComponent, PropsWithChildren} from 'react';
 import { createTheme, ThemeProvider } from '@mui/material';
 
-type RootThemeProps = {
-
-};
+type RootThemeProps = PropsWithChildren;
 
 export const RootThemeProvider: FunctionComponent<RootThemeProps> = (props) => {
     const theme = createTheme();

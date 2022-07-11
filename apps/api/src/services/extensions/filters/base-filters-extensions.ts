@@ -1,8 +1,7 @@
-import { OrderFilter, PaginationFilter } from '@boilerplate/shared';
-import { EntityFieldsNames } from 'typeorm/common/EntityFieldsNames';
+import { NonFunctionPropertyNames, OrderFilter, PaginationFilter } from '@boilerplate/shared';
 
 export type OrderType<Entity> = {
-  [P in EntityFieldsNames<Entity>]?: "ASC" | "DESC" | 1 | -1
+  [P in NonFunctionPropertyNames<Entity>]?: "ASC" | "DESC" | 1 | -1
 };
 
 export function getOrderOptionsFromFilter<T>(filter: OrderFilter<T>): OrderType<T> {

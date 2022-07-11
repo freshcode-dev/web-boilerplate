@@ -12,4 +12,7 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/apps/api',
+	reporters: [
+		["jest-junit", {"outputDirectory": "__reports__", "outputName": "api.xml"}]
+	]
 };

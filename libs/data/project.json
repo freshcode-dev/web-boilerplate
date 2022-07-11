@@ -8,7 +8,13 @@
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["libs/data/**/*.ts"]
-      }
+      },
+			"configurations": {
+				"ci": {
+					"format": "json",
+					"outputFile": "__lint__/data.json"
+				}
+			}
     },
     "test": {
       "executor": "@nrwl/jest:jest",

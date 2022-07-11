@@ -2,7 +2,7 @@ image: node:17-alpine
 
 stages:
   - lint-test-build
-  - package-docker
+  - deployment
 
 variables:
   REGISTRY: git.freshcode.org:4567/pradev/boilerplate-v2
@@ -21,17 +21,15 @@ lint-test-build:
       alias: redis
     - name: postgres:latest
       alias: postgres
-  tags:
-    - builder
-    - docker
   interruptible: true
   variables:
     NX_DATABASE_HOST: postgres
     NX_TEST_DATABASE_NAME: $POSTGRES_DB
   script:
     - $YARN_INSTALL_COMMAND
-    - yarn nx run-many --all --target=lint
+    - yarn nx run-many --all --target=lint --configuration=ci
     - yarn nx run-many --all --target=test
+    - yarn run merge-test-reports
     - yarn nx run-many --all --target=build
   artifacts:
     when: always
@@ -39,20 +37,23 @@ lint-test-build:
       - dist
       - __reports__
     reports:
-      junit: __reports__/report.xml
+      junit: __reports__/merged.xml
+      codequality: __lint__/api.json
   only:
     - main
     - merge_requests
 
-package-docker:
+deploy-main:
   image: docker:stable
-  stage: package-docker
+  stage: deployment
   interruptible: true
+  environment:
+    name: main
   dependencies:
     - lint-test-build
-  tags:
-    - builder
-    - docker
+  release:
+    tag_name: v1.0.0-web
+    description: release caused by push to the main env
   script:
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - docker build -t $BRANCH_IMAGE -f ./misc/Dockerfile .

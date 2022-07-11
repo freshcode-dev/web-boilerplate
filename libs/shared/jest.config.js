@@ -11,4 +11,7 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   coverageDirectory: '../../coverage/libs/shared',
+	reporters: [
+		["jest-junit", {"outputDirectory": "__reports__", "outputName": "shared.xml"}]
+	]
 };

@@ -53,3 +53,6 @@ Thumbs.db
 
 # testing reports
 **/__reports__
+
+# eslint reports
+**/__lint__

@@ -55,7 +55,13 @@
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["apps/frontend/**/*.{ts,tsx,js,jsx}"]
-      }
+      },
+			"configurations": {
+				"ci": {
+					"format": "json",
+					"outputFile": "__lint__/frontend.json"
+				}
+			}
     },
     "test": {
       "executor": "@nrwl/jest:jest",

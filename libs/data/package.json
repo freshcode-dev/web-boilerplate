@@ -5,17 +5,17 @@
 		"create-migration": "ts-node ./src/migration.ts"
 	},
 	"dependencies": {
-		"@nestjs/common": "^8.2.5",
-		"@nestjs/config": "^1.1.6",
-		"@nestjs/core": "^8.2.5",
-		"@nestjs/typeorm": "^8.0.2",
-		"moment": "^2.29.1",
-		"pg": "^8.7.1",
-		"typeorm": "^0.2.41",
-		"umzug": "^3.0.0"
+		"@nestjs/common": "^9.0.2",
+		"@nestjs/config": "^2.2.0",
+		"@nestjs/core": "^9.0.2",
+		"@nestjs/typeorm": "^9.0.0",
+		"moment": "^2.29.4",
+		"pg": "^8.7.3",
+		"typeorm": "^0.3.7",
+		"umzug": "^3.1.1"
 	},
 	"devDependencies": {
-		"ts-node": "^10.4.0",
-		"minimist": "^1.2.5"
+		"ts-node": "^10.8.2",
+		"minimist": "^1.2.6"
 	}
 }

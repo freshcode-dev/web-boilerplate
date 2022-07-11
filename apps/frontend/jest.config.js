@@ -7,4 +7,7 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   coverageDirectory: '../../coverage/apps/frontend',
+	reporters: [
+		["jest-junit", {"outputDirectory": "__reports__", "outputName": "frontend.xml"}]
+	]
 };
