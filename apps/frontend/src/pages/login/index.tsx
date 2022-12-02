@@ -19,8 +19,10 @@ const LoginPage: FC = () => {
       async value => {
         try {
           await login(value);
-        } catch (e: any) {
-          console.error(e.message);
+        } catch (e) {
+          if (e instanceof Error) {
+            console.error(e.message);
+          }
         }
       },
     )();
