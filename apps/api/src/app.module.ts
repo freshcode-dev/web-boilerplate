@@ -14,7 +14,7 @@ const serveStatic = process.env.NX_SERVE_STATIC === 'true';
   imports: [
     ConfigModule.forRoot(),
 		ServeStaticModule.forRoot({
-			rootPath: serveStatic ? path.resolve(process.env.NX_SERVE_STATIC_PATH || 'client') : null,
+			rootPath: (serveStatic ? path.resolve(process.env.NX_SERVE_STATIC_PATH || 'client') : null) as string,
 		}),
 		DatabaseModule.forRootAsync({
 			imports: [ConfigModule],

@@ -11,7 +11,7 @@
 		"@nestjs/serve-static": "^3.0.0",
 		"@nestjs/swagger": "^6.0.2",
 		"@nestjs/terminus": "^9.0.0",
-    "@nestjs/typeorm": "^9.0.0",
+                "@nestjs/typeorm": "^9.0.0",
 		"bcryptjs": "^2.4.3",
 		"nest-winston": "^1.6.2",
 		"passport": "^0.6.0",
@@ -32,6 +32,10 @@
 	"devDependencies": {
 		"@nestjs/schematics": "^9.0.1",
 		"@nestjs/testing": "^9.0.2",
-		"@types/passport-local": "^1.0.34"
+		"@types/passport-local": "^1.0.34",
+                "@types/swagger-stats": "^0.95.6",
+                "@types/lodash": "^4.14.191",
+                "@types/bcryptjs": "2.4.2",
+                "@types/passport-jwt": "3.0.7"
 	}
 }

@@ -9,12 +9,12 @@
 		"@mui/material": "^5.8.7",
 		"axios": "^0.27.2",
 		"mobx": "^6.6.1",
-    "mobx-react-lite": "^3.4.0",
+        "mobx-react-lite": "^3.4.0",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"react-hook-form": "^7.33.1",
 		"react-router-dom": "^6.3.0",
-    "react-query": "^3.39.1"
+        "react-query": "^3.39.1"
   },
 	"devDependencies": {
 		"@emotion/babel-plugin": "^11.9.2",

@@ -16,8 +16,8 @@ export default abstract class BaseAppExceptionsFilter implements ExceptionFilter
       ? exception.getStatus()
       : this.defaultStatusCode;
 
-    let message: string;
-    let description: string;
+    let message = '';
+    let description = '';
     let exceptionDetails: {error: string, message: string} = {message: '', error: ''};
 
     if (exception instanceof HttpException) {
@@ -49,5 +49,5 @@ export default abstract class BaseAppExceptionsFilter implements ExceptionFilter
   }
 
 
-  protected getFieldsErrors?(exception: Error): Record<string, string[]>;
+  protected getFieldsErrors?(exception: Error): Record<string, string[]> | undefined;
 }

@@ -19,8 +19,8 @@ export class UsersService {
   public async findAll(filter: UserFilter): Promise<UserDto[]> {
     return this.usersRepository.find({
       order: getOrderOptionsFromFilter(filter),
-      take: getLimitOptionFromFilter(filter),
-      skip: getOffsetOptionFromFilter(filter)
+      take: getLimitOptionFromFilter(filter) as number,
+      skip: getOffsetOptionFromFilter(filter) as number
     });
   }
 

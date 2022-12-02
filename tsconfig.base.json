@@ -23,8 +23,6 @@
     "noUnusedParameters": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": false,
-    "inlineSourceMap": true,
-    "inlineSources": true,
     "baseUrl": ".",
     "paths": {
       "@boilerplate/data": ["libs/data/src/index.ts"],
