@@ -5,5 +5,5 @@ export interface IErrorResponse {
   message: string;
   description?: string;
   exceptionDetails?: unknown;
-  fieldsErrors?: Record<string, string[]>;
+  fieldsErrors?: Record<string, string[]> | undefined;
 }

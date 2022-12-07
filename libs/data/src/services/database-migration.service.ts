@@ -35,7 +35,7 @@ export class DatabaseMigrationService implements OnModuleInit {
 		await queryRunner.connect();
 		await queryRunner.startTransaction();
 
-		let pendingMigrations: MigrationMeta[];
+		let pendingMigrations: MigrationMeta[] = [];
 
 		await this.createTableIfNotExist(queryRunner);
 
@@ -71,12 +71,16 @@ export class DatabaseMigrationService implements OnModuleInit {
 
       await queryRunner.commitTransaction();
 		} catch (e) {
-			DatabaseMigrationService.logger.error('Exception occurred when migrating', e.message);
+			if(e instanceof Error) {
+				DatabaseMigrationService.logger.error('Exception occurred when migrating', e.message);
+			}
+			
 			await queryRunner.rollbackTransaction();
 
 			await queryRunner.manager.delete(DbMigration, {
 				name: In(pendingMigrations.map((x) => x.name))
 			});
+			
 		} finally {
 			await queryRunner.release();
 		}

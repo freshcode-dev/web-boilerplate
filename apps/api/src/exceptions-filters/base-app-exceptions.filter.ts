@@ -4,7 +4,7 @@ import { IErrorResponse } from '@boilerplate/shared';
 export default abstract class BaseAppExceptionsFilter implements ExceptionFilter {
   private static readonly logger = new Logger('ExceptionsHandler');
 
-  protected defaultErrorMessage? = 'Something went wrong';
+  protected defaultErrorMessage = 'Something went wrong';
   protected defaultStatusCode = HttpStatus.INTERNAL_SERVER_ERROR;
 
   public catch(exception: Error, host: ArgumentsHost): void {
@@ -16,12 +16,12 @@ export default abstract class BaseAppExceptionsFilter implements ExceptionFilter
       ? exception.getStatus()
       : this.defaultStatusCode;
 
-    let message: string;
-    let description: string;
-    let exceptionDetails: any;
+    let message = '';
+    let description = '';
+    let exceptionDetails: {error: string, message: string} = {message: '', error: ''};
 
     if (exception instanceof HttpException) {
-      const errorResponse = exception.getResponse();
+      const errorResponse = exception.getResponse() as { message: string, error: string};
       const messageFromResponse = errorResponse['message'];
       description = errorResponse['error'];
 
@@ -49,5 +49,5 @@ export default abstract class BaseAppExceptionsFilter implements ExceptionFilter
   }
 
 
-  protected getFieldsErrors?(exception: Error): Record<string, string[]>;
+  protected getFieldsErrors?(exception: Error): Record<string, string[]> | undefined;
 }

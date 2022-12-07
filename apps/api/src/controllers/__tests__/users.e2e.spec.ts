@@ -55,7 +55,7 @@ describe('Users', () => {
 			request(app.getHttpServer())
 				.get('/users')
 				.expect(200)
-				.expect((res) => {
+				.expect((res: { body: []}) => {
 					expect(res.body.length).toBe(testUsers.length);
 				})
 		);
@@ -65,7 +65,7 @@ describe('Users', () => {
 				.get('/users')
 				.query({pageSize: 1} as UserFilter)
 				.expect(200)
-				.expect((res) => {
+				.expect((res: { body: []}) => {
 					expect(res.body.length).toBe(1);
 				})
 		);

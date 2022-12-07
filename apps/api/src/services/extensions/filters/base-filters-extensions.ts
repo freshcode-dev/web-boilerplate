@@ -8,7 +8,7 @@ export function getOrderOptionsFromFilter<T>(filter: OrderFilter<T>): OrderType<
   return filter.orderedBy?.reduce((acc, v) => ({
     ...acc,
     [v.field]: v.isReversed ? 'DESC' : 'ASC'
-  }), {});
+  }), {}) as OrderType<T>;
 }
 
 export function getLimitOptionFromFilter(filter: PaginationFilter, defaultSize: number | null = 10): number | null {
@@ -16,8 +16,13 @@ export function getLimitOptionFromFilter(filter: PaginationFilter, defaultSize: 
 }
 
 export function getOffsetOptionFromFilter(filter: PaginationFilter): number | null {
-  if (filter.page)
-    return getLimitOptionFromFilter(filter) * (filter.page - 1);
-  else
-    return null;
+  if (filter.page) {
+    const limitOption = getLimitOptionFromFilter(filter);
+    if(!limitOption) {
+      return null;
+    }
+    return limitOption * (filter.page - 1);
+  } 
+
+  return null;
 }

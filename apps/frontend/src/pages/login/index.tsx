@@ -7,6 +7,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import useMobxStoreHook from '../../hooks/use-mobx-store.hook';
+import { ErrorLogger } from '@boilerplate/shared';
 
 const resolver = classValidatorResolver(LoginDto);
 
@@ -19,8 +20,8 @@ const LoginPage: FC = () => {
       async value => {
         try {
           await login(value);
-        } catch (e: any) {
-          console.error(e.message);
+        } catch (e) {
+          ErrorLogger.logError(e);
         }
       },
     )();
