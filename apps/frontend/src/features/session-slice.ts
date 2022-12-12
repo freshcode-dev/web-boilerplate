@@ -1,6 +1,5 @@
-import { createSlice, PayloadAction, createAsyncThunk} from "@reduxjs/toolkit";
-import { LoginDto } from '@boilerplate/shared';
-import { usersService } from '../data-services';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import loginUserAction from "./session-slice.action";
 
 export interface SessionState {
     accessToken: string | null;
@@ -24,15 +23,6 @@ const setToken = async (state: SessionState, token: string | null) => {
     }
 }
 
-const loginUser = createAsyncThunk('user/login', async (body: LoginDto, { rejectWithValue }) => {
-    try {
-      const { data } = await usersService.login(body);
-      return data;
-    } catch (error) {
-      return rejectWithValue((error as Error).message);
-    }
-  })
-
 export const authSlice = createSlice({
     name: "session",
     initialState,
@@ -42,7 +32,7 @@ export const authSlice = createSlice({
         }
     },
     extraReducers: {
-        [loginUser.fulfilled.toString()]: (state: SessionState, action: PayloadAction<string>) => {
+        [loginUserAction.fulfilled.toString()]: (state: SessionState, action: PayloadAction<string>) => {
           state.accessToken = action.payload;
       }
     },

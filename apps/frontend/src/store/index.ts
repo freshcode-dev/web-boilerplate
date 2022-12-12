@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { useDispatch, TypedUseSelectorHook, useSelector } from 'react-redux'
-import sessionSlice from '../features/sessionSlice';
+import sessionSlice from '../features/session-slice';
 
 const store = configureStore({
     reducer:{

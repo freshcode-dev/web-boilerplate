@@ -1,25 +1,25 @@
-import React, { FC } from 'react';
+import { FC } from 'react';
 import { LoginDto } from '@boilerplate/shared';
-import { usersService } from '../../data-services';
-import { Avatar, Box, Button, Checkbox, Container, FormControlLabel, Grid, Input, InputLabel, TextField, Typography } from '@mui/material';
+import { Avatar, Box, Button, Checkbox, Container, FormControlLabel, Grid, TextField, Typography } from '@mui/material';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import useMobxStoreHook from '../../hooks/use-mobx-store.hook';
 import { ErrorLogger } from '@boilerplate/shared';
+import { useAppDispatch } from '../../store';
+import loginUserAction from '../../features/session-slice.action';;
 
 const resolver = classValidatorResolver(LoginDto);
 
 const LoginPage: FC = () => {
   const { handleSubmit, register, formState: { errors } } = useForm<LoginDto>({ resolver });
-  const { session: { login } } = useMobxStoreHook();
+  const dispatch = useAppDispatch();
 
   const onConfirm = async (): Promise<void> => {
     await handleSubmit(
       async value => {
         try {
-          await login(value);
+          dispatch(loginUserAction(value));
         } catch (e) {
           ErrorLogger.logError(e);
         }
@@ -44,8 +44,8 @@ const LoginPage: FC = () => {
           Sign in
         </Typography>
         <Box component="form"
-             onSubmit={handleSubmit(onConfirm)}
-             noValidate sx={{ mt: 1 }}>
+          onSubmit={handleSubmit(onConfirm)}
+          noValidate sx={{ mt: 1 }}>
           <TextField
             margin="normal"
             required

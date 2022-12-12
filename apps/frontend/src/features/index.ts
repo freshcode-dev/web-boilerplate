@@ -1,1 +1,1 @@
-export * from './sessionSlice'
+export * from './session-slice'

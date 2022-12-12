@@ -1,18 +1,30 @@
-import { Button } from '@mui/material';
 import React, { FC } from 'react';
-import useMobxStoreHook from '../../hooks/use-mobx-store.hook';
+import { CoreButton, CoreCheckbox, CoreTextField, CoreSelect } from '../../components/_ui';
+import { logOut } from '../../features';
+import { useAppDispatch } from '../../store';
 
 const AuthorizedPage: FC = () => {
-  const { session: { logOut } } = useMobxStoreHook();
-
+  const dispatch = useAppDispatch();
   const handleLogoutClick = async () => {
-    await logOut();
+    dispatch(logOut())
   }
 
   return (
     <div>
       authorized page content
-      <Button onClick={handleLogoutClick}>Logout</Button>
+      <br/>
+      <CoreButton onClick={handleLogoutClick}>Logout</CoreButton>
+      <CoreCheckbox></CoreCheckbox>
+      <CoreSelect
+        variant="outlined"
+        size="small"
+        sx={{
+          width: 200
+        }}
+      >
+      </CoreSelect>
+      
+      <CoreTextField size="small"></CoreTextField>
     </div>
   )
 };
