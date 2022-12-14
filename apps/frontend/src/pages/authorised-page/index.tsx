@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import { CoreButton, CoreCheckbox, CoreTextField, CoreSelect } from '../../components/_ui';
-import { logOut } from '../../features';
+import { logOut } from '../../store/features/session';
 import { useAppDispatch } from '../../store';
 
 const AuthorizedPage: FC = () => {

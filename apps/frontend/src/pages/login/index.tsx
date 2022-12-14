@@ -7,7 +7,8 @@ import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { ErrorLogger } from '@boilerplate/shared';
 import { useAppDispatch } from '../../store';
-import loginUserAction from '../../features/session-slice.action';;
+import loginUserAction from '../../store/features/session/session-slice.action';
+import { setAccessToken } from '../../store/features/session';
 
 const resolver = classValidatorResolver(LoginDto);
 
@@ -19,7 +20,8 @@ const LoginPage: FC = () => {
     await handleSubmit(
       async value => {
         try {
-          dispatch(loginUserAction(value));
+          const result = await dispatch(loginUserAction(value));
+          await dispatch(setAccessToken(result.payload as string));
         } catch (e) {
           ErrorLogger.logError(e);
         }
