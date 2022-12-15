@@ -1,16 +1,15 @@
-import { observer } from 'mobx-react-lite';
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 import { Navigate } from 'react-router-dom';
-import useMobxStoreHook from '../hooks/use-mobx-store.hook';
+import { useAppSelector } from '../store';
 
-const RequireUnauthorized = observer(({ children }: { children: JSX.Element }): ReactElement => {
-  const { session: { isAuthenticated } } = useMobxStoreHook();
+const RequireUnauthorized = ({ children }: { children: JSX.Element }): ReactElement => {
+  const isLoggedIn = useAppSelector(state => state.session.accessToken);
 
-  if (isAuthenticated) {
+  if (isLoggedIn) {
     return <Navigate to="/" replace />;
   }
 
   return children;
-});
+};
 
 export default RequireUnauthorized;

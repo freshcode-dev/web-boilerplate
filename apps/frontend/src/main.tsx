@@ -1,22 +1,23 @@
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
 import { RootThemeProvider } from './RootThemeProvider';
 import { BrowserRouter } from 'react-router-dom';
 import { CssBaseline } from '@mui/material';
 import Root from './root';
-import { GlobalStoreContextProvider } from './contexts';
-import { GlobalStore } from './stores';
+import store from './store';
 
 ReactDOM.render(
 	<StrictMode>
-    <GlobalStoreContextProvider value={GlobalStore}>
-      <RootThemeProvider>
+      <Provider store={store}>
+        <RootThemeProvider>
         <BrowserRouter>
           <CssBaseline />
           <Root />
         </BrowserRouter>
-      </RootThemeProvider>
-    </GlobalStoreContextProvider>
+        </RootThemeProvider>
+      </Provider>
+ 
 	</StrictMode>,
 	document.getElementById('root')
 );
