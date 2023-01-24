@@ -10,6 +10,7 @@ const AuthorizedArea = React.lazy(async () => import("./areas/authorized-area.co
 const UnauthorizedArea = React.lazy(async () => import("./areas/unauthorized-area.component"));
 const LoginPage = React.lazy(async () => import("./pages/login"));
 const SignUpPage = React.lazy(async () => import("./pages/signup"));
+const StylesExamplesPage = React.lazy(async () => import("./pages/styles-examples/styles-examples.page"));
 
 const Root: FC = () => {
   const routes = useRoutes([
@@ -19,6 +20,10 @@ const Root: FC = () => {
       children: [
         { index: true, element: <AuthorisedPage /> }
       ]
+    },
+    {
+      path: '/styles-examples',
+      element: <StylesExamplesPage />,
     },
     {
       element: <RequireUnauthorized><UnauthorizedArea /></RequireUnauthorized>,

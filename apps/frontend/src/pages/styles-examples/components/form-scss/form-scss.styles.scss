@@ -1,0 +1,53 @@
+.form-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+	background-color: #f0f0f0;
+
+	.form-modal {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		width: 480px;
+		min-height: 480px;
+		padding: 16px;
+		margin: 16px;
+		background-color: #ffffff;
+		border-radius: 8px;
+
+		.red-border {
+			border-color: red;
+			border-width: 3px;
+		}
+
+		.orange-text {
+			color: orange;
+			font-weight: bold;
+		}
+
+		.input-focused-blue-border {
+			.MuiOutlinedInput-notchedOutline {
+				border-color: green;
+				border-width: 3px;
+			}
+		}
+
+		.blue-text {
+			color: blue;
+			font-weight: bold;
+		}
+
+		.form-buttons-container {
+			align-self: flex-end;
+		}
+	}
+}
+
+.list-with-selected-blue-li {
+	li.Mui-selected {
+		color: blue;
+		font-weight: bold;
+	}
+}
