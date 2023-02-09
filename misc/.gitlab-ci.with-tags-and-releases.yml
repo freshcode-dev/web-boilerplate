@@ -7,7 +7,7 @@ stages:
 variables:
   REGISTRY: git.freshcode.org:4567/pradev/boilerplate-v2
   BRANCH_IMAGE: $REGISTRY:$CI_COMMIT_REF_SLUG
-  YARN_INSTALL_COMMAND: yarn install --cache-folder .yarn-cache
+  PNPM_INSTALL_COMMAND: pnpm install --store-dir .pnpm-store
   POSTGRES_DB: testing
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: postgres
@@ -29,11 +29,12 @@ lint-test-build:
     NX_DATABASE_HOST: postgres
     NX_TEST_DATABASE_NAME: $POSTGRES_DB
   script:
-    - $YARN_INSTALL_COMMAND
-    - yarn nx run-many --all --target=lint --configuration=ci
-    - yarn nx run-many --all --target=test
-    - yarn run merge-test-reports
-    - yarn nx run-many --all --target=build
+    - npm install -g pnpm
+    - $PNPM_INSTALL_COMMAND
+    - pnpm nx run-many --all --target=lint --configuration=ci
+    - pnpm nx run-many --all --target=test
+    - pnpm run merge-test-reports
+    - pnpm nx run-many --all --target=build
   artifacts:
     when: always
     paths:

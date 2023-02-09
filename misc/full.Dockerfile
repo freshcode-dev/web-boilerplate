@@ -4,8 +4,9 @@ WORKDIR /app
 
 COPY . /app/
 
-RUN yarn install
-RUN yarn nx run-many --all --target=build
+RUN npm install -g pnpm
+RUN pnpm install --shamefully-hoist
+RUN pnpm nx run-many --all --target=build
 
 
 FROM node:17-alpine as runner

@@ -3,36 +3,26 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "preinstall": "npx only-allow yarn",
+    "preinstall": "npx only-allow pnpm",
     "prepare": "husky install",
     "start": "nx serve",
     "build": "nx build",
     "test": "nx test",
     "merge-test-reports": "npx jrm ./__reports__/merged.xml \"__reports__/*.xml\""
   },
-  "workspaces": {
-    "packages": [
-      "apps/*",
-      "libs/*"
-    ]
-  },
   "private": true,
   "dependencies": {
-    "@nestjs/common": "^9.0.2",
-    "@nestjs/core": "^9.0.2",
-    "@nestjs/platform-express": "^9.0.2",
-    "@nestjs/terminus": "^9.0.0",
-    "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "core-js": "^3.23.4",
+    "lodash": "^4.17.21",
     "reflect-metadata": "^0.1.13",
     "regenerator-runtime": "^0.13.9",
     "tslib": "^2.4.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.20.12",
+    "@babel/preset-env": "^7.20.2",
     "@commitlint/cli": "^17.0.3",
-    "@nestjs/schematics": "^9.0.1",
-    "@nestjs/testing": "^9.0.2",
     "@nrwl/cli": "13.4.5",
     "@nrwl/cypress": "13.4.5",
     "@nrwl/eslint-plugin-nx": "13.4.5",
@@ -45,13 +35,15 @@
     "@nrwl/web": "13.4.5",
     "@nrwl/workspace": "13.4.5",
     "@types/jest": "^28.1.4",
+		"@types/lodash": "^4.14.191",
     "@types/node": "^18.0.3",
     "@typescript-eslint/eslint-plugin": "~5.30.5",
     "@typescript-eslint/parser": "~5.30.5",
     "babel-jest": "^28.1.2",
+		"babel-loader": "^9.1.2",
     "commitlint-config-jira": "^1.6.4",
     "commitlint-plugin-jira-rules": "^1.6.4",
-    "cypress": "^10.3.0",
+    "cypress": "^9.7.0",
     "eslint": "^8.19.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-formatter-gitlab": "^3.0.0",
@@ -65,6 +57,7 @@
     "prettier": "^2.7.1",
     "ts-jest": "^27.1.5",
     "ts-node": "^10.8.2",
-    "typescript": "~4.7.4"
+    "typescript": "~4.7.4",
+    "webpack": "^5.75.0"
   }
 }

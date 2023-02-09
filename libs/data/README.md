@@ -7,4 +7,4 @@ This library was generated with [Nx](https://nx.dev).
 Run `nx test data` to execute the unit tests via [Jest](https://jestjs.io).
 
 ## Add new migration
-`yarn create-migration --name=<NAME>`
+`pnpm create-migration --name=<NAME>`

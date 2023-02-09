@@ -35,7 +35,7 @@ test:
     NX_DATABASE_HOST: postgres
     NX_TEST_DATABASE_NAME: $POSTGRES_DB
   script:
-    - $YARN_INSTALL_COMMAND
+    - $PNPM_INSTALL_COMMAND
 ...
 ```
 
@@ -106,9 +106,9 @@ test:
     NX_DATABASE_HOST: postgres
     NX_TEST_DATABASE_NAME: $POSTGRES_DB
   script:
-    - $YARN_INSTALL_COMMAND # install packages
-    - yarn nx run-many --all --target=test # run tests with output to __reports__ folder
-    - yarn run merge-test-reports # merge test results
+    - $PNPM_INSTALL_COMMAND # install packages
+    - pnpm nx run-many --all --target=test # run tests with output to __reports__ folder
+    - pnpm run merge-test-reports # merge test results
   artifacts:
     when: always
     paths:

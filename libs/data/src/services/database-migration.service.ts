@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import migrations from '../migrations';
 import { DbMigration } from '../models/db-migration.entity';
 import { IDatabaseConfigParams } from '../interfaces';
+import { InjectDataSource } from '@nestjs/typeorm';
 
 @Injectable()
 export class DatabaseMigrationService implements OnModuleInit {
@@ -14,7 +15,7 @@ export class DatabaseMigrationService implements OnModuleInit {
 
   private readonly tableName = 'database_migrations';
 
-	constructor(private readonly connection: Connection,
+	constructor(@InjectDataSource() private readonly connection: Connection,
 							private readonly configService: ConfigService<IDatabaseConfigParams>) {
 	}
 
@@ -74,13 +75,13 @@ export class DatabaseMigrationService implements OnModuleInit {
 			if(e instanceof Error) {
 				DatabaseMigrationService.logger.error('Exception occurred when migrating', e.message);
 			}
-			
+
 			await queryRunner.rollbackTransaction();
 
 			await queryRunner.manager.delete(DbMigration, {
 				name: In(pendingMigrations.map((x) => x.name))
 			});
-			
+
 		} finally {
 			await queryRunner.release();
 		}

@@ -18,11 +18,11 @@ All the custom environment variables, your application may use have to be define
 ## Prerequisites
 1. `NodeJS` v.17+ and `PostgreSQL` v.13+ installed
 2. An empty database created for the project
-3. `yarn` installed
+3. `pnpm` installed
 
 ## Steps to launch the app
 1. Clone the repository
-2. Install all the dependencies with `yarn install`
+2. Install all the dependencies with `pnpm install`
 3. For both `frontend` and `backend` folders, create a new local config file named `.env.local`. Feel free to set any config value you need locally
 4. Follow the [Development server section](#Development server) instructions
 
@@ -54,7 +54,7 @@ All the custom environment variables, your application may use have to be define
 As we deal with webpack, we don't use the built-in TypeORM CLI. [Umzug](https://www.npmjs.com/package/umzug) is used instead
 
 All the migrations should be included into `libs/data/src/migrations/index.ts`. 
-To make it easier, and not extra boilerplate, you can simply call `yarn create-migration --name=<NAME>` inside of `libs/data` folder
+To make it easier, and not extra boilerplate, you can simply call `pnpm create-migration --name=<NAME>` inside of `libs/data` folder
 
 One of the main benefits of using Umzug is, you can pass almost whatever you want inside the migration. 
 For more details, discover the `UmzugOptions.context` property
@@ -64,7 +64,7 @@ When migration is created and included into the list, it will be executed automa
 ## How to manage 3rd party dependencies
 **!!! It's important to note, that dependencies management is a little different from what is proposed by default for NX projects**
 
-Unlike default NX structure, all the apps and libs can have their own package.json files, thanks to **[yarn workspaces](https://yarnpkg.com/features/workspaces)**
+Unlike default NX structure, all the apps and libs can have their own package.json files, thanks to **[pnpm workspaces](https://pnpm.io/pnpm-workspace_yaml)**
 
 The main benefit here is, we don't need to deal with a long list of dependencies inside of root folder. Root package.json only contain dev dependencies and those, that are used across all the projects (like validation library)
 
