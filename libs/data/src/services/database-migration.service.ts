@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { Connection, In, QueryRunner, Table } from 'typeorm';
+import { DataSource, In, QueryRunner, Table } from 'typeorm';
 import { Umzug, MigrationMeta, InputMigrations } from 'umzug';
 import { MigrationContext } from '../utility-types';
 import { TypeOrmUmzugStorage } from './type-orm-umzug.storage';
@@ -15,7 +15,7 @@ export class DatabaseMigrationService implements OnModuleInit {
 
   private readonly tableName = 'database_migrations';
 
-	constructor(@InjectDataSource() private readonly connection: Connection,
+	constructor(@InjectDataSource() private readonly dataSource: DataSource,
 							private readonly configService: ConfigService<IDatabaseConfigParams>) {
 	}
 
@@ -32,7 +32,7 @@ export class DatabaseMigrationService implements OnModuleInit {
 	}
 
 	public async migrate(migrationsList: InputMigrations<MigrationContext>): Promise<void> {
-		const queryRunner = this.connection.createQueryRunner();
+		const queryRunner = this.dataSource.createQueryRunner();
 		await queryRunner.connect();
 		await queryRunner.startTransaction();
 

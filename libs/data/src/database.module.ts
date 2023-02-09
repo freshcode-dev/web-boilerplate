@@ -9,7 +9,6 @@ import {
 import { EntitySchema } from 'typeorm/entity-schema/EntitySchema';
 import { DatabaseMigrationService } from './services';
 import { DbMigration } from './models/db-migration.entity';
-import { ModuleRef } from '@nestjs/core';
 
 export const modelsToInclude = [
 	DbMigration,
@@ -63,15 +62,15 @@ export class DatabaseModule extends TypeOrmModule {
 		return {
 			...module,
 			imports: [
-				...(module.imports || []),
+				...(module.imports ?? []),
 				ConfigModule
 			],
 			providers: [
-				...(module.providers || []),
+				...(module.providers ?? []),
 				...servicesToAdd
 			],
 			exports: [
-				...(module.exports || []),
+				...(module.exports ?? []),
 				...servicesToAdd
 			]
 		}

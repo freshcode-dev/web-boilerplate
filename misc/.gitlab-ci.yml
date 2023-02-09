@@ -44,7 +44,6 @@ lint-test-build:
     - main
     - staging
     - merge_requests
-    - pnpm
 
 .web-deployment-job:
   image: docker:stable

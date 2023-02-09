@@ -17,7 +17,7 @@ ReactDOM.render(
         </BrowserRouter>
         </RootThemeProvider>
       </Provider>
- 
+
 	</StrictMode>,
 	document.getElementById('root')
 );
