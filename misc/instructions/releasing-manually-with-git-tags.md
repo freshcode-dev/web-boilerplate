@@ -3,7 +3,7 @@ Use this instruction in case, part of your app needs to be versioned properly (i
 
 ## .gitlab-ci.yml updates
 #### Define, what tags you want to react to 
-If you want to run job every time any tag created, it's enough to check pipeline has corresponding variable
+If you want to run job every time some tag is created, it's enough to check pipeline has corresponding variable
 
 ```yaml
 deploy-main:
@@ -26,7 +26,7 @@ variables:
   WEB_STAGING_BRANCH_TAG_REGEX: /^web\/([0-9]+[\.]?)+(-(staging){1})(-[\d])?$/
 ```
 
-#### Define automated job to create releases every when tag is created
+#### Define automated job to create releases every when a tag is created
 This part is quite optional, as you may not need to create releases in your publishing strategy. But anyway, it might be useful in some cases
 
 ```yaml
@@ -47,4 +47,4 @@ create-release-main:
     - if: $CI_COMMIT_TAG =~ $WEB_MAIN_BRANCH_TAG_REGEX
 ```
 
-[More about what GitLab releases are about](https://docs.gitlab.com/ee/user/project/releases)
+[More about what GitLab releases are](https://docs.gitlab.com/ee/user/project/releases)

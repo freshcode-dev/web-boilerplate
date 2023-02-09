@@ -5,7 +5,7 @@ WORKDIR /app
 COPY ./dist/apps/api/package*.json /app/
 
 RUN npm install -g pnpm
-RUN pnpm install --shamefully-hoist
+RUN pnpm install
 
 COPY ./dist/apps/api/ /app/
 COPY ./apps/api/.env /app/

@@ -5,7 +5,7 @@ WORKDIR /app
 COPY . /app/
 
 RUN npm install -g pnpm
-RUN pnpm install --shamefully-hoist
+RUN pnpm install
 RUN pnpm nx run-many --all --target=build
 
 

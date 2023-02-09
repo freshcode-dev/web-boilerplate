@@ -4,6 +4,11 @@ This project was generated using [Nx](https://nx.dev).
 
 🔎 **Smart, Fast and Extensible Build System**
 
+## Specific instructions
+- [Dependencies management](misc/instructions/dependencies-management.md)
+- [Integrate testing results with gitlab](misc/instructions/integrate-testing-results-with%20gitlab.md)
+- [Releasing manually with git tags](misc/instructions/releasing-manually-with-git-tags.md)
+
 ## Environment variables
 All the applications have their own `.env` files. Values inside are always defaults, so should not be related to any production environment.
 
