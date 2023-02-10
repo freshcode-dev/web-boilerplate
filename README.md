@@ -9,6 +9,37 @@ This project was generated using [Nx](https://nx.dev).
 - [Integrate testing results with gitlab](misc/instructions/integrate-testing-results-with%20gitlab.md)
 - [Releasing manually with git tags](misc/instructions/releasing-manually-with-git-tags.md)
 
+## Automation
+The repository has a few automated tasks configured.
+They ware managed with `husky` and technically are a set of git-hooks, that are placed at `/.husky` and should be installed automatically after the very first packages installation.
+
+**Please, make sure hooks were installed properly. The most common problems are described in the [official FAQ](https://typicode.github.io/husky/#/?id=faq)**
+
+## Commits naming
+We have a `commit-lint` package, that verifies each and every package name with a set of rules described in `/commitlint.config.js`.
+
+To pass the validation, your commit message should at least follow these few rules:
+- The simplest commit message has to contain task name, and a message: 
+```
+PRJ-1: test
+```
+- In most cases, it would be ver helpful, if you include a commit type info as well: 
+```
+[FIX] PRJ-1: test
+```
+- Even better, if your commit contains it's scope (which is usually helpful when testing the app): 
+```
+[FIX] [Dashboard] PRJ-1: test
+```
+- If you want to add extra details to your commit, it's always allowed and welcomed. Just add an empty line after the commit message, and write the body below:
+```
+[FIX] [Dashboard] PRJ-1: test
+
+Body message
+```
+
+*If for some reason, you want to bypass the message verification, you can run commit message without hooks (`git commit --no-verify`). But in this case, you are the one responsible for it, so should have a strict reasoning behind it.*
+
 ## Environment variables
 All the applications have their own `.env` files. Values inside are always defaults, so should not be related to any production environment.
 
