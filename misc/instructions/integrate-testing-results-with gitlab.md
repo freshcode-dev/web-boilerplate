@@ -38,6 +38,22 @@ test:
     - $PNPM_INSTALL_COMMAND
 ...
 ```
+## Making linter output results to gitlab-compatible format
+
+To make eslint output it's results to a JSON file, you basically need a few things:
+1. Add a new configuration to `[app]/project.js/targets->lint->configurations`. So it should look like this:
+```json
+{
+	"ci": {
+		"format": "gitlab",
+		"outputFile": "__lint__/api.json"
+	}
+}
+```
+2. When executing lint command, do it with `--configuration=ci` option:
+```
+nx run-many --all --target=lint --configuration=ci
+```
 
 ## Running tests with the gitlab-compatible results
 
@@ -51,30 +67,34 @@ But, the prebuilt configuration has a few problems:
 ### Make NX output results when testing
 `* the proposed workaround may not be the best option, as there might be a way to customize jest behavior with NX->project->test->configuration`
 
-First, `jest` is quite popular, as well as `junit`. 
-So there are a few npm packages converting test results to suitable format. 
-I prefer [jest-junit](https://www.npmjs.com/package/jest-junit) as the most popular.
-To use it alongside jest, simply install it as a dev dependency on the root level.
+Worth saying, `jest` is quite popular, as well as `junit`. 
+So in npm there are already a few packages that do convert test results to `junit`
+Personally I prefer [jest-junit](https://www.npmjs.com/package/jest-junit) as the most popular.
+To use it alongside `jest`, simply install it as a dev dependency on the root level.
 
 From out of the box, `NX` generates projects with jest setup, and each project has its own preconfigured but customizable `jest.config` file.
 
-To make jest output results for particular project in `junit` suitable format, add formatter to `jest-config` 
+To make jest output results for particular project in `junit` suitable format, add formatter to `jest-config.ts->reporters` 
 
-```javascript
-module.exports = {
-  displayName: 'frontend',
-  preset: '../../jest.preset.js',
-  transform: {
-    '^(?!.*\\.(js|jsx|ts|tsx|css|json)$)': '@nrwl/react/plugins/jest',
-    '^.+\\.[tj]sx?$': 'babel-jest',
-  },
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  coverageDirectory: '../../coverage/apps/frontend',
+```typescript
+export default {
+	displayName: 'api',
+	preset: '../../jest.preset.js',
+	globals: {
+		'ts-jest': {
+			tsconfig: '<rootDir>/tsconfig.spec.json',
+		},
+	},
+	testEnvironment: 'node',
+	transform: {
+		'^.+\\.[tj]s$': 'ts-jest',
+	},
+	moduleFileExtensions: ['ts', 'js', 'html'],
+	coverageDirectory: '../../coverage/apps/api',
 	reporters: [
-		["jest-junit", {"outputDirectory": "__reports__", "outputName": "frontend.xml"}]
+		["jest-junit", {"outputDirectory": "__reports__", "outputName": "api.xml"}]
 	]
 };
-
 ```
 
 After it is set, jest outputs test results per project to `__reports__` folder at the root.

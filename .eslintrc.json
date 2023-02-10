@@ -4,7 +4,7 @@
     "project": ["./tsconfig.base.json", "./*/*/tsconfig.json"]
   },
   "root": true,
-  "ignorePatterns": ["**/*"],
+  "ignorePatterns": ["**/*", "**/dist", "**/node_modules"],
   "plugins": ["@nrwl/nx"],
   "rules": {
     "prefer-const": "error",

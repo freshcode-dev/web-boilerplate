@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { ConfigService } from '../config/config.service';
 import { IConfigParams } from '../interfaces/config-params';
 
@@ -8,7 +8,7 @@ const httpClientFactory = (configService: ConfigService<IConfigParams>): AxiosIn
     timeout: 30000
   });
 
-  const authHeaderInterceptor = (config: AxiosRequestConfig): AxiosRequestConfig => {
+  const authHeaderInterceptor = (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
     const tokenFromLocalStorage = localStorage.getItem('token');
 
     if (tokenFromLocalStorage && config.headers) {

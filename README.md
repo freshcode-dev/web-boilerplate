@@ -21,7 +21,7 @@ All the custom environment variables, your application may use have to be define
 [Learn more about .eng files overrides](https://nx.dev/guides/environment-variables)
 
 ## Prerequisites
-1. `NodeJS` v.17+ and `PostgreSQL` v.13+ installed
+1. `NodeJS` v.18+ and `PostgreSQL` v.15+ installed
 2. An empty database created for the project
 3. `pnpm` installed
 

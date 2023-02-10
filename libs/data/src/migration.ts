@@ -2,7 +2,7 @@
 const args = require('minimist')(process.argv);
 const fs = require('fs');
 const path = require('path');
-const moment = require('moment');
+const formatDate = require('date-fns/format');
 
 interface String {
 	insertBeforeLastOccurrence(strToFind: string, strToInsert: string): string;
@@ -51,7 +51,7 @@ const addMigrationClassToIndex = (migrationFileName: string, migrationClassName:
 
 	const normalizedName = migrationName.replace(/\W/g, '');
 
-	const currentTimestamp = moment().format('YYYYMMDDHHmmss');
+	const currentTimestamp = formatDate(new Date(), 'YYYYMMDDHHmmss');
 
 	const migrationClassName = `${normalizedName}${currentTimestamp}`;
 	const migrationFileName = `${currentTimestamp}.${normalizedName}`;
