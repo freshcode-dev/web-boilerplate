@@ -1,8 +1,8 @@
 import React, { FC } from 'react';
-import { CoreButton, CoreCheckbox, CoreTextField, CoreSelect } from '../../components/_ui';
-import { logOut } from '../../store/features/session';
-import { useAppDispatch } from '../../store';
-import { useGetUsersQuery } from '../../store/features/users'
+import { CoreButton, CoreCheckbox, CoreTextField, CoreSelect } from '../../../../components/_ui';
+import { logOut } from '../../../../store/features/session';
+import { useAppDispatch } from '../../../../store';
+import { useGetUsersQuery } from '../../../../store/features/users'
 
 const AuthorizedPage: FC = () => {
   const dispatch = useAppDispatch();

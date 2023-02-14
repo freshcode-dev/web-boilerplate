@@ -6,9 +6,9 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { ErrorLogger } from '@boilerplate/shared';
-import { useAppDispatch } from '../../store';
-import loginUserAction from '../../store/features/session/login-user.action';
-import { setAccessToken } from '../../store/features/session';
+import { useAppDispatch } from '../../../../store';
+import loginUserAction from '../../../../store/features/session/login-user.action';
+import { setAccessToken } from '../../../../store/features/session';
 
 const resolver = classValidatorResolver(LoginDto);
 

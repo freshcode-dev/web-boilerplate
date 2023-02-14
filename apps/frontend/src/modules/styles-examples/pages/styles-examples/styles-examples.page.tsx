@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Box, Tab, Tabs } from '@mui/material';
 import { StylesExamplesTabsEnum } from "./styles-examples.types";
-import { STYLES_EXAMPLES_TABS } from "./constants/pages.constant";
+import { STYLES_EXAMPLES_TABS } from "../../constants/pages.constant";
 
 export const StylesExamplesPage = () => {
 	const [tab, setTab] = useState<StylesExamplesTabsEnum>(StylesExamplesTabsEnum.SX_PROPS);

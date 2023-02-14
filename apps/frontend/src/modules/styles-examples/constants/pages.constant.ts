@@ -1,8 +1,8 @@
 import React from 'react';
-import { StylesExamplesTabsEnum } from '../styles-examples.types';
-import FormSxComponent from '../components/form-sx/form-sx.component';
-import FormStyledComponent from '../components/form-styled/form-styled.component';
-import FormScssComponent from '../components/form-scss/form-scss.component';
+import { StylesExamplesTabsEnum } from 'apps/frontend/src/modules/styles-examples/pages/styles-examples/styles-examples.types';
+import FormSxComponent from 'apps/frontend/src/modules/styles-examples/components/form-sx/form-sx.component';
+import FormStyledComponent from 'apps/frontend/src/modules/styles-examples/components/form-styled/form-styled.component';
+import FormScssComponent from 'apps/frontend/src/modules/styles-examples/components/form-scss/form-scss.component';
 
 export const STYLES_EXAMPLES_TABS: Array<{ id: StylesExamplesTabsEnum, title: string, component: React.ElementType }> = [
 	{
