@@ -28,7 +28,7 @@ const createNewMigrationByTemplate = (migrationFileName: string, migrationClassN
 };
 
 const addMigrationClassToIndex = (migrationFileName: string, migrationClassName: string): void => {
-	const migrationsDirIndex = fs.readFileSync(path.join(__dirname, 'migrations/index.ts'))
+	const migrationsDirIndex = fs.readFileSync(path.join(__dirname, 'migrations/session.slice.ts'))
 		.toString()
 		.insertBeforeLastOccurrence(
 			'// --imports_section_end',

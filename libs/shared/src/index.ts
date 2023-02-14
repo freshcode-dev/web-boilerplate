@@ -12,3 +12,4 @@ export * from './enums/user-roles.enum';
 
 export * from './utils/utility-types';
 export * from './utils/error-logger';
+export * from './utils/promises.utils';

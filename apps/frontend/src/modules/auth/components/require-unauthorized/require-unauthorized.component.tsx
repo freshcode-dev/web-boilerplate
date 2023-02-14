@@ -1,8 +1,8 @@
 import { ReactElement } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAppSelector } from '../store';
+import { useAppSelector } from '../../../../store';
 
-const RequireUnauthorized = ({ children }: { children: JSX.Element }): ReactElement => {
+export const RequireUnauthorized = ({ children }: { children: JSX.Element }): ReactElement => {
   const isLoggedIn = useAppSelector(state => state.session.accessToken);
 
   if (isLoggedIn) {
@@ -11,5 +11,3 @@ const RequireUnauthorized = ({ children }: { children: JSX.Element }): ReactElem
 
   return children;
 };
-
-export default RequireUnauthorized;

@@ -10,6 +10,7 @@ import store from './store';
 const root = ReactDOM.createRoot(
 	document.getElementById('root') as HTMLElement
 );
+
 root.render(
 	<StrictMode>
 		<Provider store={store}>
@@ -20,6 +21,5 @@ root.render(
 				</BrowserRouter>
 			</RootThemeProvider>
 		</Provider>
-
 	</StrictMode>
 );

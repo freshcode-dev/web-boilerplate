@@ -9,7 +9,7 @@ export interface UserDto {
 	updatedAt?: Date;
 }
 
-export class LoginDto {
+export class SignInDto {
 	@IsEmail()
 	@IsNotEmpty()
 	email: string;
@@ -18,8 +18,7 @@ export class LoginDto {
 	password: string;
 }
 
-export interface ValidateUserDto {
-	user?: UserDto;
-	error?: boolean;
-	message?: string;
+export class AuthResultDto {
+	user: UserDto;
+	authToken: string;
 }

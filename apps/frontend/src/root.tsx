@@ -1,18 +1,25 @@
-import React, { FC, Suspense } from 'react';
+import React, {FC, Suspense, lazy, useEffect} from 'react';
 import { useRoutes } from 'react-router-dom';
-import { NotFoundPage } from './modules/core/';
-import { AuthorizedPage } from './modules/auth';
-import RequireAuth from './components/require-auth.component';
-import RequireUnauthorized from './components/require-unauthorized.component';
-import RouterSuspense from './components/router-suspense.component';
+import { NotFoundPage } from './modules/_core/';
+import { AuthorizedPage } from './modules/auth/pages/authorized-page/authorized-page.page';
+import { RequireAuth, RequireUnauthorized } from './modules/auth';
+import RouterSuspense from './modules/_core/components/router-suspense/router-suspense.component';
+import {useAppDispatch} from "./store";
+import {reinitializeSessionAction} from "./modules/auth/store/actions/reinitialize-session.action";
 
-const AuthorizedArea = React.lazy(async () => import("./areas/authorized-area.component"));
-const UnauthorizedArea = React.lazy(async () => import("./areas/unauthorized-area.component"));
-const LoginPage = React.lazy(async () => import("./modules/auth/pages/login/login.page"));
-const SignUpPage = React.lazy(async () => import("./modules/auth/pages/signup/signup.page"));
-const StylesExamplesPage = React.lazy(async () => import("./modules/styles-examples/pages/styles-examples/styles-examples.page"));
+const AuthorizedArea = lazy(async () => import('./modules/_core/areas/authorized-area.component'));
+const UnauthorizedArea = lazy(async () => import('./modules/_core/areas/unauthorized-area.component'));
+const LoginPage = lazy(async () => import('./modules/auth/pages/login/login.page'));
+const SignUpPage = lazy(async () => import('./modules/auth/pages/signup/signup.page'));
+const StylesExamplesPage = lazy(async () => import('./modules/styles-examples/pages/styles-examples/styles-examples.page'));
 
 const Root: FC = () => {
+	const dispatch = useAppDispatch();
+
+	useEffect(() => {
+		dispatch(reinitializeSessionAction());
+	}, [dispatch]);
+
   const routes = useRoutes([
     {
       path: '/',
@@ -40,6 +47,6 @@ const Root: FC = () => {
       {routes}
     </Suspense>
   );
-}
+};
 
 export default Root;

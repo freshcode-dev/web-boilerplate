@@ -1,0 +1,17 @@
+import { ReactElement, useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
+import { useCurrentAccessTokenSelector } from "../../index";
+
+export const RequireAuth = ({ children }: { children: JSX.Element }): ReactElement => {
+  const currentToken = useCurrentAccessTokenSelector();
+
+	useEffect(() => {
+		console.log('isLoggedIn change', currentToken);
+	}, [currentToken]);
+
+  if (!currentToken) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};

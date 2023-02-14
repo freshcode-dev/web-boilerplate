@@ -25,7 +25,7 @@ export class UsersService {
   }
 
   public async findByEmail(email: string): Promise<UserDto | null> {
-  	return await this.usersRepository.findOne({ where: { email } });
+		return await this.usersRepository.findOne({ where: { email } });
 	}
 }
 

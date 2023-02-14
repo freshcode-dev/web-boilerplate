@@ -5,7 +5,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { FC } from 'react';
 import { Link } from 'react-router-dom';
 
-const SignUpPage: FC = () => {
+export const SignUpPage: FC = () => {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);

@@ -6,7 +6,6 @@ import { UsersService } from './users.service';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { JwtAuthGuard } from './guard/jwt.guard';
-import { LocalStrategy } from './strategy/local.strategy';
 import { jwtConstants } from '../constants';
 
 @Module({
@@ -25,7 +24,6 @@ import { jwtConstants } from '../constants';
 		AuthService,
 		JwtStrategy,
 		JwtAuthGuard,
-		LocalStrategy,
   ],
   exports: [
     UsersService,

@@ -1,6 +1,5 @@
 import { Box } from '@mui/material';
 import React, { FC } from 'react';
-import { Navigate } from 'react-router-dom';
 
 const NotFoundPage: FC = () => (
   <Box sx={{

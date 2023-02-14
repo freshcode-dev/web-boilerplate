@@ -1,16 +1,19 @@
+import { useGetUsersQuery } from '../../../../store/api/users.api';
 import React, { FC } from 'react';
-import { CoreButton, CoreCheckbox, CoreTextField, CoreSelect } from '../../../../components/_ui';
-import { logOut } from '../../../../store/features/session';
+import { CoreButton, CoreCheckbox, CoreTextField, CoreSelect } from '../../../_core/components/_ui';
 import { useAppDispatch } from '../../../../store';
-import { useGetUsersQuery } from '../../../../store/features/users'
+import { signOutAction } from '../../store/actions/sign-out.action';
 
-const AuthorizedPage: FC = () => {
+export const AuthorizedPage: FC = () => {
   const dispatch = useAppDispatch();
+
   const handleLogoutClick = async () => {
-    dispatch(logOut())
-  }
+    await dispatch(signOutAction());
+  };
+
   // Using a query hook automatically fetches data and returns query values
-  const { data, error, isLoading } = useGetUsersQuery('');
+  const { data, error, isLoading } = useGetUsersQuery();
+
   return (
     <div>
       authorized page content

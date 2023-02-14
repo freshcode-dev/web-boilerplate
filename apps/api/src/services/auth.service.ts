@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcryptjs';
 import * as _ from 'lodash';
 import { UsersService } from './users.service';
-import { UserDto, ValidateUserDto } from '@boilerplate/shared';
+import { AuthResultDto, UserDto } from '@boilerplate/shared';
 
 @Injectable()
 export class AuthService {
@@ -13,19 +13,27 @@ export class AuthService {
 	) {
 	}
 
-	public async validateUser(email: string, password: string): Promise<ValidateUserDto> {
-		const foundUser: UserDto | null = await this.usersService.findByEmail(email);
+	public async authenticateUser(email: string, password: string): Promise<AuthResultDto> {
+		const user = await this.verifyUserCredentials(email, password);
+		const authToken = this.generateJWT(user);
 
-		if (foundUser?.password) {
-			const isEqual = await compare(password, foundUser.password);
+		return { user, authToken };
+	}
 
-			if (isEqual)
-				return { user: _.omit(foundUser, 'password') };
+	public async verifyUserCredentials(email: string, password: string): Promise<UserDto> {
+		const foundUser = await this.usersService.findByEmail(email);
 
-			return { error: true, message: 'Incorrect password' };
+		if (!foundUser?.password) {
+			throw new UnauthorizedException('This user does not exist');
 		}
 
-		return { error: true, message: 'This user does not exist' };
+		const isEqual = await compare(password, foundUser.password);
+
+		if (!isEqual) {
+			throw new UnauthorizedException('Incorrect password');
+		}
+
+		return _.omit(foundUser, 'password');
 	}
 
 	public generateJWT(user: UserDto): string {
