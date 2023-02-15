@@ -13,7 +13,7 @@ export default {
 	},
 	moduleFileExtensions: ['ts', 'js', 'html'],
 	coverageDirectory: '../../coverage/apps/api',
-	reporters: [
+	coverageReporters: [
 		["jest-junit", {"outputDirectory": "__reports__", "outputName": "api.xml"}]
 	]
 };

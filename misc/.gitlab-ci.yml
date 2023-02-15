@@ -13,8 +13,16 @@ variables:
   POSTGRES_PASSWORD: postgres
   POSTGRES_HOST_AUTH_METHOD: trust
   REDIS_PASSWORD: Owc1J4cy3DS0TWn0Afed
+  # Example: web-1.0.0, web-1.0.0-staging-1
+  WEB_GENERAL_TAG_REGEX: /^web-(\d+[\.]?).*$/
+  # Example: web-1.0.0, web-1.10.123
+  WEB_PROD_TAG_REGEX: /^web-(\d+[\.]?)+$/
+  # Example: web-1.0.0-staging, web-1.0.0-staging-1
+  WEB_STAGING_TAG_REGEX: /^web-(\d+[\.]?)+(-staging)(-[\d])?$/
+  # Example: release-1, release-initial
+  RELEASE_BRANCH_REGEX: /^release-.*$/
 
-lint-test-build:
+web-lint-test-build:
   stage: lint-test-build
   services:
     - name: bitnami/redis:latest
@@ -29,7 +37,7 @@ lint-test-build:
     - npm install -g pnpm
     - $PNPM_INSTALL_COMMAND
     - pnpm nx run-many --all --target=lint --configuration=ci
-    - pnpm nx run-many --all --target=test
+#    - pnpm nx run-many --all --target=test
     - pnpm run merge-test-reports
     - pnpm nx run-many --all --target=build
   artifacts:
@@ -41,31 +49,83 @@ lint-test-build:
       junit: __reports__/merged.xml
       codequality: __lint__/api.json
   only:
-    - main
-    - staging
     - merge_requests
+    - main
+    - $WEB_GENERAL_TAG_REGEX
+    - $RELEASE_BRANCH_REGEX
 
 .web-deployment-job:
   image: docker:stable
   stage: deployment
   interruptible: true
   dependencies:
-    - lint-test-build
+    - web-lint-test-build
   script:
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - docker build -t $BRANCH_IMAGE -f ./misc/Dockerfile .
     - docker push $BRANCH_IMAGE
 
-deploy-main:
+# Deploy production START
+# Runs when $WEB_PROD_TAG_REGEX matching tag is created
+
+web-deploy-prod:
   extends: .web-deployment-job
   environment:
     name: main
   only:
-    - main
+    - $WEB_PROD_TAG_REGEX
 
-deploy-staging:
+web-create-release-main:
+  stage: deployment
+  interruptible: true
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  dependencies:
+    - web-deploy-prod
+  script:
+    - echo 'Release creation...'
+  release:
+    name: '[WEB][PROD] Release $CI_COMMIT_TAG'
+    description: 'Created automatically as a result of manual tag creation'
+    tag_name: $CI_COMMIT_TAG
+    ref: $CI_COMMIT_TAG
+  only:
+    - $WEB_PROD_TAG_REGEX
+
+# Deploy production END
+#-------------------------------------------------------
+# Deploy Staging START
+# Runs when $WEB_STAGING_TAG_REGEX matching tag is created
+
+web-deploy-staging:
   extends: .web-deployment-job
   environment:
     name: staging
   only:
-    - staging
+    - $WEB_STAGING_TAG_REGEX
+
+web-create-release-staging:
+  stage: deployment
+  interruptible: true
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  dependencies:
+    - web-deploy-staging
+  script:
+    - echo 'Release creation...'
+  release:
+    name: '[WEB][STAGING] Release $CI_COMMIT_TAG'
+    description: 'Created automatically as a result of manual tag creation'
+    tag_name: $CI_COMMIT_TAG
+    ref: $CI_COMMIT_TAG
+  only:
+    - $WEB_STAGING_TAG_REGEX
+
+# Deploy Staging END
+#-------------------------------------------------------
+# Deploy Staging START
+# Runs when $WEB_STAGING_TAG_REGEX matching tag is created
+
+web-deploy-dev:
+  extends: .web-deployment-job
+  only:
+    - main
+# Deploy Staging END

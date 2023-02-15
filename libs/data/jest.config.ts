@@ -1,4 +1,5 @@
-module.exports = {
+/* eslint-disable */
+export default {
   displayName: 'data',
   preset: '../../jest.preset.js',
   globals: {
@@ -12,7 +13,7 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   coverageDirectory: '../../coverage/libs/data',
-	reporters: [
+	coverageReporters: [
 		["jest-junit", {"outputDirectory": "__reports__", "outputName": "data.xml"}]
 	]
 };

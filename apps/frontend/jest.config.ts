@@ -8,7 +8,7 @@ export default {
 	},
 	moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
 	coverageDirectory: '../../coverage/apps/frontend',
-	reporters: [
+	coverageReporters: [
 		["jest-junit", {"outputDirectory": "__reports__", "outputName": "frontend.xml"}]
 	]
 };

@@ -1,4 +1,5 @@
-module.exports = {
+/* eslint-disable */
+export default {
   displayName: 'shared',
   preset: '../../jest.preset.js',
   globals: {
@@ -11,7 +12,7 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   coverageDirectory: '../../coverage/libs/shared',
-	reporters: [
+	coverageReporters: [
 		["jest-junit", {"outputDirectory": "__reports__", "outputName": "shared.xml"}]
 	]
 };
