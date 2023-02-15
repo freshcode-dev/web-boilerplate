@@ -15,7 +15,9 @@ const refreshActionWithMutex = createAsyncThunk<void, string>(
 	async (body, { dispatch, rejectWithValue, getState }) => {
 		try {
 			if (refreshMutex.isLocked()) {
-				return await refreshMutex.waitForUnlock();
+				await refreshMutex.waitForUnlock();
+
+				return;
 			}
 
 			await refreshMutex.acquire();
@@ -23,8 +25,8 @@ const refreshActionWithMutex = createAsyncThunk<void, string>(
 			const refreshResult = await dispatch(authApi.endpoints.refresh.initiate(body, { fixedCacheKey: REFRESH_KEY })).unwrap();
 
 			dispatch(clearSession());
-			dispatch(setCurrentUser(refreshResult!.user));
-			dispatch(setAccessToken(refreshResult!.authToken));
+			dispatch(setCurrentUser(refreshResult.user));
+			dispatch(setAccessToken(refreshResult.authToken));
 
 			return;
 		} catch (error) {
@@ -63,8 +65,8 @@ const refreshActionWithRtk = createAsyncThunk<void, string>(
 			const refreshResult = await dispatch(authApi.endpoints.refresh.initiate(body, { fixedCacheKey: REFRESH_KEY })).unwrap();
 
 			dispatch(clearSession());
-			dispatch(setCurrentUser(refreshResult!.user));
-			dispatch(setAccessToken(refreshResult!.authToken));
+			dispatch(setCurrentUser(refreshResult.user));
+			dispatch(setAccessToken(refreshResult.authToken));
 
       return;
     } catch (error) {

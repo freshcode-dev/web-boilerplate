@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { Avatar, Box, Button, Checkbox, Container, FormControlLabel, Grid, TextField, Typography } from '@mui/material';
-import { classValidatorResolver } from '@hookform/resolvers/class-validator';
+import { Avatar, Box, Button, Container, Grid, TextField, Typography } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { FC } from 'react';
 import { Link } from 'react-router-dom';

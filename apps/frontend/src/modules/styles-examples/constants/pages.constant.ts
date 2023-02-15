@@ -1,10 +1,16 @@
 import React from 'react';
-import { StylesExamplesTabsEnum } from 'apps/frontend/src/modules/styles-examples/pages/styles-examples/styles-examples.types';
-import FormSxComponent from 'apps/frontend/src/modules/styles-examples/components/form-sx/form-sx.component';
-import FormStyledComponent from 'apps/frontend/src/modules/styles-examples/components/form-styled/form-styled.component';
-import FormScssComponent from 'apps/frontend/src/modules/styles-examples/components/form-scss/form-scss.component';
+import { StylesExamplesTabsEnum } from '../pages/styles-examples/styles-examples.types';
+import FormSxComponent from '../components/form-sx/form-sx.component';
+import FormStyledComponent from '../components/form-styled/form-styled.component';
+import FormScssComponent from '../components/form-scss/form-scss.component';
 
-export const STYLES_EXAMPLES_TABS: Array<{ id: StylesExamplesTabsEnum, title: string, component: React.ElementType }> = [
+interface ExampleTab {
+	id: StylesExamplesTabsEnum;
+	title: string;
+	component: React.ElementType;
+}
+
+export const STYLES_EXAMPLES_TABS: Array<ExampleTab> = [
 	{
 		id: StylesExamplesTabsEnum.SX_PROPS,
 		title: '"sx" props',
@@ -20,4 +26,4 @@ export const STYLES_EXAMPLES_TABS: Array<{ id: StylesExamplesTabsEnum, title: st
 		title: '"scss" styles',
 		component: FormScssComponent,
 	},
-]
+];

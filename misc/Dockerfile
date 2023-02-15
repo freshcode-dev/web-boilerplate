@@ -1,5 +1,5 @@
 # For better caching
-FROM node:16-alpine as runner
+FROM node:18-alpine as runner
 WORKDIR /app
 
 COPY ./dist/apps/api/package*.json /app/

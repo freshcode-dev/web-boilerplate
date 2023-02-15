@@ -1,8 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { UserDto } from '@boilerplate/shared';
-import { useSelector } from 'react-redux';
-import { useAppSelector } from 'apps/frontend/src/store';
-import { ACCESS_TOKEN_STORAGE_KEY } from '../constants';
+import { useAppSelector } from '../../../store';
+import { ACCESS_TOKEN_STORAGE_KEY } from '../../_core/constants';
 
 export interface SessionState {
 	accessToken: string | null;

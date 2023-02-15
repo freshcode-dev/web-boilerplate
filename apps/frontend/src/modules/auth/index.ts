@@ -12,4 +12,3 @@ export { signOutAction } from './store/actions/sign-out.action';
 export { sessionSlice, useCurrentAccessTokenSelector } from './store/session.slice';
 
 // Constants
-export { ACCESS_TOKEN_STORAGE_KEY } from './constants';

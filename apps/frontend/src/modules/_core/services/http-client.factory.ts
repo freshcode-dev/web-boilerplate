@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
-import { ConfigService } from 'apps/frontend/src/modules/_core/services/config.service';
-import { IConfigParams } from 'apps/frontend/src/modules/_core/interfaces/config-params';
-import { ACCESS_TOKEN_STORAGE_KEY } from 'apps/frontend/src/modules/auth';
+import { ConfigService } from '../../_core/services/config.service';
+import { IConfigParams } from '../../_core/interfaces/config-params';
+import { ACCESS_TOKEN_STORAGE_KEY } from '../../_core/constants';
 
 const httpClientFactory = (configService: ConfigService<IConfigParams>): AxiosInstance => {
   const httpClient = axios.create({

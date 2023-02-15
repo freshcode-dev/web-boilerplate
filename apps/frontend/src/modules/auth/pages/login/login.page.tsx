@@ -13,7 +13,6 @@ const resolver = classValidatorResolver(SignInDto);
 export const LoginPage: FC = () => {
 	const dispatch = useAppDispatch();
 	const [isLoading, setIsLoading] = useState(false);
-	const [signError, setSignError] = useState<string | null>(null);
 
   const { handleSubmit, register, formState: { errors } } = useForm<SignInDto>({ resolver });
 
@@ -23,11 +22,10 @@ export const LoginPage: FC = () => {
 			await dispatch(signInAction(data)).unwrap();
 		} catch (e: unknown) {
 			ErrorLogger.logError(e);
-			setSignError((e as Error).message);
 		} finally {
 			setIsLoading(false);
 		}
-	}, []);
+	}, [dispatch]);
 
 	const callRefreshAction = async () => {
 		await dispatch(refreshAction('mock_token_data'));

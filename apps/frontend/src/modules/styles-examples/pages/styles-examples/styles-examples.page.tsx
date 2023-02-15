@@ -23,6 +23,6 @@ export const StylesExamplesPage = () => {
 			</Box>
 		</Box>
 	);
-}
+};
 
 export default StylesExamplesPage;

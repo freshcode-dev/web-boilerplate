@@ -1,8 +1,8 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { clearSession } from 'apps/frontend/src/modules/auth/store/session.slice';
-import { ACCESS_TOKEN_STORAGE_KEY } from 'apps/frontend/src/modules/auth/constants';
+import { clearSession } from '../session.slice';
+import { ACCESS_TOKEN_STORAGE_KEY } from '../../../_core/constants';
 
-export const signOutAction = createAsyncThunk<void, void>(
+export const signOutAction = createAsyncThunk<void>(
 	'auth/sign-out',
 	async (body, { dispatch, rejectWithValue, fulfillWithValue }) => {
 		try {

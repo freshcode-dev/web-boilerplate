@@ -12,7 +12,7 @@ export const AuthorizedPage: FC = () => {
   };
 
   // Using a query hook automatically fetches data and returns query values
-  const { data, error, isLoading } = useGetUsersQuery();
+  const { data } = useGetUsersQuery();
 
   return (
     <div>

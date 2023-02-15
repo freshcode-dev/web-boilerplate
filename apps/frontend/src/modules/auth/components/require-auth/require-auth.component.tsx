@@ -6,7 +6,7 @@ export const RequireAuth = ({ children }: { children: JSX.Element }): ReactEleme
   const currentToken = useCurrentAccessTokenSelector();
 
 	useEffect(() => {
-		console.log('isLoggedIn change', currentToken);
+		console.info('isLoggedIn change', currentToken);
 	}, [currentToken]);
 
   if (!currentToken) {
