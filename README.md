@@ -6,6 +6,7 @@ This project was generated using [Nx](https://nx.dev).
 
 ## Specific instructions
 - [Dependencies management](misc/instructions/dependencies-management.md)
+- [React-based projects structure](misc/instructions/react-based-projects-structure.md)
 - [Integrate testing results with gitlab](misc/instructions/integrate-testing-results-with%20gitlab.md)
 - [Releasing manually with git tags](misc/instructions/releasing-manually-with-git-tags.md)
 

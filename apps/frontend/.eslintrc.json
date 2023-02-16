@@ -1,10 +1,17 @@
 {
   "extends": ["plugin:@nrwl/nx/react", "../../.eslintrc.json"],
   "ignorePatterns": ["!**/*", "**/node_modules"],
-  "overrides": [
+	"overrides": [
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
-      "rules": {}
+      "rules": {
+				"no-restricted-imports": ["error", {
+					"patterns": [{
+						"group": ["**/module1/*/**", "**/module2/*/**"],
+						"message": "To import from this module, please use the module's index file"
+					}]
+				}]
+			}
     },
     {
       "files": ["*.ts", "*.tsx"],

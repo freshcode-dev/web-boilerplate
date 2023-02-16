@@ -37,6 +37,7 @@ const refreshActionWithMutex = createAsyncThunk<void, string>(
 	},
 );
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const refreshActionWithRtk = createAsyncThunk<void, string>(
   'auth/refresh',
   async (body, { dispatch, rejectWithValue, getState }) => {

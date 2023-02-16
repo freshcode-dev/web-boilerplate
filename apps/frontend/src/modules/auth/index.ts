@@ -9,6 +9,7 @@ export { RequireUnauthorized } from './components/require-unauthorized/require-u
 export { signInAction } from './store/actions/sign-in.action';
 export { refreshAction } from './store/actions/refresh.action';
 export { signOutAction } from './store/actions/sign-out.action';
+export { reinitializeSessionAction } from './store/actions/reinitialize-session.action';
 export { sessionSlice, useCurrentAccessTokenSelector } from './store/session.slice';
 
 // Constants

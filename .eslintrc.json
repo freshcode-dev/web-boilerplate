@@ -5,8 +5,11 @@
   },
   "root": true,
   "ignorePatterns": ["**/*", "**/dist", "**/node_modules"],
-  "plugins": ["@nrwl/nx"],
+  "plugins": ["@nrwl/nx", "import"],
   "rules": {
+		"import/no-useless-path-segments": ["error", {
+			"noUselessIndex": true
+		}],
     "prefer-const": "error",
     "no-console": [
       "warn", { "allow": [

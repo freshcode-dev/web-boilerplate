@@ -1,5 +1,5 @@
 import { AuthResultDto, SignInDto } from '@boilerplate/shared';
-import api from './';
+import api from '.';
 
 const authApi = api.injectEndpoints({
 	endpoints: builder => ({

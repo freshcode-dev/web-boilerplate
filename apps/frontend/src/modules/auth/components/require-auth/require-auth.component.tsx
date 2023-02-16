@@ -1,6 +1,6 @@
 import { ReactElement, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useCurrentAccessTokenSelector } from "../../index";
+import { useCurrentAccessTokenSelector } from "../../store/session.slice";
 
 export const RequireAuth = ({ children }: { children: JSX.Element }): ReactElement => {
   const currentToken = useCurrentAccessTokenSelector();

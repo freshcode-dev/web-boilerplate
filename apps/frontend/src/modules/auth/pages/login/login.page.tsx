@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import {SubmitHandler, useForm} from 'react-hook-form';
 import { ErrorLogger, SignInDto } from '@boilerplate/shared';
 import { useAppDispatch } from '../../../../store';
-import {refreshAction, signInAction} from "../../";
+import { refreshAction, signInAction } from "../..";
 
 const resolver = classValidatorResolver(SignInDto);
 

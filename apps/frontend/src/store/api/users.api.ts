@@ -1,5 +1,5 @@
 import { UserDto } from '@boilerplate/shared';
-import api from './';
+import api from '.';
 
 const usersApi = api.injectEndpoints({
 	endpoints: builder => ({

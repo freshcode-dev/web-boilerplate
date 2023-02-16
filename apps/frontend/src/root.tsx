@@ -1,11 +1,9 @@
-import React, {FC, Suspense, lazy, useEffect} from 'react';
+import React, { FC, Suspense, lazy, useEffect } from 'react';
 import { useRoutes } from 'react-router-dom';
-import { NotFoundPage } from './modules/_core/';
-import { AuthorizedPage } from './modules/auth/pages/authorized-page/authorized-page.page';
-import { RequireAuth, RequireUnauthorized } from './modules/auth';
+import { NotFoundPage } from './modules/_core';
+import { RequireAuth, RequireUnauthorized, reinitializeSessionAction, AuthorizedPage } from './modules/auth';
 import RouterSuspense from './modules/_core/components/router-suspense/router-suspense.component';
-import {useAppDispatch} from "./store";
-import {reinitializeSessionAction} from "./modules/auth/store/actions/reinitialize-session.action";
+import { useAppDispatch } from "./store";
 
 const AuthorizedArea = lazy(async () => import('./modules/_core/areas/authorized-area.component'));
 const UnauthorizedArea = lazy(async () => import('./modules/_core/areas/unauthorized-area.component'));
