@@ -1,21 +1,24 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { AuthResultDto, SignInDto, waitAsync } from '@boilerplate/shared';
+import { Body, Controller, Post, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
+import { AuthResponseDto, SignInDto } from '@boilerplate/shared';
+import { JwtRefreshGuard } from '../services/guard/jwt-refresh.guard';
+import { AuthRequest } from '../interfaces/auth-request';
 
 @Controller('auth')
 export class AuthController {
 	constructor(private readonly authService: AuthService) {
 	}
 
-	@Post('/sign-in')
-	public async signIn(@Body() body: SignInDto): Promise<AuthResultDto> {
-		return this.authService.authenticateUser(body.email, body.password);
+	@Post('sign-in')
+	async signIn(@Body() credentials: SignInDto): Promise<AuthResponseDto> {
+		return await this.authService.authenticateUser(credentials);
 	}
 
-	@Post('/refresh')
-	public async refresh(@Body('refreshToken') refreshToken: string): Promise<AuthResultDto | null> {
-		await waitAsync(1000);
+	@Post('refresh')
+	@UseGuards(JwtRefreshGuard)
+	async refreshTokens(@Request() req: AuthRequest): Promise<AuthResponseDto> {
+		const { sub, jti } = req.user;
 
-		return { authToken: '23232323', user: {email: '2112', id: '232323', name: '232323'} };
+		return await this.authService.refreshToken(sub, jti);
 	}
 }

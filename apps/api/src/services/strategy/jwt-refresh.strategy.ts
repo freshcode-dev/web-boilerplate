@@ -5,12 +5,12 @@ import { jwtConstants } from '../../constants';
 import { JwtPayload } from '../../interfaces/jwt-payload';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwtRefresh') {
 	constructor() {
 		super({
-			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+			jwtFromRequest: ExtractJwt.fromBodyField('refreshToken'),
 			ignoreExpiration: false,
-			secretOrKey: jwtConstants.accessTokenSecret,
+			secretOrKey: jwtConstants.refreshTokenSecret,
 		});
 	}
 

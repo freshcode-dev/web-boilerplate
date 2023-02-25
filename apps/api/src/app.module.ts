@@ -7,11 +7,16 @@ import { ServicesModule } from './services/services.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import * as path from 'path';
 import { IApiConfigParams } from './interfaces/api-config-params';
+import { AutomapperModule } from '@automapper/nestjs';
+import { classes } from '@automapper/classes';
 
 const serveStatic = process.env.NX_SERVE_STATIC === 'true';
 
 @Module({
   imports: [
+		AutomapperModule.forRoot({
+			strategyInitializer: classes()
+		}),
     ConfigModule.forRoot(),
 		ServeStaticModule.forRoot({
 			rootPath: (serveStatic ? path.resolve(process.env.NX_SERVE_STATIC_PATH || 'client') : null) as string,

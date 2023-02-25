@@ -1,27 +1,34 @@
-import { AuthResultDto, SignInDto } from '@boilerplate/shared';
+import { AuthResponseDto, CreateUserDto, ErrorLogger, SignInDto, UserDto } from '@boilerplate/shared';
 import api from '.';
+import { updateSessionAction } from '../../modules/auth';
 
 const authApi = api.injectEndpoints({
 	endpoints: builder => ({
-		signIn: builder.mutation<AuthResultDto, SignInDto>({
+		register: builder.mutation<UserDto, CreateUserDto>({
 			query: data => ({
-				url: `auth/sign-in`,
+				url: 'users',
 				method: 'POST',
 				body: data
 			})
 		}),
-		refresh: builder.mutation<AuthResultDto, string>({
-			query: refreshToken => ({
-				url: `auth/refresh`,
+		signIn: builder.mutation<AuthResponseDto, SignInDto>({
+			query: data => ({
+				url: `auth/sign-in`,
 				method: 'POST',
-				body: {
-					refreshToken
+				body: data
+			}),
+			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+				try {
+					const response = await queryFulfilled;
+					dispatch(updateSessionAction(response.data));
+				} catch (error) {
+					ErrorLogger.logError(error);
 				}
-			})
-		}),
+			}
+		})
 	}),
 });
 
 export default authApi;
 
-export const { useSignInMutation } = authApi;
+export const { useSignInMutation, useRegisterMutation } = authApi;

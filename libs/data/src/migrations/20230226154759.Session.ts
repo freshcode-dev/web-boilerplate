@@ -1,17 +1,15 @@
 import { MigrationParams, RunnableMigration } from 'umzug/lib/types';
 import { MigrationContext } from '../utility-types';
-import { Table } from 'typeorm';
+import { Table, TableForeignKey } from 'typeorm';
 
-export class CreateUsersTable20220114133300 implements RunnableMigration<MigrationContext> {
-  public name = '20220114133300.CreateUsersTable';
+export class Session20230226154759 implements RunnableMigration<MigrationContext> {
+	public name = '20230226154759.Session';
 
 	public async up(params: MigrationParams<MigrationContext>): Promise<void> {
 		const { context: { queryRunner } } = params;
 
-		await queryRunner.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
-
 		await queryRunner.createTable(new Table({
-			name: 'users',
+			name: 'sessions',
 			columns: [
 				{
 					name: 'id',
@@ -21,19 +19,20 @@ export class CreateUsersTable20220114133300 implements RunnableMigration<Migrati
 					generationStrategy: 'uuid'
 				},
 				{
-					name: 'name',
-					type: 'text',
+					name: 'tokenId',
+					type: 'uuid',
+					isGenerated: true,
+					generationStrategy: 'uuid',
 					isNullable: false
 				},
 				{
-					name: 'email',
-					type: 'text',
-					isUnique: true,
+					name: 'userId',
+					type: 'uuid',
 					isNullable: false
 				},
 				{
-					name: 'password',
-					type: 'text',
+					name: 'expiredAt',
+					type: 'timestamptz',
 					isNullable: false
 				},
 				{
@@ -50,11 +49,19 @@ export class CreateUsersTable20220114133300 implements RunnableMigration<Migrati
 				},
 			]
 		}));
+
+		await queryRunner.createForeignKey('sessions', new TableForeignKey({
+			name: 'FK_users_userId',
+			columnNames: ['userId'],
+			referencedColumnNames: ['id'],
+			referencedTableName: 'users'
+		}));
 	}
 
 	public async down(params: MigrationParams<MigrationContext>): Promise<void> {
 		const { context: { queryRunner } } = params;
 
-		await queryRunner.dropTable('users');
+		await queryRunner.dropForeignKey('sessions', 'FK_users_userId');
+		await queryRunner.dropTable('sessions');
 	}
 }

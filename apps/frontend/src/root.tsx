@@ -1,9 +1,8 @@
-import React, { FC, Suspense, lazy, useEffect } from 'react';
+import React, { FC, Suspense, lazy } from 'react';
 import { useRoutes } from 'react-router-dom';
 import { NotFoundPage } from './modules/_core';
-import { RequireAuth, RequireUnauthorized, reinitializeSessionAction, AuthorizedPage } from './modules/auth';
+import { RequireAuth, RequireUnauthorized, AuthorizedPage } from './modules/auth';
 import RouterSuspense from './modules/_core/components/router-suspense/router-suspense.component';
-import { useAppDispatch } from "./store";
 
 const AuthorizedArea = lazy(async () => import('./modules/_core/areas/authorized-area.component'));
 const UnauthorizedArea = lazy(async () => import('./modules/_core/areas/unauthorized-area.component'));
@@ -12,11 +11,6 @@ const SignUpPage = lazy(async () => import('./modules/auth/pages/signup/signup.p
 const StylesExamplesPage = lazy(async () => import('./modules/styles-examples/pages/styles-examples/styles-examples.page'));
 
 const Root: FC = () => {
-	const dispatch = useAppDispatch();
-
-	useEffect(() => {
-		dispatch(reinitializeSessionAction());
-	}, [dispatch]);
 
   const routes = useRoutes([
     {

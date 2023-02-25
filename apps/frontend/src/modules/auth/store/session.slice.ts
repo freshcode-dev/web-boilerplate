@@ -1,16 +1,16 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { UserDto } from '@boilerplate/shared';
 import { useAppSelector } from '../../../store';
-import { ACCESS_TOKEN_STORAGE_KEY } from '../../_core/constants';
+import { ACCESS_TOKEN_STORAGE_KEY, REFRESH_TOKEN_STORAGE_KEY } from '../../_core/constants';
+import { TokenPairDto } from '@boilerplate/shared';
 
 export interface SessionState {
 	accessToken: string | null;
-	currentUser?: UserDto | null;
+	refreshToken: string | null;
 }
 
 export const initialState: SessionState = {
-	accessToken: null,
-	currentUser: null
+	accessToken: localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY),
+	refreshToken: localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY)
 };
 
 export const sessionSlice = createSlice({
@@ -19,23 +19,17 @@ export const sessionSlice = createSlice({
 	reducers: {
 		clearSession: (state: SessionState) => {
 			state.accessToken = null;
-			state.currentUser = null;
+			state.refreshToken = null;
 		},
-		setCurrentUser: (state: SessionState, action: PayloadAction<UserDto>) => {
-			state.currentUser = action.payload;
-		},
-		setAccessToken: (state: SessionState, action: PayloadAction<string>) => {
-			if (action.payload) {
-				localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, action.payload);
-				state.accessToken = action.payload;
-			} else {
-				localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
-				state.accessToken = null;
-			}
+		setTokenPair: (state: SessionState, action: PayloadAction<TokenPairDto>) => {
+			const { refreshToken, accessToken } = action.payload;
+
+			state.accessToken = accessToken;
+			state.refreshToken = refreshToken;
 		}
 	}
 });
 
-export const { clearSession, setCurrentUser, setAccessToken } = sessionSlice.actions;
+export const { setTokenPair, clearSession } = sessionSlice.actions;
 
 export const useCurrentAccessTokenSelector = () => useAppSelector(state => state.session.accessToken);

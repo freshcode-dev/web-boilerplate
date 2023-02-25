@@ -18,11 +18,13 @@ export function getLimitOptionFromFilter(filter: PaginationFilter, defaultSize: 
 export function getOffsetOptionFromFilter(filter: PaginationFilter): number | null {
   if (filter.page) {
     const limitOption = getLimitOptionFromFilter(filter);
-    if(!limitOption) {
+
+    if (!limitOption) {
       return null;
     }
+
     return limitOption * (filter.page - 1);
-  } 
+  }
 
   return null;
 }
