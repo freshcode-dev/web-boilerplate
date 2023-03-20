@@ -19,7 +19,8 @@
 				"assets": ["apps/frontend/src/favicon.ico", "apps/frontend/src/assets"],
 				"styles": [],
 				"scripts": [],
-				"webpackConfig": "apps/frontend/webpack.config.js"
+				"webpackConfig": "apps/frontend/webpack.config.js",
+				"babelUpwardRootMode": true
 			},
 			"configurations": {
 				"development": {

@@ -9,6 +9,7 @@ This project was generated using [Nx](https://nx.dev).
 - [React-based projects structure](misc/instructions/react-based-projects-structure.md)
 - [Integrate testing results with gitlab](misc/instructions/integrate-testing-results-with%20gitlab.md)
 - [Releasing manually with git tags](misc/instructions/releasing-manually-with-git-tags.md)
+- [Mapping classes with automapper](misc/instructions/mapping-with-automapper.md)
 
 ## Automation
 The repository has a few automated tasks configured.

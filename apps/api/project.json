@@ -16,6 +16,7 @@
 				"assets": ["apps/api/src/assets"],
 				"webpackConfig": "apps/api/webpack.config.js",
 				"generatePackageJson": true,
+				"babelUpwardRootMode": true,
 				"tsPlugins": [
 					{
 						"name": "@nestjs/swagger/plugin",
@@ -23,6 +24,9 @@
 							"classValidatorShim": false,
 							"introspectComments": true
 						}
+					},
+					{
+						"name": "@automapper/classes/transformer-plugin"
 					}
 				]
 			},
