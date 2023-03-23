@@ -5,12 +5,14 @@ import {
 } from 'nest-winston';
 import * as swStats from 'swagger-stats';
 import * as winston from 'winston';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import AllExceptionsFilter from './exceptions-filters/all-exceptions.filter';
 import BadRequestExceptionsFilter from './exceptions-filters/bad-request-exceptions.filter';
 import * as Transport from 'winston-transport';
+
+const rootLogger: Logger | null = new Logger('ApplicationRoot');
 
 async function bootstrap(): Promise<void> {
   const transports: Transport[] = [];
@@ -68,5 +70,22 @@ async function bootstrap(): Promise<void> {
 
   await app.listen(3000);
 }
+
+process
+	.on('unhandledRejection', (reason, promise) => {
+		if (rootLogger) {
+			rootLogger.error('Unhandled Rejection at Promise', reason);
+		} else {
+			console.error(reason, 'Unhandled Rejection at Promise', promise);
+		}
+	}).on('uncaughtException', (reason) => {
+		if (rootLogger) {
+			rootLogger.error('Uncaught Exception thrown', reason);
+		} else {
+			console.error('Uncaught Exception thrown', reason);
+		}
+
+	process.exit(1);
+});
 
 bootstrap();

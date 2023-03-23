@@ -5,15 +5,16 @@ This project was generated using [Nx](https://nx.dev).
 🔎 **Smart, Fast and Extensible Build System**
 
 ## Specific instructions
-- [Dependencies management](misc/instructions/dependencies-management.md)
+- [Packages management](misc/instructions/packages-management.md)
 - [React-based projects structure](misc/instructions/react-based-projects-structure.md)
 - [Integrate testing results with gitlab](misc/instructions/integrate-testing-results-with%20gitlab.md)
 - [Releasing manually with git tags](misc/instructions/releasing-manually-with-git-tags.md)
 - [Mapping classes with automapper](misc/instructions/mapping-with-automapper.md)
+- [Exceptions handling](misc/instructions/exceptions-handling.md)
 
 ## Automation
 The repository has a few automated tasks configured.
-They ware managed with `husky` and technically are a set of git-hooks, that are placed at `/.husky` and should be installed automatically after the very first packages installation.
+They are managed with `husky` and technically are a set of git-hooks, that are placed at `/.husky` and should be installed automatically after the very first packages installation.
 
 **Please, make sure hooks were installed properly. The most common problems are described in the [official FAQ](https://typicode.github.io/husky/#/?id=faq)**
 
