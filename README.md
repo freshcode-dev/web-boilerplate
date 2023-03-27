@@ -11,6 +11,7 @@ This project was generated using [Nx](https://nx.dev).
 - [Releasing manually with git tags](misc/instructions/releasing-manually-with-git-tags.md)
 - [Mapping classes with automapper](misc/instructions/mapping-with-automapper.md)
 - [Exceptions handling](misc/instructions/exceptions-handling.md)
+- **[Common mistakes](misc/instructions/common-mistakes.md)**
 
 ## Automation
 The repository has a few automated tasks configured.
