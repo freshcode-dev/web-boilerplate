@@ -79,4 +79,24 @@ export class SessionsService {
 
 		return session;
 	}
+
+	public async removeSession(id: string, tokenId: string): Promise<SessionDto> {
+		const { affected, raw } = await this.sessionRepository
+			.createQueryBuilder()
+			.delete()
+			.where({
+				id,
+				tokenId
+			})
+			.returning('*')
+			.execute();
+
+		if (affected === 0) {
+			throw new NotFoundException('This session does not exist');
+		}
+
+		const deletedSession = this.sessionRepository.create(raw[0] as Session);
+
+		return this.mapper.map(deletedSession, Session, SessionDto);
+	}
 }

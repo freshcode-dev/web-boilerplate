@@ -1,12 +1,16 @@
 import { Body, Controller, Post, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
-import { AuthResponseDto, SignInDto } from '@boilerplate/shared';
+import { AuthResponseDto, SessionDto, SignInDto } from '@boilerplate/shared';
 import { JwtRefreshGuard } from '../services/guard/jwt-refresh.guard';
 import { AuthRequest } from '../interfaces/auth-request';
+import { SessionsService } from '../services/sessions.service';
 
 @Controller('auth')
 export class AuthController {
-	constructor(private readonly authService: AuthService) {
+	constructor(
+		private readonly authService: AuthService,
+		private readonly sessionService: SessionsService
+	) {
 	}
 
 	@Post('sign-in')
@@ -20,5 +24,13 @@ export class AuthController {
 		const { sub, jti } = req.user;
 
 		return await this.authService.refreshToken(sub, jti);
+	}
+
+	@Post('sign-out')
+	@UseGuards(JwtRefreshGuard)
+	async signOut(@Request() req: AuthRequest): Promise<SessionDto> {
+		const { sub, jti } = req.user;
+
+		return await this.sessionService.removeSession(sub, jti);
 	}
 }
