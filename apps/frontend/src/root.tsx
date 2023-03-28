@@ -3,6 +3,7 @@ import { useRoutes } from 'react-router-dom';
 import { NotFoundPage } from './modules/_core';
 import { RequireAuth, RequireUnauthorized, AuthorizedPage } from './modules/auth';
 import RouterSuspense from './modules/_core/components/router-suspense/router-suspense.component';
+import { useAuthSubscription } from "./modules/auth/hooks/use-auth-subscription.hook";
 
 const AuthorizedArea = lazy(async () => import('./modules/_core/areas/authorized-area.component'));
 const UnauthorizedArea = lazy(async () => import('./modules/_core/areas/unauthorized-area.component'));
@@ -11,6 +12,7 @@ const SignUpPage = lazy(async () => import('./modules/auth/pages/signup/signup.p
 const StylesExamplesPage = lazy(async () => import('./modules/styles-examples/pages/styles-examples/styles-examples.page'));
 
 const Root: FC = () => {
+	useAuthSubscription();
 
   const routes = useRoutes([
     {

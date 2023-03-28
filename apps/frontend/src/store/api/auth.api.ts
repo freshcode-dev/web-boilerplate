@@ -1,15 +1,34 @@
-import { AuthResponseDto, CreateUserDto, ErrorLogger, SignInDto, UserDto } from '@boilerplate/shared';
+import {
+	AuthResponseDto,
+	CreateUserDto,
+	RefreshDto,
+	SignInDto,
+	UserDto
+} from '@boilerplate/shared';
 import api from '.';
 import { updateSessionAction } from '../../modules/auth';
 
 const authApi = api.injectEndpoints({
 	endpoints: builder => ({
+		refresh: builder.mutation<AuthResponseDto, RefreshDto>({
+			query: data => ({
+				url: 'auth/refresh',
+				method: 'POST',
+				body: data
+			}),
+			extraOptions: {
+				skipAuth: true
+			}
+		}),
 		register: builder.mutation<UserDto, CreateUserDto>({
 			query: data => ({
 				url: 'users',
 				method: 'POST',
 				body: data
-			})
+			}),
+			extraOptions: {
+				skipAuth: true
+			}
 		}),
 		signIn: builder.mutation<AuthResponseDto, SignInDto>({
 			query: data => ({
@@ -21,9 +40,10 @@ const authApi = api.injectEndpoints({
 				try {
 					const response = await queryFulfilled;
 					dispatch(updateSessionAction(response.data));
-				} catch (error) {
-					ErrorLogger.logError(error);
-				}
+				} catch { /* empty */ }
+			},
+			extraOptions: {
+				skipAuth: true
 			}
 		})
 	}),

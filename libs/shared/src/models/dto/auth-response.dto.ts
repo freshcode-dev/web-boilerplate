@@ -8,3 +8,7 @@ export interface TokenPairDto {
 export interface AuthResponseDto extends TokenPairDto {
 	user: UserDto;
 }
+
+export interface RefreshDto {
+	refreshToken: string;
+}

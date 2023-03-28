@@ -8,6 +8,8 @@ export { RequireUnauthorized } from './components/require-unauthorized/require-u
 // Store
 export { updateSessionAction } from './store/actions/update-session.action';
 export { signOutAction } from './store/actions/sign-out.action';
+export { refreshAction } from './store/actions/refresh.action';
+export { syncSessionAction } from './store/actions/sync-session.action';
 export { clearSession, sessionSlice, setTokenPair, useCurrentAccessTokenSelector } from './store/session.slice';
 
 // Constants
