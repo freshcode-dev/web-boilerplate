@@ -13,3 +13,6 @@ export { syncSessionAction } from './store/actions/sync-session.action';
 export { clearSession, sessionSlice, setTokenPair, useCurrentAccessTokenSelector } from './store/session.slice';
 
 // Constants
+
+// Router
+export { AuthModuleRouter } from './auth.router';

@@ -6,7 +6,7 @@ export const RequireAuth = ({ children }: { children: JSX.Element }): ReactEleme
   const currentToken = useCurrentAccessTokenSelector();
 
   if (!currentToken) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/auth/login" replace />;
   }
 
   return children;
