@@ -1,21 +1,28 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { UserDto, UserFilter } from '@boilerplate/shared';
+import {
+	Request,
+	UseGuards,
+	Body,
+	Get,
+	Controller,
+	Post
+} from '@nestjs/common';
+import { CreateUserDto, UserDto } from '@boilerplate/shared';
 import { UsersService } from '../services/users.service';
-import { AuthService } from '../services/auth.service';
+import { JwtAuthGuard } from '../services/guard/jwt.guard';
+import { AuthRequest } from '../interfaces/auth-request';
 
 @Controller('users')
 export class UsersController {
-  constructor(
-    private readonly usersService: UsersService
-  ) {}
+	constructor(private readonly userService: UsersService) {}
 
-  @Get()
-  public async findAll(@Query() filter: UserFilter): Promise<UserDto[]> {
-		return await this.usersService.findAll(filter);
-  }
+	@Post()
+	async create(@Body() user: CreateUserDto): Promise<UserDto> {
+		return await this.userService.create(user);
+	}
 
-  // @Put()
-  // public async create(@Body() entity: UserDto): Promise<UserDto> {
-  //   return this.usersService.upsert(entity);
-  // }
+	@Get('profile')
+	@UseGuards(JwtAuthGuard)
+	async currentUser(@Request() req: AuthRequest): Promise<UserDto> {
+		return await this.userService.getUserById(req.user.sub);
+	}
 }

@@ -1,41 +1,39 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { UserDto } from '@boilerplate/shared';
 import { useAppSelector } from '../../../store';
-import { ACCESS_TOKEN_STORAGE_KEY } from '../../_core/constants';
+import { TokenWithPayload } from '../interfaces';
+import { createTokenPair } from '../utils/token.utils';
+import { ACCESS_TOKEN_STORAGE_KEY, REFRESH_TOKEN_STORAGE_KEY } from '../../_core/constants';
 
-export interface SessionState {
-	accessToken: string | null;
-	currentUser?: UserDto | null;
+
+export interface TokenPairWithPayload {
+	access: TokenWithPayload;
+	refresh: TokenWithPayload;
 }
 
-export const initialState: SessionState = {
-	accessToken: null,
-	currentUser: null
-};
+export type SessionState = { access: null; refresh: null } | TokenPairWithPayload;
+
+export const initialState: SessionState = createTokenPair(
+	localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY),
+	localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY),
+);
 
 export const sessionSlice = createSlice({
 	name: 'session',
 	initialState,
 	reducers: {
 		clearSession: (state: SessionState) => {
-			state.accessToken = null;
-			state.currentUser = null;
+			state.access = null;
+			state.refresh = null;
 		},
-		setCurrentUser: (state: SessionState, action: PayloadAction<UserDto>) => {
-			state.currentUser = action.payload;
-		},
-		setAccessToken: (state: SessionState, action: PayloadAction<string>) => {
-			if (action.payload) {
-				localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, action.payload);
-				state.accessToken = action.payload;
-			} else {
-				localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
-				state.accessToken = null;
-			}
+		setTokenPair: (state: SessionState, action: PayloadAction<TokenPairWithPayload>) => {
+			const { access, refresh } = action.payload;
+
+			state.access = access;
+			state.refresh = refresh;
 		}
 	}
 });
 
-export const { clearSession, setCurrentUser, setAccessToken } = sessionSlice.actions;
+export const { setTokenPair, clearSession } = sessionSlice.actions;
 
-export const useCurrentAccessTokenSelector = () => useAppSelector(state => state.session.accessToken);
+export const useCurrentAccessTokenSelector = () => useAppSelector(state => state.session.access);

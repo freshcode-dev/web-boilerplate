@@ -1,79 +1,41 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { waitAsync } from '@boilerplate/shared';
+import { TokenWithPayload } from '../../interfaces';
+import { requestLock } from '../../../_core/utils/lock.utils';
+import { REFRESH_LOCK_KEY } from '../../../_core/constants';
+import { isTokenExpired } from '../../../_core/utils/token.utils';
+import { syncSessionAction } from './sync-session.action';
+import { AppThunkConfig, RootState } from '../../../../store';
 import authApi from '../../../../store/api/auth.api';
-import { clearSession, setAccessToken, setCurrentUser } from '../session.slice';
-import { RootState } from '../../../../store';
-import { Mutex } from 'async-mutex';
+import { updateSessionAction } from './update-session.action';
 
-const REFRESH_KEY = 'refresh_mutation_key';
+export const refreshAction = createAsyncThunk<void, TokenWithPayload, AppThunkConfig>('auth/refresh',
+	async (refresh, { dispatch, getState }) => {
+	const release = await requestLock(REFRESH_LOCK_KEY);
 
-const refreshMutex = new Mutex();
-
-// There are a few examples solving the same problem of debouncing multiple requests. Feel free rto remove any of them
-const refreshActionWithMutex = createAsyncThunk<void, string>(
-	'auth/refresh',
-	async (body, { dispatch, rejectWithValue, getState }) => {
-		try {
-			if (refreshMutex.isLocked()) {
-				await refreshMutex.waitForUnlock();
-
-				return;
-			}
-
-			await refreshMutex.acquire();
-
-			const refreshResult = await dispatch(authApi.endpoints.refresh.initiate(body, { fixedCacheKey: REFRESH_KEY })).unwrap();
-
-			dispatch(clearSession());
-			dispatch(setCurrentUser(refreshResult.user));
-			dispatch(setAccessToken(refreshResult.authToken));
-
-			return;
-		} catch (error) {
-			return rejectWithValue((error as Error).message);
-		} finally {
-			refreshMutex.release();
+	try {
+		if (isTokenExpired(refresh.payload)) {
+			throw new Error('Refresh token expired!');
 		}
-	},
-);
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const refreshActionWithRtk = createAsyncThunk<void, string>(
-  'auth/refresh',
-  async (body, { dispatch, rejectWithValue, getState }) => {
-    try {
-			const currentActionStateSelector = authApi.endpoints.refresh.select({ fixedCacheKey: REFRESH_KEY, requestId: undefined });
+		dispatch(syncSessionAction());
 
-			const waitAllParallelRequestsToFinish = async (): Promise<boolean> => {
-				const currentActionState = currentActionStateSelector(getState() as RootState);
+		const { refresh: actualToken } = (getState() as RootState).session;
 
-				if (!currentActionState.isLoading) {
-					return false;
-				}
+		if (actualToken?.token !== refresh.token) {
+			return;
+		}
 
-				await waitAsync(200);
-				await waitAllParallelRequestsToFinish();
+		const result = await dispatch(authApi.endpoints.refresh.initiate(
+			{ refreshToken: refresh.token },
+			{ track: false }
+		));
 
-				return true;
-			};
+		if ('error' in result) {
+			throw new Error('Failed to update session!');
+		}
 
-			const anyParallelRequestsFulfilled = await waitAllParallelRequestsToFinish();
-
-			if (anyParallelRequestsFulfilled) {
-				return;
-			}
-
-			const refreshResult = await dispatch(authApi.endpoints.refresh.initiate(body, { fixedCacheKey: REFRESH_KEY })).unwrap();
-
-			dispatch(clearSession());
-			dispatch(setCurrentUser(refreshResult.user));
-			dispatch(setAccessToken(refreshResult.authToken));
-
-      return;
-    } catch (error) {
-      return rejectWithValue((error as Error).message);
-    }
-  },
-);
-
-export const refreshAction = refreshActionWithMutex;
+		dispatch(updateSessionAction(result.data));
+	} finally {
+		release();
+	}
+});

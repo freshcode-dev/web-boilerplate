@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Session } from './session.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -14,9 +15,12 @@ export class User {
 	@Column()
 	password: string;
 
+	@OneToMany(() => Session, session => session.user)
+	sessions: Session[];
+
 	@CreateDateColumn({ type: 'timestamptz' })
-	public createdAt: Date;
+	createdAt: Date;
 
 	@UpdateDateColumn({ type: 'timestamptz' })
-	public updatedAt: Date;
+	updatedAt: Date;
 }

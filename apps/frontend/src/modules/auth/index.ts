@@ -6,10 +6,13 @@ export { RequireAuth } from './components/require-auth/require-auth.component';
 export { RequireUnauthorized } from './components/require-unauthorized/require-unauthorized.component';
 
 // Store
-export { signInAction } from './store/actions/sign-in.action';
-export { refreshAction } from './store/actions/refresh.action';
+export { updateSessionAction } from './store/actions/update-session.action';
 export { signOutAction } from './store/actions/sign-out.action';
-export { reinitializeSessionAction } from './store/actions/reinitialize-session.action';
-export { sessionSlice, useCurrentAccessTokenSelector } from './store/session.slice';
+export { refreshAction } from './store/actions/refresh.action';
+export { syncSessionAction } from './store/actions/sync-session.action';
+export { clearSession, sessionSlice, setTokenPair, useCurrentAccessTokenSelector } from './store/session.slice';
 
 // Constants
+
+// Router
+export { AuthModuleRouter } from './auth.router';

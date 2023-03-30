@@ -4,6 +4,7 @@ import { HealthController } from './health.controller';
 import { TerminusModule } from '@nestjs/terminus';
 import { ServicesModule } from '../services/services.module';
 import { AuthController } from './auth.controller';
+import { SessionsController } from './sessions.controller';
 
 @Module({
   imports: [
@@ -13,7 +14,8 @@ import { AuthController } from './auth.controller';
   controllers: [
 		AuthController,
     UsersController,
-    HealthController
+    HealthController,
+		SessionsController
   ],
 })
 export class ControllersModule {}

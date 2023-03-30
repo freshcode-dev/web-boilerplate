@@ -1,35 +1,17 @@
-import {FC, useCallback, useState} from 'react';
+import { FC } from 'react';
 import { Avatar, Box, Button, Checkbox, Container, FormControlLabel, Grid, TextField, Typography } from '@mui/material';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Link } from 'react-router-dom';
-import {SubmitHandler, useForm} from 'react-hook-form';
-import { ErrorLogger, SignInDto } from '@boilerplate/shared';
-import { useAppDispatch } from '../../../../store';
-import { refreshAction, signInAction } from "../..";
+import { useForm } from 'react-hook-form';
+import { SignInDto } from '@boilerplate/shared';
+import { useSignInMutation } from "../../../../store/api/auth.api";
 
 const resolver = classValidatorResolver(SignInDto);
 
 export const LoginPage: FC = () => {
-	const dispatch = useAppDispatch();
-	const [isLoading, setIsLoading] = useState(false);
-
   const { handleSubmit, register, formState: { errors } } = useForm<SignInDto>({ resolver });
-
-	const onConfirm: SubmitHandler<SignInDto> = useCallback(async (data) => {
-		try {
-			setIsLoading(true);
-			await dispatch(signInAction(data)).unwrap();
-		} catch (e: unknown) {
-			ErrorLogger.logError(e);
-		} finally {
-			setIsLoading(false);
-		}
-	}, [dispatch]);
-
-	const callRefreshAction = async () => {
-		await dispatch(refreshAction('mock_token_data'));
-	};
+	const [signIn, { isLoading }] = useSignInMutation();
 
   return (
     <Container component="main" maxWidth="xs">
@@ -48,7 +30,7 @@ export const LoginPage: FC = () => {
           Sign in
         </Typography>
         <Box component="form"
-          onSubmit={handleSubmit(onConfirm)}
+          onSubmit={handleSubmit(signIn)}
           noValidate sx={{ mt: 1 }}>
           <TextField
             margin="normal"
@@ -83,17 +65,9 @@ export const LoginPage: FC = () => {
           >
             Sign In
           </Button>
-					<Button
-						onClick={callRefreshAction}
-						fullWidth
-						variant="contained"
-						sx={{ mt: 1, mb: 2 }}
-					>
-						Refresh
-					</Button>
           <Grid container>
             <Grid item>
-              <Link to={'/signup'}>
+              <Link to="/auth/signup">
                 Don't have an account? Sign Up
               </Link>
             </Grid>

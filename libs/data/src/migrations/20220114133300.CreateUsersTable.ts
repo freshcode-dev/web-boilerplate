@@ -38,12 +38,14 @@ export class CreateUsersTable20220114133300 implements RunnableMigration<Migrati
 				},
 				{
 					name: 'createdAt',
-					type: 'timestamp',
+					type: 'timestamptz',
+					default: 'now()',
 					isNullable: false
 				},
 				{
 					name: 'updatedAt',
-					type: 'timestamp',
+					type: 'timestamptz',
+					default: 'now()',
 					isNullable: true
 				},
 			]

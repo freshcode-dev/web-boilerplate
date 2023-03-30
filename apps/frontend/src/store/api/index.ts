@@ -1,9 +1,9 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
-import configService from '../../modules/_core/services/config.service';
+import { createApi } from '@reduxjs/toolkit/dist/query/react';
+import { baseQueryWithReAuth } from '../../modules/_core/services';
 
 const api = createApi({
 	reducerPath: 'api',
-	baseQuery: fetchBaseQuery({ baseUrl: configService.get('NX_APP_API_URL') }),
+	baseQuery: baseQueryWithReAuth,
 	endpoints: () => ({}),
 	tagTypes: [],
 });

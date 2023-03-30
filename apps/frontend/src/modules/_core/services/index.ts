@@ -1,4 +1,2 @@
-import httpClientFactory from "./http-client.factory";
-import configService from './config.service';
+export { baseQueryWithReAuth } from "./http-client.factory";
 
-export const httpClientService = httpClientFactory(configService);
