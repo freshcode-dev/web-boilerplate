@@ -14,5 +14,8 @@ export { clearSession, sessionSlice, setTokenPair, useCurrentAccessTokenSelector
 
 // Constants
 
+// Hooks
+export { useAuthSubscription } from './hooks/use-auth-subscription.hook';
+
 // Router
 export { AuthModuleRouter } from './auth.router';

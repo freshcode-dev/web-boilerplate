@@ -15,7 +15,7 @@ export const SignUpPage: FC = () => {
   const [registerUser, { isLoading, data }] = useRegisterMutation();
 
 	if (data) {
-		return <Navigate to="/login"/>;
+		return <Navigate to="/auth/login"/>;
 	}
 
   return (
@@ -83,7 +83,7 @@ export const SignUpPage: FC = () => {
           </Button>
           <Grid container justifyContent="flex-end">
             <Grid item>
-              <Link to={'/login'}>
+              <Link to={'/auth/login'}>
                 Already have an account? Sign in
               </Link>
             </Grid>

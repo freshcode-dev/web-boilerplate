@@ -17,8 +17,9 @@ export class LoggerMiddleware implements NestMiddleware {
   }
 
 	public use(request: Request, response: Response, next: NextFunction): void {
+		const startTime = new Date().getTime();
 		const { ip, method, body, query } = request;
-		const userAgent = request.get('user-agent') || '';
+		const userAgent = request.get('user-agent') ?? '';
 
     if (this.isResponseBodyLoggingEnabled) {
       const oldJsonFunc = response.json;
@@ -30,6 +31,7 @@ export class LoggerMiddleware implements NestMiddleware {
     }
 
 		response.on('close', () => {
+			const responseTime = new Date().getTime() - startTime;
 			const { statusCode, locals } = response;
 			const contentLength = response.get('content-length');
 
@@ -39,6 +41,7 @@ export class LoggerMiddleware implements NestMiddleware {
 			if (!url.includes('/users')) {
 				if (this.isVerboseRequestsLoggingEnabled) {
 					this.logger.log({
+						message: 'Request',
 						method,
 						url,
             path,
@@ -46,10 +49,12 @@ export class LoggerMiddleware implements NestMiddleware {
 						body,
 						ip,
             query,
-						contentLength: contentLength || 0,
+						params: request.params,
+						contentLength: contentLength ?? 0,
 						userAgent,
             currentUserId: (request.user as UserDto)?.id,
-            responseJsonBody: locals._jsonBody
+            responseJsonBody: locals._jsonBody,
+						responseTime
 					});
 				} else {
 					this.logger.log(`[${ip}] [${method}] ${url} - ${statusCode}`);

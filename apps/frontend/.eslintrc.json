@@ -7,7 +7,7 @@
       "rules": {
 				"no-restricted-imports": ["error", {
 					"patterns": [{
-						"group": ["**/module1/*/**", "**/module2/*/**"],
+						"group": ["**/auth/*/**", "**/styles-examples/*/**"],
 						"message": "To import from this module, please use the module's index file"
 					}]
 				}]

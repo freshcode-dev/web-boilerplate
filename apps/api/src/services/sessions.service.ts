@@ -51,9 +51,7 @@ export class SessionsService {
 	public async listUserSessions(userId: string): Promise<SessionDto[]> {
 		const sessionsList = await this.sessionRepository.find({
 			where: {
-				user: {
-					id: userId
-				},
+				userId,
 				expiredAt: MoreThan(new Date())
 			},
 			order: {
