@@ -1,0 +1,14 @@
+{
+	"name": "db-migrations",
+	"version": "0.0.0",
+	"private": true,
+	"dependencies": {
+		"@nestjs/core": "^9.3.8",
+		"nest-winston": "^1.8.0",
+		"winston": "^3.8.2",
+		"@nestjs/common": "^9.3.8",
+		"rxjs": "^7.8.0",
+		"reflect-metadata": "^0.1.13",
+		"@nestjs/config": "^2.3.1"
+	}
+}

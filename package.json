@@ -18,6 +18,7 @@
 		"@automapper/classes": "^8.7.7",
 		"@automapper/core": "^8.7.7",
 		"class-validator": "^0.14.0",
+		"class-transformer": "^0.5.1",
 		"date-fns": "^2.29.3",
 		"core-js": "^3.27.2",
 		"lodash": "^4.17.21",
