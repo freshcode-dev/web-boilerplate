@@ -16,46 +16,16 @@
 				"tsConfig": "apps/db-migrations/tsconfig.app.json",
 				"isolatedConfig": true,
 				"webpackConfig": "apps/db-migrations/webpack.config.js"
-			},
-			"configurations": {
-				"development": {},
-				"production": {}
 			}
 		},
-		"serve": {
-			"executor": "@nrwl/js:node",
+		"execute": {
+			"executor": "nx:run-commands",
 			"defaultConfiguration": "development",
+			"dependsOn": ["build"],
 			"options": {
-				"buildTarget": "db-migrations:build"
-			},
-			"configurations": {
-				"development": {
-					"buildTarget": "db-migrations:build:development"
-				},
-				"production": {
-					"buildTarget": "db-migrations:build:production"
-				}
-			}
-		},
-		"lint": {
-			"executor": "@nrwl/linter:eslint",
-			"outputs": ["{options.outputFile}"],
-			"options": {
-				"lintFilePatterns": ["apps/db-migrations/**/*.ts"]
-			}
-		},
-		"test": {
-			"executor": "@nrwl/jest:jest",
-			"outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
-			"options": {
-				"jestConfig": "apps/db-migrations/jest.config.ts",
-				"passWithNoTests": true
-			},
-			"configurations": {
-				"ci": {
-					"ci": true,
-					"codeCoverage": true
-				}
+				"buildTarget": "db-migrations:build",
+				"command": "node dist/apps/db-migrations/main.js",
+				"parallel": false
 			}
 		}
 	},
