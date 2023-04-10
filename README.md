@@ -7,6 +7,7 @@ This project was generated using [Nx](https://nx.dev).
 ## Specific instructions
 - [Packages management](misc/instructions/packages-management.md)
 - [React-based projects structure](misc/instructions/react-based-projects-structure.md)
+- [React-based projects routing](misc/instructions/react-based-projects-routing.md)
 - [Integrate testing results with gitlab](misc/instructions/integrate-testing-results-with%20gitlab.md)
 - [Releasing manually with git tags](misc/instructions/releasing-manually-with-git-tags.md)
 - [Mapping classes with automapper](misc/instructions/mapping-with-automapper.md)
