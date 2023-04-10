@@ -71,3 +71,14 @@ passing from the `DatabaseMigrationService`.
 
 **It's still not recommended to speculate on passing anything to migrations. But if you have some required 
 actions related to the modifiable data, you at least can keep them close enough.**
+
+## Reference tables of many-to-many relations should always have separate primary identifier column
+When creating a reference table, it is generally recommended to create a separate primary key column for the table. The primary key column serves as a unique identifier for each row in the table, and it is used to enforce data integrity and ensure that the table can be efficiently indexed and queried.
+
+In addition, creating a separate primary key column allows you to easily reference the rows in the table from other tables using foreign keys. This can be important for maintaining the relationships between tables and ensuring data consistency.
+
+While it is possible to use other columns as a primary key, such as a combination of columns or a column that already contains unique values, this approach can be less efficient and may lead to issues with data consistency in the long run.
+
+In addition, using a separate identifier column allows you to add additional data to the reference table in the future, without having to modify the primary key or foreign key columns. For example, you may want to add a status column to track whether the relationship is active or inactive.
+
+So, as the bottom-line, having separate primary identifier worth it at least in terms of consistency.  
