@@ -2,9 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../dist/out-tsc",
-    "module": "commonjs",
     "types": ["node"],
-    "target": "es2015",
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true
   },

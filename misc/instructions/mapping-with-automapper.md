@@ -72,3 +72,15 @@ The process of configuring is described on the [official website](https://automa
 _Please note that concepts automapper is built around are more applicable to the backend than react frontend. SO I don't provide a react webpack configuration example here._
 
 **_Feel free to extend this document if have a suitable example._**
+
+## Troubleshooting
+### Module not resolved
+We use `@automapper/classes/transformer-plugin` to avoid defining lots of `@AutoMap` decorators.
+
+However, plugin adds some limitations to using of circular dependencies. If you have some, make sure, modules are registered using correct order. And the modules resolution mode is set to `esnext`.
+
+Otherwise, it may cause the next error:
+```text
+ERROR in ../../libs/data/src/models/user.entity.ts 18:40-141
+Module not found: Error: Can't resolve '../H:\FreshCode_projects\boilerplate-v2\libs\data\src\models\session.entity' in 'H:\FreshCode_projects\boilerplate-v2\libs\data\src\models'
+```
