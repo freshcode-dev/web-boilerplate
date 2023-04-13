@@ -56,3 +56,8 @@ Thumbs.db
 
 # eslint reports
 **/__lint__
+
+
+# not sure, but will add for now
+cdk.context.json
+cdk.out

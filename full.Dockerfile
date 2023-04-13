@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY . /app/
 
+RUN apk --no-cache --virtual build-dependencies add python3 make g++
 RUN npm install -g pnpm
 RUN pnpm install
 RUN pnpm nx run-many --all --target=build
@@ -11,11 +12,11 @@ RUN pnpm nx run-many --all --target=build
 
 FROM node:17-alpine as runner
 COPY --from=builder /app/dist/apps/api/ /app/
-COPY /app/dist/apps/frontend/ /app/client/
-COPY /app/apps/api/.env /app/
+COPY --from=builder /app/dist/apps/frontend/ /app/client/
+COPY --from=builder /app/apps/api/.env /app/
 
 RUN mkdir -p /app/client/misc
-COPY ./apps/frontend/misc/env.sh /app/client/misc
+COPY ./misc/env.sh /app/client/misc
 COPY ./apps/frontend/.env /app/client/
 
 RUN apk add --no-cache bash && chmod +x /app/client/misc/env.sh

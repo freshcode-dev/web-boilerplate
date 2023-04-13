@@ -1,0 +1,19 @@
+{
+  "name": "aws-cdk-v2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "~5.51.0",
+    "aws-cdk-lib": "^2.73.0",
+    "cdk-ecr-deployment": "^2.5.6",
+    "constructs": "^10.1.308",
+    "eslint-plugin-cdk": "^1.8.0"
+  }
+}
