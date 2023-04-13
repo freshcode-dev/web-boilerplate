@@ -1,29 +1,34 @@
 import { App } from 'aws-cdk-lib';
-import { EcsLbStack, SgStack, S3Stack } from './stacks';
 import * as process from 'process';
+import { VpcStack } from 'apps/aws-cdk-v2/src/stacks/vpc.stack';
+import { MainStack } from 'apps/aws-cdk-v2/src/stacks/main.stack';
+
+const {
+	NX_CDK_DEFAULT_ACCOUNT: accountId = '[AWS ACCOUNT ID]',
+	NX_CDK_DEFAULT_REGION: region = 'us-east-2',
+	NX_STAGE: stage = 'dev',
+	NX_DATABASE_ENABLE_PERFORMANCE_INSIGHTS: enableDbPerformanceInsightsRaw = 'false'
+} = process.env;
+
+const enableDbPerformanceInsights = enableDbPerformanceInsightsRaw === 'true';
+
+const applicationName = 'boilerplate';
+const stackPrefix = `${applicationName}-${stage}`;
 
 const app = new App();
-const {
-	CDK_DEFAULT_ACCOUNT: accountId = "[AWS ACCOUNT ID]",
-	CDK_DEFAULT_REGION: region = "eu-central-1",
-} = process.env;
 
 const env = {
 	account: accountId,
 	region: region,
 };
 
-const ecsStack = new EcsLbStack(app, 'infra-stack', {
-	env,
-});
+const { vpc } = new VpcStack(app, `${stackPrefix}-vpc-stack`, { env });
 
-const sgStack = new SgStack(app, 'sg-stack', {
-	env,
-});
-
-const s3Stack = new S3Stack(app, 's3-stack', {
-	env,
-});
+const mainStack = new MainStack(app, `${stackPrefix}-stack`, stackPrefix, vpc, enableDbPerformanceInsights, { env });
+//
+// const ecsStack = new EcsWithLbStack(app, `${stackPrefix}-lb-stack`, {
+// 	env,
+// });
 
 
 app.synth();

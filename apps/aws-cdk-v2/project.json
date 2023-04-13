@@ -7,7 +7,6 @@
 		"deploy": {
 			"executor": "@ago-dev/nx-aws-cdk-v2:deploy",
 			"options": {
-				"stackName": "infra-stack",
 				"requireApproval": "never",
 				"noConfirmChangeset": true
 			}

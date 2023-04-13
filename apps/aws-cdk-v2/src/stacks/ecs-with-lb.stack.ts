@@ -11,16 +11,16 @@ import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as ecsPatterns from 'aws-cdk-lib/aws-ecs-patterns';
 import * as logs from 'aws-cdk-lib/aws-logs';
 
-interface EcsLbStackProps extends StackProps {
+interface EcsWithLbStackProps extends StackProps {
 	// readonly prefix: string;
 	// readonly stage: string;
 	readonly deploymentEnvironment?: string;
 }
 
-export class EcsLbStack extends Stack {
+export class EcsWithLbStack extends Stack {
 	// public readonly vpc: IVpc;
 
-	constructor(scope: Construct, id: string, props?: EcsLbStackProps) {
+	constructor(scope: Construct, id: string, props?: EcsWithLbStackProps) {
 		super(scope, id, props);
 		// const { prefix, stage } = props;
 
