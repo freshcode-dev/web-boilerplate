@@ -12,6 +12,9 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as cdk from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { ApplicationLoadBalancedFargateService } from 'aws-cdk-lib/aws-ecs-patterns';
+import { Cluster, ContainerImage, Secret as EcsSecret } from 'aws-cdk-lib/aws-ecs';
+import { Repository } from 'aws-cdk-lib/aws-ecr';
 
 export class MainStack extends Stack {
 	public rdsDb: DatabaseInstance;
@@ -130,5 +133,46 @@ export class MainStack extends Stack {
 
 		// Add the policy to the bucket
 		// this.bucket.addToResourcePolicy(policy);
+	}
+
+	private registerEcsCluster(vpc: IVpc, stackPrefix: string): void {
+		const clusterName = `${stackPrefix}-cluster`;
+		const ecsCluster = new Cluster(this, clusterName, {
+			clusterName,
+			vpc,
+			containerInsights: false
+		});
+
+		const repository = Repository.fromRepositoryName(this, `${stackPrefix}-ecr-repo`, `${stackPrefix}-ecr-repo`);
+
+		const serviceName = `${stackPrefix}-ecs-backend`;
+		const lbFargate = new ApplicationLoadBalancedFargateService(this, serviceName, {
+			serviceName,
+			cluster: ecsCluster,
+			securityGroups: [this.commonSg],
+			vpc,
+			cpu: 256,
+			memoryLimitMiB: 512,
+			desiredCount: 1,
+			minHealthyPercent: 50,
+			maxHealthyPercent: 200,
+			taskImageOptions: {
+				image: ContainerImage.fromEcrRepository(repository, 'latest'),
+				enableLogging: true,
+				containerPort: 3000,
+				containerName: 'app',
+				family: `${stackPrefix}-task-definition`,
+				environment: {
+					NX_PORT: '3000'
+				},
+				secrets: {
+					NX_DATABASE_HOST: EcsSecret.fromSecretsManager(this.secret, 'host'),
+					NX_DATABASE_PORT: EcsSecret.fromSecretsManager(this.secret, 'port'),
+					NX_DATABASE_USERNAME: EcsSecret.fromSecretsManager(this.secret, 'username'),
+					NX_DATABASE_PASSWORD: EcsSecret.fromSecretsManager(this.secret, 'password'),
+					NX_DATABASE_NAME: EcsSecret.fromSecretsManager(this.secret, 'dbname')
+				}
+			}
+		});
 	}
 }

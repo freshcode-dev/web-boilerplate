@@ -2,6 +2,7 @@ import { App } from 'aws-cdk-lib';
 import * as process from 'process';
 import { VpcStack } from 'apps/aws-cdk-v2/src/stacks/vpc.stack';
 import { MainStack } from 'apps/aws-cdk-v2/src/stacks/main.stack';
+import { EcrRepositoryStack } from 'apps/aws-cdk-v2/src/stacks/ecr-repository.stack';
 
 const {
 	NX_CDK_DEFAULT_ACCOUNT: accountId = '[AWS ACCOUNT ID]',
@@ -23,6 +24,8 @@ const env = {
 };
 
 const { vpc } = new VpcStack(app, `${stackPrefix}-vpc-stack`, { env });
+
+const ecrStack = new EcrRepositoryStack(app, `${stackPrefix}-ecr-stack`, stackPrefix, { env });
 
 const mainStack = new MainStack(app, `${stackPrefix}-stack`, stackPrefix, vpc, enableDbPerformanceInsights, { env });
 //
