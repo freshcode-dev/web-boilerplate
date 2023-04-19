@@ -4,10 +4,14 @@ stages:
   - lint-test-build
   - deployment
 
+before_script:
+  - npm install -g pnpm@7.27.0
+  - pnpm config set store-dir .pnpm-store
+  - pnpm install
+  - pnpm store path
+
 variables:
-  REGISTRY: git.freshcode.org:4567/pradev/boilerplate-v2
-  BRANCH_IMAGE: $REGISTRY:$CI_COMMIT_REF_SLUG
-  PNPM_INSTALL_COMMAND: pnpm install --store-dir .pnpm-store
+  NX_APP_NAME: boilerplate
   POSTGRES_DB: testing
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: postgres
@@ -22,8 +26,16 @@ variables:
   # Example: release-1, release-initial
   RELEASE_BRANCH_REGEX: /^release-.*$/
 
+.dependencies_cache:
+  cache: &cache
+    key: "$CI_COMMIT_REF_SLUG"
+    paths:
+      - .pnpm-store
+    policy: pull-push
+
 web-lint-test-build:
   stage: lint-test-build
+  extends: .dependencies_cache
   services:
     - name: bitnami/redis:latest
       alias: redis
@@ -34,37 +46,59 @@ web-lint-test-build:
     NX_DATABASE_HOST: postgres
     NX_TEST_DATABASE_NAME: $POSTGRES_DB
   script:
-    - npm install -g pnpm
-    - $PNPM_INSTALL_COMMAND
-    - pnpm nx run-many --all --target=lint --configuration=ci
+    - pnpm nx run-many --all --target=lint
+#    - pnpm nx run-many --all --target=lint --configuration=ci
 #    - pnpm nx run-many --all --target=test
-    - pnpm run merge-test-reports
+#    - pnpm run merge-test-reports
     - pnpm nx run-many --all --target=build
   artifacts:
     when: always
     paths:
       - dist
-      - __reports__
-    reports:
-      junit: __reports__/merged.xml
-      codequality: __lint__/api.json
+#      - __reports__
+#    reports:
+#      junit: __reports__/merged.xml
+#      codequality: __lint__/api.json
   only:
     - merge_requests
     - main
     - $WEB_GENERAL_TAG_REGEX
     - $RELEASE_BRANCH_REGEX
 
+#-------------------------------------------------------
+# Define base deployment job START
+
 .web-deployment-job:
-  image: docker:stable
   stage: deployment
   interruptible: true
   dependencies:
     - web-lint-test-build
+  extends: .dependencies_cache
   script:
-    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
-    - docker build -t $BRANCH_IMAGE -f ./misc/Dockerfile .
-    - docker push $BRANCH_IMAGE
+    #   Install AWS CDK
+    - apk add --no-cache python3 py3-pip jq nodejs docker openrc && pip3 install --upgrade pip && pip3 install awscli
+    - rc-update add docker boot
+    #   Configure AWS CDK
+    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+    - aws configure set region $AWS_DEFAULT_REGION
+    #   Deploy ECR stack and write outputs to file
+    - pnpm nx deploy infrastructure-cdk $CDK_STACK_PREFIX-ecr-stack --outputs-file /cdk-outputs.json
+    - ECR_REPO_URL=$(jq -r "."\""${CDK_STACK_PREFIX}-ecr-stack"\"".ecrRepoUrl" /cdk-outputs.json)
+    - ECR_REPO_NAME=$(jq -r "."\""${CDK_STACK_PREFIX}-ecr-stack"\"".ecrRepoName" /cdk-outputs.json)
+    #   Login to ecr registry
+    - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REPO_URL
+    #   Build and push image
+    - docker build -t $ECR_REPO_NAME --cache-from=$ECR_REPO_URL:latest -f ./misc/Dockerfile .
+    - docker tag $ECR_REPO_NAME:latest $ECR_REPO_URL:latest
+    - docker push $ECR_REPO_URL:latest
+    #   Deploy vpc and main stacks
+    - NX_APP_IMAGE_ECR_REPO_NAME=$ECR_REPO_NAME
+    - echo $NX_APP_IMAGE_ECR_REPO_NAME
+    - pnpm nx deploy infrastructure-cdk $CDK_STACK_PREFIX-vpc-stack $CDK_STACK_PREFIX-stack --outputs-file /cdk-outputs.json
 
+# Define base deployment job END
+#-------------------------------------------------------
 # Deploy production START
 # Runs when $WEB_PROD_TAG_REGEX matching tag is created
 
@@ -75,7 +109,7 @@ web-deploy-prod:
   only:
     - $WEB_PROD_TAG_REGEX
 
-web-create-release-main:
+web-create-release-prod:
   stage: deployment
   interruptible: true
   image: registry.gitlab.com/gitlab-org/release-cli:latest
@@ -93,39 +127,34 @@ web-create-release-main:
 
 # Deploy production END
 #-------------------------------------------------------
-# Deploy Staging START
-# Runs when $WEB_STAGING_TAG_REGEX matching tag is created
-
-web-deploy-staging:
-  extends: .web-deployment-job
-  environment:
-    name: staging
-  only:
-    - $WEB_STAGING_TAG_REGEX
-
-web-create-release-staging:
-  stage: deployment
-  interruptible: true
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
-  dependencies:
-    - web-deploy-staging
-  script:
-    - echo 'Release creation...'
-  release:
-    name: '[WEB][STAGING] Release $CI_COMMIT_TAG'
-    description: 'Created automatically as a result of manual tag creation'
-    tag_name: $CI_COMMIT_TAG
-    ref: $CI_COMMIT_TAG
-  only:
-    - $WEB_STAGING_TAG_REGEX
-
-# Deploy Staging END
-#-------------------------------------------------------
-# Deploy Staging START
+# Deploy Dev START
 # Runs when $WEB_STAGING_TAG_REGEX matching tag is created
 
 web-deploy-dev:
   extends: .web-deployment-job
+  variables:
+    NX_CDK_STAGE: dev
+    CDK_STACK_PREFIX: $NX_APP_NAME-$NX_CDK_STAGE
   only:
     - main
-# Deploy Staging END
+  script:
+#   Install AWS CDK
+    - apk add --no-cache python3 py3-pip jq nodejs docker openrc && pip3 install --upgrade pip && pip3 install awscli
+    - rc-update add docker boot
+#   Configure AWS CDK
+    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+    - aws configure set region $AWS_DEFAULT_REGION
+#   Deploy ECR stack and write outputs to file
+    - pnpm nx deploy infrastructure-cdk $CDK_STACK_PREFIX-ecr-stack --outputs-file /cdk-outputs.json
+    - ECR_REPO_URL=$(jq -r "."\""${CDK_STACK_PREFIX}-ecr-stack"\"".ecrRepoUrl" /cdk-outputs.json)
+    - ECR_REPO_NAME=$(jq -r "."\""${CDK_STACK_PREFIX}-ecr-stack"\"".ecrRepoName" /cdk-outputs.json)
+#   Login to ecr registry
+    - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REPO_URL
+#   Build and push image
+    - docker build -t $ECR_REPO_NAME --cache-from=$ECR_REPO_URL:latest -f ./misc/Dockerfile .
+    - docker tag $ECR_REPO_NAME:latest $ECR_REPO_URL:latest
+    - docker push $ECR_REPO_URL:latest
+#   Deploy vpc and main stacks
+    - pnpm nx deploy infrastructure-cdk $CDK_STACK_PREFIX-vpc-stack $CDK_STACK_PREFIX-stack --outputs-file /cdk-outputs.json
+# Deploy Dev END

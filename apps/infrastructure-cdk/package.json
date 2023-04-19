@@ -1,5 +1,5 @@
 {
-  "name": "aws-cdk-v2",
+  "name": "infrastructure-cdk",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -10,8 +10,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "~5.51.0",
+		"@aws-sdk/types": "^3.310.0",
     "aws-cdk-lib": "^2.73.0",
+		"@aws-sdk/client-ecs": "^3.319.0",
+		"@aws-sdk/client-rds": "^3.319.0",
     "cdk-ecr-deployment": "^2.5.6",
     "constructs": "^10.1.308",
     "eslint-plugin-cdk": "^1.8.0"

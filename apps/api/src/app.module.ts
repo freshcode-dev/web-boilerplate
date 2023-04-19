@@ -31,6 +31,12 @@ const serveStatic = process.env.NX_SERVE_STATIC === 'true';
 				password: configService.get('NX_DATABASE_PASSWORD'),
 				database: configService.get('NX_DATABASE_NAME'),
         logging: configService.get('NX_DATABASE_ENABLE_LOGGING') === 'true',
+				// ToDo: needs to be improved. Set to false because default RDS authority doesn't match allowed CA's list
+				extra: {
+					ssl: {
+						rejectUnauthorized: false
+					}
+				}
 			}),
 			inject: [ConfigService]
 		}),

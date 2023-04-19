@@ -1,6 +1,6 @@
 {
 	"app": "npx ts-node src/main.ts",
-	"output": "../../dist/apps/aws-cdk-v2",
+	"output": "../../dist/apps/infrastructure-cdk",
 	"requireApproval": "never",
 	"noConfirmChangeset": true,
 	"watch": {
