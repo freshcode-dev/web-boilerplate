@@ -11,6 +11,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import AllExceptionsFilter from './exceptions-filters/all-exceptions.filter';
 import BadRequestExceptionsFilter from './exceptions-filters/bad-request-exceptions.filter';
 import * as Transport from 'winston-transport';
+import compression from 'compression';
 
 const rootLogger: Logger | null = new Logger('ApplicationRoot');
 
@@ -63,6 +64,8 @@ async function bootstrap(): Promise<void> {
   app.useGlobalPipes(
     new ValidationPipe({ transform: true })
   );
+
+	app.use(compression());
 
   app.setGlobalPrefix('api');
 

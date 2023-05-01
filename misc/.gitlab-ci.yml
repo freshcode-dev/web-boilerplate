@@ -50,7 +50,7 @@ web-lint-test-build:
 #    - pnpm nx run-many --all --target=lint --configuration=ci
 #    - pnpm nx run-many --all --target=test
 #    - pnpm run merge-test-reports
-    - pnpm nx run-many --all --target=build
+    - pnpm nx run-many --all --target=build --configuration=production
   artifacts:
     when: always
     paths:

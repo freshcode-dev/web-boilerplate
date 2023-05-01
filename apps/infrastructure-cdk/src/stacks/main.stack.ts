@@ -264,6 +264,7 @@ export class MainStack extends Stack {
 				containerName: 'app',
 				family: `${stackPrefix}-task-definition`,
 				environment: {
+					NODE_ENV: 'production',
 					NX_PORT: '3000',
 					NX_DATABASE_ENABLE_LOGGING: 'false',
 					NX_DATABASE_ENABLE_MIGRATIONS: 'false',
