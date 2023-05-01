@@ -149,6 +149,7 @@ export class MainStack extends Stack {
 			deleteAutomatedBackups: true,
 			removalPolicy: RemovalPolicy.DESTROY, // ToDo: change when deploying the real stack
 			maxAllocatedStorage: 100,
+			allocatedStorage: 20,
 			deletionProtection: false,
 			autoMinorVersionUpgrade: true,
 			publiclyAccessible: true,
