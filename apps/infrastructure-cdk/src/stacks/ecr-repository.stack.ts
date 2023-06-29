@@ -12,13 +12,13 @@ export class EcrRepositoryStack extends Stack {
 
 		this.repository = new Repository(this, applicationRepoName, {
 			repositoryName: applicationRepoName,
-			lifecycleRules: [{ maxImageCount: 5 }],
+			lifecycleRules: [{ maxImageCount: 2 }],
 			removalPolicy: RemovalPolicy.DESTROY,
 			autoDeleteImages: true
 		});
 
-		new CfnOutput(this, 'ecrRepoName', { value: this.repository.repositoryName, exportName: 'ecrRepoName' });
-		new CfnOutput(this, 'ecrRepoArn', { value: this.repository.repositoryArn, exportName: 'ecrRepoArn' });
-		new CfnOutput(this, 'ecrRepoUrl', { value: this.repository.repositoryUri, exportName: 'ecrRepoUrl' });
+		new CfnOutput(this, `${stackPrefix}-ecrRepoName`, { value: this.repository.repositoryName, exportName: `${stackPrefix}-ecrRepoName` });
+		new CfnOutput(this, `${stackPrefix}-ecrRepoArn`, { value: this.repository.repositoryArn, exportName: `${stackPrefix}-ecrRepoArn` });
+		new CfnOutput(this, `${stackPrefix}-ecrRepoUrl`, { value: this.repository.repositoryUri, exportName: `${stackPrefix}-ecrRepoUrl` });
 	}
 }

@@ -12,17 +12,12 @@ before_script:
 
 variables:
   NX_APP_NAME: boilerplate
-  POSTGRES_DB: testing
-  POSTGRES_USER: postgres
-  POSTGRES_PASSWORD: postgres
-  POSTGRES_HOST_AUTH_METHOD: trust
-  REDIS_PASSWORD: Owc1J4cy3DS0TWn0Afed
   # Example: web-1.0.0, web-1.0.0-staging-1
   WEB_GENERAL_TAG_REGEX: /^web-(\d+[\.]?).*$/
   # Example: web-1.0.0, web-1.10.123
   WEB_PROD_TAG_REGEX: /^web-(\d+[\.]?)+$/
   # Example: web-1.0.0-staging, web-1.0.0-staging-1
-  WEB_STAGING_TAG_REGEX: /^web-(\d+[\.]?)+(-staging)(-[\d])?$/
+  WEB_STAGING_TAG_REGEX: /^web-(\d+[\.]?)+(-staging)(-[\d]+)?$/
   # Example: release-1, release-initial
   RELEASE_BRANCH_REGEX: /^release-.*$/
 
@@ -36,33 +31,25 @@ variables:
 web-lint-test-build:
   stage: lint-test-build
   extends: .dependencies_cache
-  services:
-    - name: bitnami/redis:latest
-      alias: redis
-    - name: postgres:latest
-      alias: postgres
   interruptible: true
-  variables:
-    NX_DATABASE_HOST: postgres
-    NX_TEST_DATABASE_NAME: $POSTGRES_DB
   script:
     - pnpm nx run-many --all --target=lint
-#    - pnpm nx run-many --all --target=lint --configuration=ci
-#    - pnpm nx run-many --all --target=test
-#    - pnpm run merge-test-reports
+    #    - pnpm nx run-many --all --target=lint --configuration=ci
+    #    - pnpm nx run-many --all --target=test
+    #    - pnpm run merge-test-reports
     - pnpm nx run-many --all --target=build --configuration=production
   artifacts:
     when: always
     paths:
       - dist
-#      - __reports__
-#    reports:
-#      junit: __reports__/merged.xml
-#      codequality: __lint__/api.json
+  #      - __reports__
+  #    reports:
+  #      junit: __reports__/merged.xml
+  #      codequality: __lint__/api.json
   only:
     - merge_requests
     - main
-    - $WEB_GENERAL_TAG_REGEX
+    - /^web-(\d+[\.]?).*$/
     - $RELEASE_BRANCH_REGEX
 
 #-------------------------------------------------------
@@ -70,7 +57,6 @@ web-lint-test-build:
 
 .web-deployment-job:
   stage: deployment
-  interruptible: true
   dependencies:
     - web-lint-test-build
   extends: .dependencies_cache
@@ -84,8 +70,9 @@ web-lint-test-build:
     - aws configure set region $AWS_DEFAULT_REGION
     #   Deploy ECR stack and write outputs to file
     - pnpm nx deploy infrastructure-cdk $CDK_STACK_PREFIX-ecr-stack --outputs-file /cdk-outputs.json
-    - ECR_REPO_URL=$(jq -r "."\""${CDK_STACK_PREFIX}-ecr-stack"\"".ecrRepoUrl" /cdk-outputs.json)
-    - ECR_REPO_NAME=$(jq -r "."\""${CDK_STACK_PREFIX}-ecr-stack"\"".ecrRepoName" /cdk-outputs.json)
+    - CDK_STACK_PREFIX_TRIM="${CDK_STACK_PREFIX//-/}"
+    - ECR_REPO_URL=$(jq -r "."\""${CDK_STACK_PREFIX}-ecr-stack"\""."\""${CDK_STACK_PREFIX_TRIM}ecrRepoUrl"\""" /cdk-outputs.json)
+    - ECR_REPO_NAME=$(jq -r "."\""${CDK_STACK_PREFIX}-ecr-stack"\""."\""${CDK_STACK_PREFIX_TRIM}ecrRepoName"\""" /cdk-outputs.json)
     #   Login to ecr registry
     - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REPO_URL
     #   Build and push image
@@ -94,10 +81,67 @@ web-lint-test-build:
     - docker push $ECR_REPO_URL:latest
     #   Deploy vpc and main stacks
     - NX_APP_IMAGE_ECR_REPO_NAME=$ECR_REPO_NAME
-    - echo $NX_APP_IMAGE_ECR_REPO_NAME
-    - pnpm nx deploy infrastructure-cdk $CDK_STACK_PREFIX-vpc-stack $CDK_STACK_PREFIX-stack --outputs-file /cdk-outputs.json
+    - pnpm nx deploy infrastructure-cdk $CDK_STACK_PREFIX-stack --outputs-file /cdk-outputs.json
+    - ECS_CLUSTER_NAME=$(jq -r "."\""${CDK_STACK_PREFIX}-stack"\""."\""${CDK_STACK_PREFIX_TRIM}ecsClusterName"\""" /cdk-outputs.json)
+    - ECS_SERVICE_NAME=$(jq -r "."\""${CDK_STACK_PREFIX}-stack"\""."\""${CDK_STACK_PREFIX_TRIM}ecsServiceName"\""" /cdk-outputs.json)
+    - aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --force-new-deployment
+
+.create-release-job:
+  stage: deployment
+  interruptible: true
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  before_script:
+    - echo 'Release is about to be created...'
 
 # Define base deployment job END
+#-------------------------------------------------------
+# Deploy Dev START
+# Runs on any update to main branch
+
+web-deploy-dev:
+  extends: .web-deployment-job
+  environment:
+    name: dev
+    url: https://boilerplate.freshcode.org/
+    deployment_tier: development
+  variables:
+    NX_CDK_STAGE: dev
+    CDK_STACK_PREFIX: $NX_APP_NAME-$NX_CDK_STAGE
+  only:
+    - main
+
+# Deploy Dev END
+#-------------------------------------------------------
+# Deploy staging START
+# Runs when $WEB_STAGING_TAG_REGEX matching tag is created
+
+web-deploy-staging:
+  extends: .web-deployment-job
+  environment:
+    name: staging
+    url: https://staging.barvainvest.com/
+    deployment_tier: staging
+  variables:
+    NX_CDK_STAGE: staging
+    CDK_STACK_PREFIX: $NX_APP_NAME-$NX_CDK_STAGE
+  only:
+    - /^web-(\d+[\.]?)+(-staging)(-[\d]+)?$/
+
+web-create-release-staging:
+  extends: .create-release-job
+  dependencies:
+    - web-deploy-staging
+  release:
+    name: '[WEB][STAGING] Release $CI_COMMIT_TAG'
+    description: 'Created automatically as a result of manual tag creation'
+    tag_name: $CI_COMMIT_TAG
+    ref: $CI_COMMIT_TAG
+  script:
+    - echo 'Release creation...'
+  only:
+    - /^web-(\d+[\.]?)+(-staging)(-[\d]+)?$/
+
+# Deploy production END
 #-------------------------------------------------------
 # Deploy production START
 # Runs when $WEB_PROD_TAG_REGEX matching tag is created
@@ -110,51 +154,19 @@ web-deploy-prod:
     - $WEB_PROD_TAG_REGEX
 
 web-create-release-prod:
-  stage: deployment
-  interruptible: true
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  extends: .create-release-job
   dependencies:
     - web-deploy-prod
-  script:
-    - echo 'Release creation...'
   release:
     name: '[WEB][PROD] Release $CI_COMMIT_TAG'
     description: 'Created automatically as a result of manual tag creation'
     tag_name: $CI_COMMIT_TAG
     ref: $CI_COMMIT_TAG
+  script:
+    - echo 'Release creation...'
   only:
-    - $WEB_PROD_TAG_REGEX
+    refs:
+      - $WEB_STAGING_TAG_REGEX
 
 # Deploy production END
 #-------------------------------------------------------
-# Deploy Dev START
-# Runs when $WEB_STAGING_TAG_REGEX matching tag is created
-
-web-deploy-dev:
-  extends: .web-deployment-job
-  variables:
-    NX_CDK_STAGE: dev
-    CDK_STACK_PREFIX: $NX_APP_NAME-$NX_CDK_STAGE
-  only:
-    - main
-  script:
-#   Install AWS CDK
-    - apk add --no-cache python3 py3-pip jq nodejs docker openrc && pip3 install --upgrade pip && pip3 install awscli
-    - rc-update add docker boot
-#   Configure AWS CDK
-    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-    - aws configure set region $AWS_DEFAULT_REGION
-#   Deploy ECR stack and write outputs to file
-    - pnpm nx deploy infrastructure-cdk $CDK_STACK_PREFIX-ecr-stack --outputs-file /cdk-outputs.json
-    - ECR_REPO_URL=$(jq -r "."\""${CDK_STACK_PREFIX}-ecr-stack"\"".ecrRepoUrl" /cdk-outputs.json)
-    - ECR_REPO_NAME=$(jq -r "."\""${CDK_STACK_PREFIX}-ecr-stack"\"".ecrRepoName" /cdk-outputs.json)
-#   Login to ecr registry
-    - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REPO_URL
-#   Build and push image
-    - docker build -t $ECR_REPO_NAME --cache-from=$ECR_REPO_URL:latest -f ./misc/Dockerfile .
-    - docker tag $ECR_REPO_NAME:latest $ECR_REPO_URL:latest
-    - docker push $ECR_REPO_URL:latest
-#   Deploy vpc and main stacks
-    - pnpm nx deploy infrastructure-cdk $CDK_STACK_PREFIX-vpc-stack $CDK_STACK_PREFIX-stack --outputs-file /cdk-outputs.json
-# Deploy Dev END

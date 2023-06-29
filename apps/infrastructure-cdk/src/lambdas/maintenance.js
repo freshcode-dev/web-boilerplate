@@ -45,15 +45,24 @@ exports.handler = async (event) => {
 	try {
 		const {
 			ECS_CLUSTER: ecsCluster = '',
-			ECS_SERVICE: ecsService = '',
+			ECS_SERVICES: ecsServices = '[]',
 			RDS_INSTANCE_IDENTIFIER: rdsInstanceIdentifier = ''
 		} = process.env;
 
 		console.info({ event: 'Lambda started', params: event });
 
 		const { newState } = event;
-		await updateRdsInstance(newState, rdsInstanceIdentifier);
-		await updateEcsService(newState, ecsCluster, ecsService);
+
+		if (rdsInstanceIdentifier?.length) {
+			await updateRdsInstance(newState, rdsInstanceIdentifier);
+		} else {
+			console.info('Database-related params not found. Skipping...')
+		}
+
+		const servicesNames = JSON.parse(ecsServices);
+		for (const serviceName of servicesNames) {
+			await updateEcsService(newState, ecsCluster, serviceName);
+		}
 	} catch (e) {
 		console.error('[ERROR]', e);
 		throw e;
