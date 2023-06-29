@@ -11,6 +11,7 @@ import { AutomapperModule } from '@automapper/nestjs';
 import { classes } from '@automapper/classes';
 
 const serveStatic = process.env.NX_SERVE_STATIC === 'true';
+const databaseRejectUnauthorized = process.env.NX_DATABASE_REJECT_UNAUTHORIZED === 'true';
 
 @Module({
   imports: [
@@ -33,9 +34,7 @@ const serveStatic = process.env.NX_SERVE_STATIC === 'true';
         logging: configService.get('NX_DATABASE_ENABLE_LOGGING') === 'true',
 				// ToDo: needs to be improved. Set to false because default RDS authority doesn't match allowed CA's list
 				extra: {
-					ssl: {
-						rejectUnauthorized: false
-					}
+					ssl: databaseRejectUnauthorized ? { rejectUnauthorized: false } : undefined
 				}
 			}),
 			inject: [ConfigService]

@@ -1,17 +1,17 @@
 {
 	"$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "npmScope": "boilerplate",
-  "affected": {
-    "defaultBase": "main"
-  },
-  "tasksRunnerOptions": {
-    "default": {
-      "runner": "@nrwl/workspace/tasks-runners/default",
-      "options": {
-        "cacheableOperations": ["build", "lint", "test", "e2e"]
-      }
-    }
-  },
+	"npmScope": "boilerplate",
+	"affected": {
+		"defaultBase": "main"
+	},
+	"tasksRunnerOptions": {
+		"default": {
+			"runner": "@nx/workspace/tasks-runners/default",
+			"options": {
+				"cacheableOperations": ["build", "lint", "test", "e2e"]
+			}
+		}
+	},
 	"targetDefaults": {
 		"build": {
 			"dependsOn": ["^build"],
@@ -39,7 +39,7 @@
 		"sharedGlobals": ["{workspaceRoot}/babel.config.json"]
 	},
 	"generators": {
-		"@nrwl/react": {
+		"@nx/react": {
 			"application": {
 				"style": "@emotion/styled",
 				"linter": "eslint",

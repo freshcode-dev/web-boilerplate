@@ -8,8 +8,6 @@ import { JwtStrategy } from './strategy/jwt.strategy';
 import { JwtAuthGuard } from './guard/jwt.guard';
 import { SessionsService } from './sessions.service';
 import { TokensService } from './tokens.service';
-import { UserProfile } from './profiles/user.profile';
-import { SessionProfile } from './profiles/session.profile';
 import { JwtRefreshGuard } from './guard/jwt-refresh.guard';
 import { JwtRefreshStrategy } from './strategy/jwt-refresh.strategy';
 
@@ -22,8 +20,6 @@ import { JwtRefreshStrategy } from './strategy/jwt-refresh.strategy';
 		JwtAuthGuard,
 		SessionsService,
 		TokensService,
-		UserProfile,
-		SessionProfile,
 		JwtRefreshGuard,
 		JwtRefreshStrategy
 	],

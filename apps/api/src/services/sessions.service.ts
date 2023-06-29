@@ -12,8 +12,7 @@ import { TokensService } from '../services/tokens.service';
 export class SessionsService {
 	constructor(
 		@InjectRepository(Session) private readonly sessionRepository: Repository<Session>,
-		private readonly tokensService: TokensService,
-		@InjectMapper() private readonly mapper: Mapper
+		private readonly tokensService: TokensService
 	) {}
 
 	public async updateSessionToken(id: string, tokenId: string, issuedAt: Date): Promise<SessionDto> {
@@ -45,7 +44,7 @@ export class SessionsService {
 
 		await this.sessionRepository.insert(session);
 
-		return this.mapper.map(session, Session, SessionDto);
+		return session;
 	}
 
 	public async listUserSessions(userId: string): Promise<SessionDto[]> {
@@ -59,13 +58,13 @@ export class SessionsService {
 			}
 		});
 
-		return this.mapper.mapArray(sessionsList, Session, SessionDto);
+		return sessionsList;
 	}
 
 	public async findSessionById(id: string): Promise<SessionDto | null> {
 		const session = await this.sessionRepository.findOne({ where: { id } });
 
-		return this.mapper.map(session, Session, SessionDto);
+		return session;
 	}
 
 	public async getSessionById(id: string): Promise<SessionDto> {
@@ -95,6 +94,6 @@ export class SessionsService {
 
 		const deletedSession = this.sessionRepository.create(raw[0] as Session);
 
-		return this.mapper.map(deletedSession, Session, SessionDto);
+		return deletedSession;
 	}
 }

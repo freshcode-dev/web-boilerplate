@@ -14,8 +14,7 @@ export class AuthService {
 	constructor(
 		private readonly usersService: UsersService,
 		private readonly sessionService: SessionsService,
-		private readonly tokensService: TokensService,
-		@InjectMapper() private readonly mapper: Mapper
+		private readonly tokensService: TokensService
 	) {
 	}
 
@@ -60,7 +59,7 @@ export class AuthService {
 			throw new UnauthorizedException('Incorrect password');
 		}
 
-		return this.mapper.map(user, User, UserDto);
+		return user;
 	}
 
 	public async refreshToken(sessionId: string, tokenId: string): Promise<AuthResponseDto> {

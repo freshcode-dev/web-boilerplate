@@ -12,8 +12,7 @@ import { Mapper } from '@automapper/core';
 @Injectable()
 export class UsersService {
 	constructor(
-		@InjectRepository(User) private readonly usersRepository: Repository<User>,
-		@InjectMapper() private readonly mapper: Mapper
+		@InjectRepository(User) private readonly usersRepository: Repository<User>
 	) {}
 
 	public async findByEmail(email: string): Promise<User | null> {
@@ -31,7 +30,7 @@ export class UsersService {
 
 			await this.usersRepository.insert(user);
 
-			return this.mapper.map(user, User, UserDto);
+			return user;
 		} catch (exception) {
 			if (!(exception instanceof QueryFailedError)) {
 				throw exception;
@@ -50,7 +49,7 @@ export class UsersService {
 	public async findUserById(id: string): Promise<UserDto | null> {
 		const user = await this.usersRepository.findOne({ where: { id } });
 
-		return this.mapper.map(user, User, UserDto);
+		return user;
 	}
 
 	public async getUserById(id: string): Promise<UserDto> {
