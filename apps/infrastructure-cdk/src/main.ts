@@ -10,10 +10,11 @@ import { SesStack } from './stacks/ses.stack';
 const {
 	NX_CDK_DEFAULT_ACCOUNT: accountId = '[AWS ACCOUNT ID]',
 	NX_CDK_DEFAULT_REGION: region = 'eu-north-1',
-	NX_APP_NAME: applicationName = 'boilerplate',
+	NX_CDK_APP_NAME: applicationName = 'boilerplate',
 	NX_CDK_STAGE: stage = 'test',
-	NX_CERTIFICATE_ARN: certificateArn = undefined,
-	NX_EMAIL_IDENTITY_DOMAIN: emailIdentityDomain = undefined,
+	NX_CDK_CERTIFICATE_ARN: certificateArn = undefined,
+	NX_CDK_EMAIL_IDENTITY_DOMAIN: emailIdentityDomain = undefined,
+	NX_CDK_DOCKER_IMAGE_TAG: dockerImageTag = undefined
 } = process.env;
 
 
@@ -54,12 +55,15 @@ new LoadBalancerStack(
 
 new EcrRepositoryStack(app, `${stackPrefix}-ecr-stack`, stackPrefix, { env });
 
-const mainStackOptions: MainStackProps = {
+const mainStackProps: MainStackProps = {
 	stackPrefix,
 	vpc,
-	stageSettings: currentStageSettings
+	stageSettings: currentStageSettings,
+	dockerImageTag,
+
+	env
 };
 
-new MainStack(app, `${stackPrefix}-stack`, mainStackOptions, { env });
+new MainStack(app, `${stackPrefix}-stack`, mainStackProps);
 
 app.synth();

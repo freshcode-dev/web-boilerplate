@@ -11,7 +11,7 @@ before_script:
   - pnpm store path
 
 variables:
-  NX_APP_NAME: boilerplate
+  NX_CDK_APP_NAME: boilerplate
   # Example: web-1.0.0, web-1.0.0-staging-1
   WEB_GENERAL_TAG_REGEX: /^web-(\d+[\.]?).*$/
   # Example: web-1.0.0, web-1.10.123
@@ -76,15 +76,20 @@ web-lint-test-build:
     #   Login to ecr registry
     - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REPO_URL
     #   Build and push image
-    - docker build -t $ECR_REPO_NAME --cache-from=$ECR_REPO_URL:latest -f ./misc/Dockerfile .
-    - docker tag $ECR_REPO_NAME:latest $ECR_REPO_URL:latest
+    - docker build -t $ECR_REPO_NAME -t $ECR_REPO_URL:latest -t $ECR_REPO_URL:$CI_COMMIT_SHORT_SHA --cache-from=$ECR_REPO_URL:latest -f ./misc/Dockerfile .
     - docker push $ECR_REPO_URL:latest
+    - docker push $ECR_REPO_URL:$CI_COMMIT_SHORT_SHA
     #   Deploy vpc and main stacks
-    - NX_APP_IMAGE_ECR_REPO_NAME=$ECR_REPO_NAME
+    - export NX_APP_IMAGE_ECR_REPO_NAME=$ECR_REPO_NAME
+    - export NX_CDK_DOCKER_IMAGE_TAG=$CI_COMMIT_SHORT_SHA
+    - echo $NX_APP_IMAGE_ECR_REPO_NAME
+    - echo $NX_CDK_DOCKER_IMAGE_TAG
     - pnpm nx deploy infrastructure-cdk $CDK_STACK_PREFIX-stack --outputs-file /cdk-outputs.json
-    - ECS_CLUSTER_NAME=$(jq -r "."\""${CDK_STACK_PREFIX}-stack"\""."\""${CDK_STACK_PREFIX_TRIM}ecsClusterName"\""" /cdk-outputs.json)
-    - ECS_SERVICE_NAME=$(jq -r "."\""${CDK_STACK_PREFIX}-stack"\""."\""${CDK_STACK_PREFIX_TRIM}ecsServiceName"\""" /cdk-outputs.json)
-    - aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --force-new-deployment
+#   Commented as now we update task definition with the exact commit version hash on every deployment
+#    - ECS_CLUSTER_NAME=$(jq -r "."\""${CDK_STACK_PREFIX}-stack"\""."\""${CDK_STACK_PREFIX_TRIM}ecsClusterName"\""" /cdk-outputs.json)
+#    - ECS_SERVICE_NAME=$(jq -r "."\""${CDK_STACK_PREFIX}-stack"\""."\""${CDK_STACK_PREFIX_TRIM}ecsServiceName"\""" /cdk-outputs.json)
+#    - aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --force-new-deployment
+#    - aws ecs wait services-stable --cluster $ECS_CLUSTER_NAME --services $ECS_SERVICE_NAME
 
 .create-release-job:
   stage: deployment
@@ -106,7 +111,7 @@ web-deploy-dev:
     deployment_tier: development
   variables:
     NX_CDK_STAGE: dev
-    CDK_STACK_PREFIX: $NX_APP_NAME-$NX_CDK_STAGE
+    CDK_STACK_PREFIX: $NX_CDK_APP_NAME-$NX_CDK_STAGE
   only:
     - main
 
@@ -123,7 +128,7 @@ web-deploy-staging:
     deployment_tier: staging
   variables:
     NX_CDK_STAGE: staging
-    CDK_STACK_PREFIX: $NX_APP_NAME-$NX_CDK_STAGE
+    CDK_STACK_PREFIX: $NX_CDK_APP_NAME-$NX_CDK_STAGE
   only:
     - /^web-(\d+[\.]?)+(-staging)(-[\d]+)?$/
 

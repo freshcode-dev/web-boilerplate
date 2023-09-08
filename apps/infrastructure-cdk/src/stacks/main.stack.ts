@@ -29,10 +29,11 @@ import { ICluster } from 'aws-cdk-lib/aws-ecs/lib/cluster';
 import { getEcrRepositoryName } from '../utils/resource-names.utils';
 import { EcsServiceDefinition } from '../types';
 
-export interface MainStackProps {
+export interface MainStackProps extends StackProps {
 	stackPrefix: string;
 	vpc: ec2.IVpc;
 	stageSettings: ICdkEnvironmentSettings;
+	dockerImageTag?: string;
 }
 
 export class MainStack extends Stack {
@@ -48,19 +49,20 @@ export class MainStack extends Stack {
 	private readonly redisDefinition: EcsServiceDefinition;
 	private readonly appDefinition: EcsServiceDefinition;
 	private readonly stageSettings: ICdkEnvironmentSettings;
+	private readonly dockerImageTag?: string;
 
 	constructor(scope: Construct,
 							id: string,
-							options: MainStackProps,
-							props?: StackProps) {
+							props: MainStackProps) {
 		super(scope, id, props);
 
 		const {
 			stackPrefix,
 			vpc
-		} = options;
+		} = props;
 
-		this.stageSettings = options.stageSettings;
+		this.stageSettings = props.stageSettings;
+		this.dockerImageTag = props.dockerImageTag;
 
 		this.registerSecurityGroups(stackPrefix, vpc);
 
@@ -440,9 +442,11 @@ export class MainStack extends Stack {
 		const containerName = 'app';
 		const portMappingName = 'mapping';
 
+		const imageTag = this.dockerImageTag?.length ? this.dockerImageTag : 'latest';
+
 		taskDefinition.addContainer(containerName, {
 			containerName,
-			image: ecs.ContainerImage.fromEcrRepository(repository, 'latest'),
+			image: ecs.ContainerImage.fromEcrRepository(repository, imageTag),
 			logging: ecs.LogDriver.awsLogs({ logGroup, streamPrefix: serviceName }),
 			portMappings: [{ containerPort: 3000, hostPort: 3000, protocol: ecs.Protocol.TCP, name: portMappingName }],
 			environment: {
