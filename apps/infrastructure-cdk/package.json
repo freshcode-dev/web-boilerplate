@@ -10,12 +10,12 @@
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
-		"@aws-sdk/types": "^3.310.0",
-		"aws-cdk-lib": "^2.73.0",
-		"@aws-sdk/client-ecs": "^3.319.0",
-		"@aws-sdk/client-rds": "^3.319.0",
-		"cdk-ecr-deployment": "^2.5.6",
-		"constructs": "^10.1.308",
+		"@aws-sdk/types": "^3.413.0",
+		"aws-cdk-lib": "^2.96.2",
+		"@aws-sdk/client-ecs": "^3.414.0",
+		"@aws-sdk/client-rds": "^3.414.0",
+		"cdk-ecr-deployment": "^2.5.30",
+		"constructs": "^10.2.70",
 		"eslint-plugin-cdk": "^1.8.0"
 	}
 }

@@ -1,0 +1,37 @@
+diff --git a/transformer-plugin/index.cjs b/transformer-plugin/index.cjs
+index 059255646788674e5ef90fbb40e05e8249e3de33..cf4005c386f9d080e21bec9d0e621044ecfb0842 100644
+--- a/transformer-plugin/index.cjs
++++ b/transformer-plugin/index.cjs
+@@ -138,10 +138,16 @@ function replaceImportPath(typeReference, fileName) {
+   if (!importPath) {
+     return undefined;
+   }
++
++  if (process.platform === 'win32') {
++    return typeReference.replace('import', 'require')
++  }
++  
+   importPath = importPath.slice(2, importPath.length - 1);
+   let relativePath = path.posix.relative(path.dirname(fileName), importPath);
+   relativePath = relativePath[0] !== '.' ? './' + relativePath : relativePath;
+   typeReference = typeReference.replace(importPath, relativePath);
++
+   return typeReference.replace('import', 'require');
+ }
+ 
+diff --git a/transformer-plugin/index.js b/transformer-plugin/index.js
+index 4685f28ffad25fb7270b30200e9f67d7d4c616cd..416a68caa0fc7ee1cc2c0be6c0087b30edf0525b 100644
+--- a/transformer-plugin/index.js
++++ b/transformer-plugin/index.js
+@@ -134,6 +134,11 @@ function replaceImportPath(typeReference, fileName) {
+   if (!importPath) {
+     return undefined;
+   }
++
++  if (process.platform === 'win32') {
++    return typeReference.replace('import', 'require')
++  }
++
+   importPath = importPath.slice(2, importPath.length - 1);
+   let relativePath = posix.relative(dirname(fileName), importPath);
+   relativePath = relativePath[0] !== '.' ? './' + relativePath : relativePath;

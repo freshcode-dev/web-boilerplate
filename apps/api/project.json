@@ -24,6 +24,12 @@
 							"classValidatorShim": false,
 							"introspectComments": true
 						}
+					},
+					{
+						"name": "@automapper/classes/transformer-plugin",
+						"options": {
+							"modelFileNameSuffix": [".dto.ts", ".entity.ts"]
+						}
 					}
 				]
 			},

@@ -6,7 +6,7 @@ export const cdkTestingEnvironmentSettings: ICdkEnvironmentSettings = {
 	withMaintenanceSchedule: true,
 	databaseMode: 'create',
 	rdsCreationParams: {
-		removalPolicy: RemovalPolicy.RETAIN,
+		removalPolicy: RemovalPolicy.DESTROY,
 		enablePerformanceInsights: false,
 		rdsInstanceClass: InstanceClass.T3,
 		rdsInstanceSize: InstanceSize.MICRO

@@ -6,13 +6,14 @@ import { QueryFailedError, Repository } from 'typeorm';
 import { hash } from 'argon2';
 import { argon2DefaultConfig, DbErrorCodes } from '../constants';
 import { DatabaseError } from 'pg';
-import { InjectMapper } from '@automapper/nestjs';
 import { Mapper } from '@automapper/core';
+import { InjectMapper } from '@automapper/nestjs';
 
 @Injectable()
 export class UsersService {
 	constructor(
-		@InjectRepository(User) private readonly usersRepository: Repository<User>
+		@InjectRepository(User) private readonly usersRepository: Repository<User>,
+		@InjectMapper() private readonly mapper: Mapper
 	) {}
 
 	public async findByEmail(email: string): Promise<User | null> {
@@ -49,7 +50,7 @@ export class UsersService {
 	public async findUserById(id: string): Promise<UserDto | null> {
 		const user = await this.usersRepository.findOne({ where: { id } });
 
-		return user;
+		return this.mapper.map(user, User, UserDto);
 	}
 
 	public async getUserById(id: string): Promise<UserDto> {

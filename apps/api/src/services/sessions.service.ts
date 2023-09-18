@@ -2,8 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Session } from '@boilerplate/data';
 import { MoreThan, Repository } from 'typeorm';
-import { InjectMapper } from '@automapper/nestjs';
-import { Mapper } from '@automapper/core';
 import { SessionDto } from '@boilerplate/shared';
 import { randomUUID } from 'crypto';
 import { TokensService } from '../services/tokens.service';

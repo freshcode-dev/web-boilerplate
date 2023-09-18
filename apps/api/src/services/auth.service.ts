@@ -5,10 +5,6 @@ import { verify } from 'argon2';
 import { argon2DefaultConfig } from '../constants';
 import { SessionsService } from './sessions.service';
 import { TokensService } from './tokens.service';
-import { InjectMapper } from '@automapper/nestjs';
-import { Mapper } from '@automapper/core';
-import { User } from '@boilerplate/data';
-
 @Injectable()
 export class AuthService {
 	constructor(

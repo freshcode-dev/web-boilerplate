@@ -85,7 +85,8 @@
 		"no-var": "error",
 		"object-shorthand": "warn",
 		"prefer-arrow-callback": "warn",
-		"object-curly-spacing": ["warn", "always"]
+		"object-curly-spacing": ["warn", "always"],
+		"import/no-duplicates": ["error", {"considerQueryString": true}]
 	},
 	"overrides": [
 		{
@@ -110,6 +111,7 @@
 			"files": ["*.ts", "*.tsx"],
 			"extends": ["plugin:@nx/typescript"],
 			"rules": {
+				"@typescript-eslint/no-unused-vars": "warn",
 				"@typescript-eslint/semi": ["error", "always"],
 				"@typescript-eslint/default-param-last": ["error"],
 				"@typescript-eslint/comma-dangle": ["warn", "only-multiline"],
@@ -118,7 +120,6 @@
 				"@typescript-eslint/keyword-spacing": ["warn", { "after": true, "before": true }],
 				"@typescript-eslint/lines-between-class-members": ["warn", "always", { "exceptAfterSingleLine": true }],
 				"@typescript-eslint/space-infix-ops": ["warn", { "int32Hint": false }],
-				"@typescript-eslint/no-duplicate-imports": "warn",
 				"@typescript-eslint/class-literal-property-style": ["warn", "fields"],
 				"@typescript-eslint/explicit-member-accessibility": [
 					"warn",

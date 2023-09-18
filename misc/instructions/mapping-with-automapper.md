@@ -1,5 +1,13 @@
 # Mapping classes with automapper
 
+## ⚠️Important note
+This repository contains a `patches` folder with a file which modifies the automapper package.
+It's a temporary solution to fix the bug preventing the package from being cross-platform.
+
+The original package registry already has the [corresponding PR opened.](https://github.com/nartc/mapper/pull/570)
+
+Patch should be removed as soon as the PR is merged to the upstream.
+
 ## Motivation
 
 Building flexible and maintainable architecture usually means segregation of classes, modules, and layers.

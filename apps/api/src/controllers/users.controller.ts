@@ -1,10 +1,5 @@
 import {
-	Request,
-	UseGuards,
-	Body,
-	Get,
-	Controller,
-	Post
+	Request, UseGuards, Body, Get, Controller, Post, Param
 } from '@nestjs/common';
 import { CreateUserDto, UserDto } from '@boilerplate/shared';
 import { UsersService } from '../services/users.service';
@@ -18,6 +13,11 @@ export class UsersController {
 	@Post()
 	async create(@Body() user: CreateUserDto): Promise<UserDto> {
 		return await this.userService.create(user);
+	}
+
+	@Get(':id')
+	async getUserById(@Param('id') id: string): Promise<UserDto> {
+		return await this.userService.getUserById(id);
 	}
 
 	@Get('profile')

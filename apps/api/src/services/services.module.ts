@@ -10,10 +10,12 @@ import { SessionsService } from './sessions.service';
 import { TokensService } from './tokens.service';
 import { JwtRefreshGuard } from './guard/jwt-refresh.guard';
 import { JwtRefreshStrategy } from './strategy/jwt-refresh.strategy';
+import { UserProfile } from './profiles/user.profile';
 
 @Module({
 	imports: [DatabaseModule.forFeature([User, Session]), PassportModule, JwtModule.register({})],
 	providers: [
+		UserProfile,
 		UsersService,
 		AuthService,
 		JwtStrategy,

@@ -12,7 +12,6 @@ const {
 	NX_CDK_APP_NAME: applicationName = 'boilerplate',
 	NX_CDK_STAGE: stage = 'test',
 	NX_CDK_CERTIFICATE_ARN: certificateArn = undefined,
-	NX_CDK_EMAIL_IDENTITY_DOMAIN: emailIdentityDomain = undefined,
 	NX_CDK_DOCKER_IMAGE_TAG: dockerImageTag = undefined,
 	NX_CDK_DEPLOYMENT_REPOSITORY_URL: deploymentRepositoryUrl = 'local'
 } = process.env;
