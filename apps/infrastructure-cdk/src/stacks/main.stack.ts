@@ -28,10 +28,10 @@ import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { ICluster } from 'aws-cdk-lib/aws-ecs/lib/cluster';
 import { getEcrRepositoryName } from '../utils/resource-names.utils';
 import { EcsServiceDefinition } from '../types';
+import { defineSecretWithGeneratedPassword, lookupDefaultVpc } from '../utils/generators';
 
 export interface MainStackProps extends StackProps {
 	stackPrefix: string;
-	vpc: ec2.IVpc;
 	stageSettings: ICdkEnvironmentSettings;
 	dockerImageTag?: string;
 }
@@ -46,6 +46,7 @@ export class MainStack extends Stack {
 	public ecsCluster: ICluster;
 	public mediaConvertDefaultRole: iam.Role;
 	public namespace: cloudMap.HttpNamespace;
+	private readonly vpc: ec2.IVpc;
 	private readonly redisDefinition: EcsServiceDefinition;
 	private readonly appDefinition: EcsServiceDefinition;
 	private readonly stageSettings: ICdkEnvironmentSettings;
@@ -57,19 +58,24 @@ export class MainStack extends Stack {
 		super(scope, id, props);
 
 		const {
-			stackPrefix,
-			vpc
+			stackPrefix
 		} = props;
 
 		this.stageSettings = props.stageSettings;
 		this.dockerImageTag = props.dockerImageTag;
 
-		this.registerSecurityGroups(stackPrefix, vpc);
+		this.vpc = lookupDefaultVpc(this, `default-vpc-id`);
+
+		this.registerSecurityGroups(stackPrefix);
 
 		if (this.stageSettings.databaseMode === 'create') {
-			this.createDatabaseSecret(stackPrefix);
+			this.dbSecret = defineSecretWithGeneratedPassword(this, {
+				secretName: `${stackPrefix}-db-secret`,
+				staticContent: { username: 'postgres' },
+				passwordKey: 'password'
+			});
 
-			this.createDatabase(vpc, stackPrefix);
+			this.createDatabase(stackPrefix);
 		} else {
 			this.importDatabaseSecret(stackPrefix);
 		}
@@ -79,9 +85,9 @@ export class MainStack extends Stack {
 		this.registerMediaConvertData(stackPrefix);
 
 		this.registerNamespace(stackPrefix);
-		this.registerEcsCluster(vpc, stackPrefix);
+		this.registerEcsCluster(stackPrefix);
 		this.redisDefinition = this.registerRedisService(stackPrefix);
-		this.appDefinition = this.registerEcsAppService(vpc, stackPrefix);
+		this.appDefinition = this.registerEcsAppService(stackPrefix);
 
 		if (this.stageSettings.withMaintenanceSchedule) {
 			this.registerMaintenanceLambda(stackPrefix);
@@ -95,10 +101,10 @@ export class MainStack extends Stack {
 		});
 	}
 
-	private registerSecurityGroups(stackPrefix: string, vpc: ec2.IVpc): void {
+	private registerSecurityGroups(stackPrefix: string): void {
 		const commonSgName = `${stackPrefix}-sg`;
 		this.commonSg = new ec2.SecurityGroup(this, commonSgName, {
-			vpc,
+			vpc: this.vpc,
 			allowAllOutbound: true,
 			description: 'Restrict allow inbound HTTP traffic to common resources',
 			securityGroupName: commonSgName,
@@ -108,7 +114,7 @@ export class MainStack extends Stack {
 
 		if (this.stageSettings.databaseMode === 'create') {
 			this.databaseSg = new ec2.SecurityGroup(this, dbSgName, {
-				vpc,
+				vpc: this.vpc,
 				allowAllOutbound: true,
 				description: 'Restrict inbound traffic to database resources',
 				securityGroupName: dbSgName,
@@ -123,7 +129,7 @@ export class MainStack extends Stack {
 
 		const redisSgName = `${stackPrefix}-redis-sg`;
 		this.redisSg = new ec2.SecurityGroup(this, redisSgName, {
-			vpc,
+			vpc: this.vpc,
 			allowAllOutbound: true,
 			description: 'Restrict access to redis',
 			securityGroupName: redisSgName,
@@ -139,25 +145,7 @@ export class MainStack extends Stack {
 		this.dbSecret = Secret.fromSecretCompleteArn(this, secretName, this.stageSettings.rdsReuseParams?.dbSecretArn);
 	}
 
-	private createDatabaseSecret(stackPrefix: string): void {
-		const secretName = `${stackPrefix}-db-secret`;
-		this.dbSecret = new Secret(this, secretName, {
-			secretName,
-			description: 'Database secrets storage',
-			generateSecretString: {
-				secretStringTemplate: JSON.stringify({ username: 'postgres' }),
-				generateStringKey: 'password',
-				passwordLength: 26,
-				excludePunctuation: true,
-				excludeLowercase: false,
-				excludeNumbers: false,
-				includeSpace: false,
-				excludeUppercase: false
-			}
-		});
-	}
-
-	private createDatabase(vpc: ec2.IVpc, stackPrefix: string): void {
+	private createDatabase(stackPrefix: string): void {
 		if (!this.stageSettings.rdsCreationParams) {
 			throw Error(`rdsCreationParams can't be empty`);
 		}
@@ -172,7 +160,7 @@ export class MainStack extends Stack {
 		const dbName = `${stackPrefix}-db`.split('-').join('');
 
 		this.rdsDb = new DatabaseInstance(this, dbName, {
-			vpc,
+			vpc: this.vpc,
 			instanceIdentifier: dbName,
 			databaseName: dbName,
 			vpcSubnets: { onePerAz: true, subnetFilters: [ec2.SubnetFilter.onePerAz()] },
@@ -408,16 +396,16 @@ export class MainStack extends Stack {
 		}
 	}
 
-	private registerEcsCluster(vpc: ec2.IVpc, stackPrefix: string): void {
+	private registerEcsCluster(stackPrefix: string): void {
 		const clusterName = `${stackPrefix}-cluster`;
 		this.ecsCluster = new ecs.Cluster(this, clusterName, {
 			clusterName,
-			vpc,
+			vpc: this.vpc,
 			containerInsights: false
 		});
 	}
 
-	private registerEcsAppService(vpc: ec2.IVpc, stackPrefix: string): EcsServiceDefinition {
+	private registerEcsAppService(stackPrefix: string): EcsServiceDefinition {
 		const repositoryName = getEcrRepositoryName(stackPrefix);
 		const repository = Repository.fromRepositoryName(this, repositoryName, repositoryName);
 
@@ -493,7 +481,7 @@ export class MainStack extends Stack {
 
 		const targetGroupName = `${stackPrefix}-app-target-group`;
 		const targetGroup = new ApplicationTargetGroup(this, targetGroupName, {
-			vpc,
+			vpc: this.vpc,
 			targetGroupName,
 			port: 80,
 			protocol: ApplicationProtocol.HTTP,
