@@ -1,4 +1,4 @@
 export * from './vpc.generators';
-export * from './rds.generators';
+export * from './efs.generators';
 export * from './secrets-manager.generators';
 

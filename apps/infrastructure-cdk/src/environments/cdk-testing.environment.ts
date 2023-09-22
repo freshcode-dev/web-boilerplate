@@ -36,8 +36,8 @@ export const cdkTestingEnvironmentSettings: ICdkEnvironmentSettings = {
 	loadBalancerSecurityGroupId: 'sg-040e5d3c92516f586',
 
 	maintenanceSchedule: {
-		envStart: { minute: '0', hour: '6', weekDay: 'MON-FRI', month: '*', year: '*' },
-		envStop: { minute: '0', hour: '19', weekDay: 'MON-FRI', month: '*', year: '*' },
+		envStart: { minute: '0', hour: '10', weekDay: 'MON-FRI', month: '*', year: '*' },
+		envStop: { minute: '0', hour: '11', weekDay: 'MON-FRI', month: '*', year: '*' },
 	},
 	mediaConvertRoleRemovalPolicy: RemovalPolicy.DESTROY
 };

@@ -28,7 +28,11 @@ import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { ICluster } from 'aws-cdk-lib/aws-ecs/lib/cluster';
 import { getEcrRepositoryName } from '../utils/resource-names.utils';
 import { EcsServiceDefinition } from '../types';
-import { defineSecretWithGeneratedPassword, lookupDefaultVpc } from '../utils/generators';
+import {
+	defineSecretWithGeneratedPassword,
+	lookupDefaultVpc,
+	defineEfsStorageForVolume
+} from '../utils/generators';
 
 export interface MainStackProps extends StackProps {
 	stackPrefix: string;
@@ -46,6 +50,7 @@ export class MainStack extends Stack {
 	public ecsCluster: ICluster;
 	public mediaConvertDefaultRole: iam.Role;
 	public namespace: cloudMap.HttpNamespace;
+	public readonly mainSubnet: ec2.ISubnet;
 	private readonly vpc: ec2.IVpc;
 	private readonly redisDefinition: EcsServiceDefinition;
 	private readonly appDefinition: EcsServiceDefinition;
@@ -65,6 +70,8 @@ export class MainStack extends Stack {
 		this.dockerImageTag = props.dockerImageTag;
 
 		this.vpc = lookupDefaultVpc(this, `default-vpc-id`);
+
+		this.mainSubnet = this.vpc.publicSubnets[0]!;
 
 		this.registerSecurityGroups(stackPrefix);
 
@@ -215,11 +222,31 @@ export class MainStack extends Stack {
 			retention: RetentionDays.TWO_WEEKS
 		});
 
+		const volumePath = '/bitnami/redis/data';
+		const {
+			efsMountTarget,
+			efsStorage,
+			volume
+		} = defineEfsStorageForVolume(this, `${stackPrefix}-${serviceAlias}`, {
+			vpc: this.vpc,
+			volumePath,
+			volumeName: 'redis_volume',
+			subnet: this.mainSubnet,
+			securityGroup: this.redisSg,
+			useCustomPosixUser: true,
+			posixCreationPermissions: '777',
+			posixGroupId: '1001',
+			posixUserId: '1001'
+		});
+
 		const taskDefinitionFamily = `${stackPrefix}-${serviceAlias}-task`;
 		const taskDefinition = new ecs.FargateTaskDefinition(this, taskDefinitionFamily, {
 			cpu: this.stageSettings.ecsRedisTaskCpu,
 			memoryLimitMiB: this.stageSettings.ecsRedisTaskMemory,
-			family: taskDefinitionFamily
+			family: taskDefinitionFamily,
+			volumes: [
+				volume
+			]
 		});
 
 		const containerName = serviceAlias;
@@ -227,7 +254,7 @@ export class MainStack extends Stack {
 
 		const serviceName = `${stackPrefix}-${serviceAlias}-service`;
 
-		taskDefinition.addContainer(containerName, {
+		const redisContainer = taskDefinition.addContainer(containerName, {
 			containerName,
 			image: ecs.ContainerImage.fromRegistry('bitnami/redis:latest'),
 			logging: ecs.LogDriver.awsLogs({ logGroup, streamPrefix: serviceName }),
@@ -238,6 +265,12 @@ export class MainStack extends Stack {
 			secrets: {
 				REDIS_PASSWORD: ecs.Secret.fromSecretsManager(passwordSecret, 'password')
 			}
+		});
+
+		redisContainer.addMountPoints({
+			sourceVolume: volume.name,
+			readOnly: false,
+			containerPath: volumePath
 		});
 
 		taskDefinition.taskRole.addToPrincipalPolicy(
@@ -259,8 +292,11 @@ export class MainStack extends Stack {
 			assignPublicIp: true,
 			circuitBreaker: { rollback: true },
 			desiredCount: 1,
-			minHealthyPercent: 50,
-			maxHealthyPercent: 200,
+			minHealthyPercent: 0,
+			maxHealthyPercent: 100,
+			vpcSubnets: {
+				availabilityZones: [this.mainSubnet.availabilityZone]
+			},
 			taskDefinition,
 			serviceConnectConfiguration: {
 				namespace: this.namespace.namespaceArn,
@@ -275,13 +311,17 @@ export class MainStack extends Stack {
 			}
 		});
 
+		service.node.addDependency(efsMountTarget);
+
 		return {
 			service,
 			task: taskDefinition,
 			passwordSecret,
 			portMappingName,
 			namespaceDnsName,
-			port
+			port,
+			efsMountTarget,
+			efsStorage
 		};
 	}
 
