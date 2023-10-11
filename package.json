@@ -14,7 +14,7 @@
 		"merge-test-reports": "npx jrm ./__reports__/merged.xml \"__reports__/*.xml\""
 	},
 	"private": true,
-	"packageManager": "pnpm@8.5.0",
+	"packageManager": "pnpm@8.9.0",
 	"dependencies": {
 		"@automapper/classes": "8.7.7",
 		"@automapper/core": "8.7.7",

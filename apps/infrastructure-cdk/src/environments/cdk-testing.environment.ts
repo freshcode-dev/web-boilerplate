@@ -23,7 +23,8 @@ export const cdkTestingEnvironmentSettings: ICdkEnvironmentSettings = {
 		NX_REFRESH_TOKEN_EXPIRES_IN: '7d',
 		NX_FRONT_APP_API_URL: '/api',
 		NX_FRONT_STAGE_NAME_TO_DISPLAY: 'dev',
-		NX_USE_AWS_CREDENTIALS: 'false'
+		NX_USE_AWS_CREDENTIALS: 'false',
+		NX_DATABASE_REJECT_UNAUTHORIZED: 'true'
 	},
 	ecsApplicationTaskCpu: 256,
 	ecsApplicationTaskMemory: 512,
@@ -34,6 +35,7 @@ export const cdkTestingEnvironmentSettings: ICdkEnvironmentSettings = {
 	loadBalancerListenerArn: 'arn:aws:elasticloadbalancing:us-east-2:730819153141:listener/app/outsource-shared-lb/df9deec44e861dca/ee3c3c9db74798e3',
 	ecsAppHost: 'boilerplate.freshcode.org',
 	loadBalancerSecurityGroupId: 'sg-040e5d3c92516f586',
+	loadBalancerRulePriority: 999,
 
 	maintenanceSchedule: {
 		envStart: { minute: '0', hour: '10', weekDay: 'MON-FRI', month: '*', year: '*' },

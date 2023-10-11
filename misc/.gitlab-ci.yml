@@ -1,4 +1,4 @@
-image: node:18-alpine
+image: node:18-alpine3.16
 
 stages:
   - lint-test-build
@@ -34,7 +34,7 @@ web-lint-test-build:
   interruptible: true
   script:
     - pnpm nx run-many --all --target=lint
-    #    - pnpm nx run-many --all --target=lint --configuration=ci
+#    - pnpm nx run-many --all --target=lint --configuration=ci
     #    - pnpm nx run-many --all --target=test
     #    - pnpm run merge-test-reports
     - pnpm nx run-many --all --target=build --configuration=production
@@ -61,30 +61,36 @@ web-lint-test-build:
     - web-lint-test-build
   extends: .dependencies_cache
   script:
-    #   Install AWS CDK
-    - apk add --no-cache python3 py3-pip jq nodejs docker openrc && pip3 install --upgrade pip && pip3 install awscli
+#   👇 Pass CI environment variables
+    - export NX_CDK_DEPLOYMENT_REPOSITORY_URL=$CI_PROJECT_URL
+#   👇 Install all the AWS CLI dependencies and set credentials
+    - apk add --no-cache jq docker openrc aws-cli
     - rc-update add docker boot
-    #   Configure AWS CDK
     - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
     - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
     - aws configure set region $AWS_DEFAULT_REGION
-    #   Deploy ECR stack and write outputs to file
+#   👇 Deploy ECR stack and parse outputs to variables
     - pnpm nx deploy infrastructure-cdk $CDK_STACK_PREFIX-ecr-stack --outputs-file /cdk-outputs.json
     - CDK_STACK_PREFIX_TRIM="${CDK_STACK_PREFIX//-/}"
+    - echo $CDK_STACK_PREFIX_TRIM
+    - echo $CDK_STACK_PREFIX
     - ECR_REPO_URL=$(jq -r "."\""${CDK_STACK_PREFIX}-ecr-stack"\""."\""${CDK_STACK_PREFIX_TRIM}ecrRepoUrl"\""" /cdk-outputs.json)
     - ECR_REPO_NAME=$(jq -r "."\""${CDK_STACK_PREFIX}-ecr-stack"\""."\""${CDK_STACK_PREFIX_TRIM}ecrRepoName"\""" /cdk-outputs.json)
     #   Login to ecr registry
     - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REPO_URL
-    #   Build and push image
-    - docker build -t $ECR_REPO_NAME -t $ECR_REPO_URL:latest -t $ECR_REPO_URL:$CI_COMMIT_SHORT_SHA --cache-from=$ECR_REPO_URL:latest -f ./misc/Dockerfile .
+#   👇 Build and push docker image to ECR registry
+    - docker build -t $ECR_REPO_NAME --cache-from=$ECR_REPO_URL:latest -f ./misc/Dockerfile .
+    - docker tag $ECR_REPO_NAME:latest $ECR_REPO_URL:latest
+    - docker tag $ECR_REPO_NAME:latest $ECR_REPO_URL:$CI_COMMIT_SHORT_SHA
     - docker push $ECR_REPO_URL:latest
     - docker push $ECR_REPO_URL:$CI_COMMIT_SHORT_SHA
-    #   Deploy vpc and main stacks
+#   This command updates task definition to refer the latest commit hash and initiates the deployment process.
+#   If deployment fails, the environment rolls back to previous image version, as well as any infrastructure changes
     - export NX_APP_IMAGE_ECR_REPO_NAME=$ECR_REPO_NAME
     - export NX_CDK_DOCKER_IMAGE_TAG=$CI_COMMIT_SHORT_SHA
     - echo $NX_APP_IMAGE_ECR_REPO_NAME
     - echo $NX_CDK_DOCKER_IMAGE_TAG
-    - pnpm nx deploy infrastructure-cdk $CDK_STACK_PREFIX-stack --outputs-file /cdk-outputs.json
+    - pnpm nx deploy infrastructure-cdk $CDK_STACK_PREFIX-stack
 #   Commented as now we update task definition with the exact commit version hash on every deployment
 #    - ECS_CLUSTER_NAME=$(jq -r "."\""${CDK_STACK_PREFIX}-stack"\""."\""${CDK_STACK_PREFIX_TRIM}ecsClusterName"\""" /cdk-outputs.json)
 #    - ECS_SERVICE_NAME=$(jq -r "."\""${CDK_STACK_PREFIX}-stack"\""."\""${CDK_STACK_PREFIX_TRIM}ecsServiceName"\""" /cdk-outputs.json)

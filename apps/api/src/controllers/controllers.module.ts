@@ -5,10 +5,12 @@ import { TerminusModule } from '@nestjs/terminus';
 import { ServicesModule } from '../services/services.module';
 import { AuthController } from './auth.controller';
 import { SessionsController } from './sessions.controller';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    TerminusModule,
+		ConfigModule,
+		TerminusModule,
     ServicesModule,
   ],
   controllers: [

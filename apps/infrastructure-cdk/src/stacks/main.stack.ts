@@ -232,7 +232,7 @@ export class MainStack extends Stack {
 			volumePath,
 			volumeName: 'redis_volume',
 			subnet: this.mainSubnet,
-			securityGroup: this.redisSg,
+			containerSecurityGroup: this.redisSg,
 			useCustomPosixUser: true,
 			posixCreationPermissions: '777',
 			posixGroupId: '1001',
@@ -553,7 +553,7 @@ export class MainStack extends Stack {
 			conditions: [
 				ListenerCondition.hostHeaders([this.stageSettings.ecsAppHost])
 			],
-			priority: 1
+			priority: this.stageSettings.loadBalancerRulePriority
 		});
 
 		const autoscalingSettings = this.stageSettings.ecsAutoscaling;
@@ -578,6 +578,9 @@ export class MainStack extends Stack {
 				effect: iam.Effect.ALLOW,
 			})
 		);
+
+		ecsService.node.addDependency(this.redisDefinition.service);
+		ecsService.node.addDependency(this.rdsDb);
 
 		new CfnOutput(this, `${stackPrefix}-albArn`, { value: ecsService.serviceArn, exportName: `${stackPrefix}-albArn` });
 		new CfnOutput(this, `${stackPrefix}-ecsClusterName`, { value: ecsService.cluster.clusterName, exportName: `${stackPrefix}-ecsClusterName` });

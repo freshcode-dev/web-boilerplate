@@ -52,6 +52,11 @@ export interface ICdkEnvironmentSettings {
 	 * ARN of a listener of the core load balancer
 	 */
 	loadBalancerListenerArn: string;
+	/**
+	 * Load balancer priority for a rule routing traffic to this environment
+	 * @example usually from 1 to 1000
+	 */
+	loadBalancerRulePriority: number;
 
 	/**
 	 * Hostname including subdomain you expect the environment will be accessed by.

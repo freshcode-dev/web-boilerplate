@@ -19,6 +19,14 @@ import * as ecs from 'aws-cdk-lib/aws-ecs';
 export const defineEfsStorageForVolume = (stack: Stack,
 																					resourcesPrefix: string,
 																					params: SystemOverviewDashboardParams) => {
+	const efsSgName = `${resourcesPrefix}-efs-sg`;
+	const securityGroup = new ec2.SecurityGroup(stack, efsSgName, {
+		vpc: params.vpc,
+		allowAllOutbound: true,
+		description: 'Restrict access to the file system',
+		securityGroupName: efsSgName,
+	});
+
 	const efsName = `${resourcesPrefix}-storage`;
 	const efsStorage = new efs.CfnFileSystem(stack, efsName, {
 		throughputMode: 'bursting',
@@ -41,7 +49,7 @@ export const defineEfsStorageForVolume = (stack: Stack,
 	const mountTargetName = `${resourcesPrefix}-mount-target`;
 	const efsMountTarget = new efs.CfnMountTarget(stack, mountTargetName, {
 		fileSystemId: efsStorage.attrFileSystemId,
-		securityGroups: [params.securityGroup.securityGroupId],
+		securityGroups: [securityGroup.securityGroupId],
 		subnetId: params.subnet.subnetId
 	});
 	// Make access point with root directory to make sure it's owned by 1001 user the redis container uses
@@ -75,10 +83,13 @@ export const defineEfsStorageForVolume = (stack: Stack,
 		},
 	};
 
+	securityGroup.addIngressRule(ec2.Peer.securityGroupId(params.containerSecurityGroup.securityGroupId), ec2.Port.tcp(2049));
+
 	return {
 		efsStorage,
 		efsMountTarget,
-		volume
+		volume,
+		securityGroup
 	}
 }
 
@@ -87,7 +98,7 @@ export const defineEfsStorageForVolume = (stack: Stack,
 export type SystemOverviewDashboardParams = {
 		vpc: ec2.IVpc,
 		subnet: ec2.ISubnet,
-		securityGroup: ec2.ISecurityGroup,
+		containerSecurityGroup: ec2.ISecurityGroup,
 		volumeName: string,
 		volumePath: string, // '/bitnami/redis/data'
 	}
