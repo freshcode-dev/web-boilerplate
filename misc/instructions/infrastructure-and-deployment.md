@@ -70,6 +70,10 @@ is defaulted to it.
 ```bash
 aws configure list-profiles
 ```
+To configure new profile, use the next command:
+```bash
+aws configure --profile=[new profile name]
+```
 
 ## Complete deployment of the app to the new account/region
 1. Deploy SES identity for sending emails

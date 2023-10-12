@@ -32,10 +32,13 @@ export const cdkTestingEnvironmentSettings: ICdkEnvironmentSettings = {
 	ecsRedisTaskCpu: 256,
 	ecsRedisTaskMemory: 512,
 
+	snsTopicArn: '',
+
 	loadBalancerListenerArn: 'arn:aws:elasticloadbalancing:us-east-2:730819153141:listener/app/outsource-shared-lb/df9deec44e861dca/ee3c3c9db74798e3',
 	ecsAppHost: 'boilerplate.freshcode.org',
 	loadBalancerSecurityGroupId: 'sg-040e5d3c92516f586',
 	loadBalancerRulePriority: 999,
+	loadBalancerArn: 'arn:aws:elasticloadbalancing:us-east-2:730819153141:loadbalancer/app/outsource-shared-lb/df9deec44e861dca',
 
 	maintenanceSchedule: {
 		envStart: { minute: '0', hour: '10', weekDay: 'MON-FRI', month: '*', year: '*' },

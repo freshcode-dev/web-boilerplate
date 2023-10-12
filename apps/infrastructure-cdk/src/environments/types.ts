@@ -38,6 +38,10 @@ export type ICdkEnvironmentSettings = {
 	 */
 	loadBalancerListenerArn: string;
 	/**
+	 * ARN of a load balancer
+	 */
+	loadBalancerArn: string;
+	/**
 	 * Load balancer priority for a rule routing traffic to this environment
 	 * @example usually from 1 to 1000
 	 */
@@ -52,6 +56,9 @@ export type ICdkEnvironmentSettings = {
 
 	// media convert
 	mediaConvertRoleRemovalPolicy: RemovalPolicy;
+
+	// sns
+	snsTopicArn?: string;
 }
 & (WithAutoScalingEnvironmentSettings | WithoutAutoScalingEnvironmentSettings)
 & (WithDatabaseCreationEnvironmentSettings | WithDatabaseReusingEnvironmentSettings);

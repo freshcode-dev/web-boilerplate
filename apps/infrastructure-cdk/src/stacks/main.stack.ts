@@ -2,7 +2,11 @@ import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps } from 'aws-cdk-l
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 import {
-	Credentials, DatabaseInstance, DatabaseInstanceEngine, PostgresEngineVersion, StorageType
+	Credentials,
+	DatabaseInstance,
+	DatabaseInstanceEngine,
+	PostgresEngineVersion,
+	StorageType,
 } from 'aws-cdk-lib/aws-rds';
 import { ISecret, Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import * as s3 from 'aws-cdk-lib/aws-s3';
@@ -18,21 +22,20 @@ import * as ecs from 'aws-cdk-lib/aws-ecs';
 import { ICdkEnvironmentSettings } from '../environments';
 import {
 	ApplicationListener,
+	ApplicationLoadBalancer,
 	ApplicationProtocol,
 	ApplicationTargetGroup,
+	IApplicationLoadBalancer,
 	ListenerAction,
 	ListenerCondition,
-	TargetType
+	TargetType,
 } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { ICluster } from 'aws-cdk-lib/aws-ecs/lib/cluster';
 import { getEcrRepositoryName } from '../utils/resource-names.utils';
 import { EcsServiceDefinition } from '../types';
-import {
-	defineSecretWithGeneratedPassword,
-	lookupDefaultVpc,
-	defineEfsStorageForVolume
-} from '../utils/generators';
+import { defineSecretWithGeneratedPassword, lookupDefaultVpc, defineEfsStorageForVolume } from '../utils/generators';
+import { defineSystemOverviewDashboard } from '../utils/generators/dashboards.generators';
 
 export interface MainStackProps extends StackProps {
 	stackPrefix: string;
@@ -54,20 +57,20 @@ export class MainStack extends Stack {
 	private readonly vpc: ec2.IVpc;
 	private readonly redisDefinition: EcsServiceDefinition;
 	private readonly appDefinition: EcsServiceDefinition;
+	private readonly coreLoadBalancer: IApplicationLoadBalancer;
 	private readonly stageSettings: ICdkEnvironmentSettings;
 	private readonly dockerImageTag?: string;
 
-	constructor(scope: Construct,
-							id: string,
-							props: MainStackProps) {
+	constructor(scope: Construct, id: string, props: MainStackProps) {
 		super(scope, id, props);
 
-		const {
-			stackPrefix
-		} = props;
+		const { stackPrefix } = props;
 
 		this.stageSettings = props.stageSettings;
 		this.dockerImageTag = props.dockerImageTag;
+		this.coreLoadBalancer = ApplicationLoadBalancer.fromLookup(this, `${stackPrefix}-core-alb`, {
+			loadBalancerArn: this.stageSettings.loadBalancerArn,
+		});
 
 
 		this.vpc = lookupDefaultVpc(this, `default-vpc-id`);
@@ -80,7 +83,7 @@ export class MainStack extends Stack {
 			this.dbSecret = defineSecretWithGeneratedPassword(this, {
 				secretName: `${stackPrefix}-db-secret`,
 				staticContent: { username: 'postgres' },
-				passwordKey: 'password'
+				passwordKey: 'password',
 			});
 
 			this.createDatabase(stackPrefix);
@@ -100,12 +103,23 @@ export class MainStack extends Stack {
 		if (this.stageSettings.withMaintenanceSchedule) {
 			this.registerMaintenanceLambda(stackPrefix);
 		}
+
+		defineSystemOverviewDashboard(
+			this,
+			stackPrefix,
+			{
+				region: props.env?.region,
+				loadBalancer: this.coreLoadBalancer,
+				databaseIdentifier: this.rdsDb.instanceIdentifier,
+				appDefinition: this.appDefinition,
+			}
+		);
 	}
 
 	private registerNamespace(stackPrefix: string) {
 		const namespaceName = `${stackPrefix}-namespace`;
 		this.namespace = new cloudMap.HttpNamespace(this, namespaceName, {
-			name: namespaceName
+			name: namespaceName,
 		});
 	}
 
@@ -132,7 +146,11 @@ export class MainStack extends Stack {
 				throw new Error('rdsReuseParams cannot be null');
 			}
 
-			this.databaseSg = ec2.SecurityGroup.fromSecurityGroupId(this, dbSgName, this.stageSettings.rdsReuseParams?.dbSecurityGroupId);
+			this.databaseSg = ec2.SecurityGroup.fromSecurityGroupId(
+				this,
+				dbSgName,
+				this.stageSettings.rdsReuseParams?.dbSecurityGroupId
+			);
 		}
 
 		const redisSgName = `${stackPrefix}-redis-sg`;
@@ -188,7 +206,7 @@ export class MainStack extends Stack {
 			multiAz: false,
 			enablePerformanceInsights: this.stageSettings.rdsCreationParams?.enablePerformanceInsights,
 			storageEncrypted: true,
-			storageType: StorageType.GP2
+			storageType: StorageType.GP2,
 		});
 		// this.secret.attach(this.rdsDb);
 
@@ -211,8 +229,8 @@ export class MainStack extends Stack {
 				excludeLowercase: false,
 				excludeNumbers: false,
 				includeSpace: false,
-				excludeUppercase: false
-			}
+				excludeUppercase: false,
+			},
 		});
 
 		// Logs Storage
@@ -220,15 +238,11 @@ export class MainStack extends Stack {
 		const logGroup = new LogGroup(this, logGroupName, {
 			logGroupName,
 			removalPolicy: RemovalPolicy.DESTROY,
-			retention: RetentionDays.TWO_WEEKS
+			retention: RetentionDays.TWO_WEEKS,
 		});
 
 		const volumePath = '/bitnami/redis/data';
-		const {
-			efsMountTarget,
-			efsStorage,
-			volume
-		} = defineEfsStorageForVolume(this, `${stackPrefix}-${serviceAlias}`, {
+		const { efsMountTarget, efsStorage, volume } = defineEfsStorageForVolume(this, `${stackPrefix}-${serviceAlias}`, {
 			vpc: this.vpc,
 			volumePath,
 			volumeName: 'redis_volume',
@@ -237,7 +251,7 @@ export class MainStack extends Stack {
 			useCustomPosixUser: true,
 			posixCreationPermissions: '777',
 			posixGroupId: '1001',
-			posixUserId: '1001'
+			posixUserId: '1001',
 		});
 
 		const taskDefinitionFamily = `${stackPrefix}-${serviceAlias}-task`;
@@ -245,9 +259,7 @@ export class MainStack extends Stack {
 			cpu: this.stageSettings.ecsRedisTaskCpu,
 			memoryLimitMiB: this.stageSettings.ecsRedisTaskMemory,
 			family: taskDefinitionFamily,
-			volumes: [
-				volume
-			]
+			volumes: [volume],
 		});
 
 		const containerName = serviceAlias;
@@ -261,17 +273,17 @@ export class MainStack extends Stack {
 			logging: ecs.LogDriver.awsLogs({ logGroup, streamPrefix: serviceName }),
 			portMappings: [{ containerPort: port, hostPort: port, protocol: ecs.Protocol.TCP, name: portMappingName }],
 			environment: {
-				LOG_LEVEL: 'debug'
+				LOG_LEVEL: 'debug',
 			},
 			secrets: {
-				REDIS_PASSWORD: ecs.Secret.fromSecretsManager(passwordSecret, 'password')
-			}
+				REDIS_PASSWORD: ecs.Secret.fromSecretsManager(passwordSecret, 'password'),
+			},
 		});
 
 		redisContainer.addMountPoints({
 			sourceVolume: volume.name,
 			readOnly: false,
-			containerPath: volumePath
+			containerPath: volumePath,
 		});
 
 		taskDefinition.taskRole.addToPrincipalPolicy(
@@ -296,7 +308,7 @@ export class MainStack extends Stack {
 			minHealthyPercent: 0,
 			maxHealthyPercent: 100,
 			vpcSubnets: {
-				availabilityZones: [this.mainSubnet.availabilityZone]
+				availabilityZones: [this.mainSubnet.availabilityZone],
 			},
 			taskDefinition,
 			serviceConnectConfiguration: {
@@ -307,9 +319,9 @@ export class MainStack extends Stack {
 						dnsName: namespaceDnsName,
 						discoveryName: serviceName,
 						portMappingName,
-					}
-				]
-			}
+					},
+				],
+			},
 		});
 
 		service.node.addDependency(efsMountTarget);
@@ -317,12 +329,13 @@ export class MainStack extends Stack {
 		return {
 			service,
 			task: taskDefinition,
+			logGroup,
 			passwordSecret,
 			portMappingName,
 			namespaceDnsName,
 			port,
 			efsMountTarget,
-			efsStorage
+			efsStorage,
 		};
 	}
 
@@ -337,15 +350,11 @@ export class MainStack extends Stack {
 			autoDeleteObjects: true,
 			cors: [
 				{
-					allowedMethods: [
-						s3.HttpMethods.GET,
-						s3.HttpMethods.POST,
-						s3.HttpMethods.PUT,
-					],
+					allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.POST, s3.HttpMethods.PUT],
 					allowedOrigins: ['*'],
 					allowedHeaders: ['*'],
-				}
-			]
+				},
+			],
 		});
 	}
 
@@ -384,7 +393,7 @@ export class MainStack extends Stack {
 			retryAttempts: 0,
 			code: lambda.Code.fromAsset(path.join(__dirname, '..', 'lambdas')),
 			handler: 'maintenance.handler',
-			environment
+			environment,
 		});
 
 		// 👇 create a policy statement
@@ -397,7 +406,7 @@ export class MainStack extends Stack {
 		appManagerLambda.role?.attachInlinePolicy(
 			new iam.Policy(this, 'AllowAllPolicy', {
 				statements: [allowAll],
-			}),
+			})
 		);
 
 		if (this.stageSettings.maintenanceSchedule.envStart) {
@@ -411,7 +420,7 @@ export class MainStack extends Stack {
 			startEventRule.addTarget(
 				new targets.LambdaFunction(appManagerLambda, {
 					event: events.RuleTargetInput.fromObject({ newState: 'start' }),
-				}),
+				})
 			);
 
 			// allow the Event Rule to invoke the Lambda function
@@ -429,7 +438,7 @@ export class MainStack extends Stack {
 			stopEventRule.addTarget(
 				new targets.LambdaFunction(appManagerLambda, {
 					event: events.RuleTargetInput.fromObject({ newState: 'stop' }),
-				}),
+				})
 			);
 
 			// allow the Event Rule to invoke the Lambda function
@@ -442,7 +451,7 @@ export class MainStack extends Stack {
 		this.ecsCluster = new ecs.Cluster(this, clusterName, {
 			clusterName,
 			vpc: this.vpc,
-			containerInsights: false
+			containerInsights: false,
 		});
 	}
 
@@ -457,7 +466,7 @@ export class MainStack extends Stack {
 		const logGroup = new LogGroup(this, logGroupName, {
 			logGroupName,
 			removalPolicy: RemovalPolicy.DESTROY,
-			retention: RetentionDays.TWO_WEEKS
+			retention: RetentionDays.TWO_WEEKS,
 		});
 
 		// Task definition
@@ -465,7 +474,7 @@ export class MainStack extends Stack {
 		const taskDefinition = new ecs.FargateTaskDefinition(this, taskDefinitionFamily, {
 			cpu: this.stageSettings.ecsApplicationTaskCpu,
 			memoryLimitMiB: this.stageSettings.ecsApplicationTaskMemory,
-			family: taskDefinitionFamily
+			family: taskDefinitionFamily,
 		});
 
 		const containerName = 'app';
@@ -492,8 +501,8 @@ export class MainStack extends Stack {
 				NX_DATABASE_PORT: ecs.Secret.fromSecretsManager(this.dbSecret, 'port'),
 				NX_DATABASE_USERNAME: ecs.Secret.fromSecretsManager(this.dbSecret, 'username'),
 				NX_DATABASE_PASSWORD: ecs.Secret.fromSecretsManager(this.dbSecret, 'password'),
-				NX_DATABASE_NAME: ecs.Secret.fromSecretsManager(this.dbSecret, 'dbname')
-			}
+				NX_DATABASE_NAME: ecs.Secret.fromSecretsManager(this.dbSecret, 'dbname'),
+			},
 		});
 
 		taskDefinition.taskRole.addToPrincipalPolicy(
@@ -516,8 +525,8 @@ export class MainStack extends Stack {
 			maxHealthyPercent: 200,
 			taskDefinition,
 			serviceConnectConfiguration: {
-				namespace: this.namespace.namespaceArn
-			}
+				namespace: this.namespace.namespaceArn,
+			},
 		});
 
 		const targetGroupName = `${stackPrefix}-app-target-group`;
@@ -526,7 +535,7 @@ export class MainStack extends Stack {
 			targetGroupName,
 			port: 80,
 			protocol: ApplicationProtocol.HTTP,
-			targetType: TargetType.IP
+			targetType: TargetType.IP,
 		});
 
 		ecsService.attachToApplicationTargetGroup(targetGroup);
@@ -537,17 +546,19 @@ export class MainStack extends Stack {
 			unhealthyThresholdCount: 5,
 			interval: Duration.seconds(30),
 			port: '3000',
-			timeout: Duration.seconds(10)
+			timeout: Duration.seconds(10),
 		});
 
-		const albSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, `${stackPrefix}-alb-securityGroup`, this.stageSettings.loadBalancerSecurityGroupId);
+		const albSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(
+			this,
+			`${stackPrefix}-alb-securityGroup`,
+			this.stageSettings.loadBalancerSecurityGroupId
+		);
 
-		const listener = ApplicationListener.fromApplicationListenerAttributes(this,
-			`${stackPrefix}-alb-listener`,
-			{
-				listenerArn: this.stageSettings.loadBalancerListenerArn,
-				securityGroup: albSecurityGroup
-			});
+		const listener = ApplicationListener.fromApplicationListenerAttributes(this, `${stackPrefix}-alb-listener`, {
+			listenerArn: this.stageSettings.loadBalancerListenerArn,
+			securityGroup: albSecurityGroup,
+		});
 
 		listener.addAction(`${stackPrefix}-ecs-forward`, {
 			action: ListenerAction.forward([targetGroup]),
@@ -584,13 +595,21 @@ export class MainStack extends Stack {
 		ecsService.node.addDependency(this.rdsDb);
 
 		new CfnOutput(this, `${stackPrefix}-albArn`, { value: ecsService.serviceArn, exportName: `${stackPrefix}-albArn` });
-		new CfnOutput(this, `${stackPrefix}-ecsClusterName`, { value: ecsService.cluster.clusterName, exportName: `${stackPrefix}-ecsClusterName` });
-		new CfnOutput(this, `${stackPrefix}-ecsServiceName`, { value: ecsService.serviceName, exportName: `${stackPrefix}-ecsServiceName` });
+		new CfnOutput(this, `${stackPrefix}-ecsClusterName`, {
+			value: ecsService.cluster.clusterName,
+			exportName: `${stackPrefix}-ecsClusterName`,
+		});
+		new CfnOutput(this, `${stackPrefix}-ecsServiceName`, {
+			value: ecsService.serviceName,
+			exportName: `${stackPrefix}-ecsServiceName`,
+		});
 
 		return {
 			service: ecsService,
 			task: taskDefinition,
-			portMappingName
+			targetGroup,
+			logGroup,
+			portMappingName,
 		};
 	}
 }
