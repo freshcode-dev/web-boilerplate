@@ -2,28 +2,13 @@ import { RemovalPolicy } from "aws-cdk-lib";
 import { CronOptions } from 'aws-cdk-lib/aws-events/lib/schedule';
 import { InstanceClass, InstanceSize } from 'aws-cdk-lib/aws-ec2';
 
-export interface ICdkEnvironmentSettings {
-
-	/**
-	 * If true, creates maintenance lambda to enable and disable the environment based on work hours schedule
-	 */
-	withMaintenanceSchedule: boolean;
+export type ICdkEnvironmentSettings = {
 	s3RemovalPolicy: RemovalPolicy;
 
-	// rds
+	/**
+	 * Defines, if infrastructure should reuse some existing RDS database, or create a new one
+	 */
 	databaseMode: 'create' | 'reuse';
-
-	rdsReuseParams?: {
-		dbSecretArn: string;
-		dbSecurityGroupId: string;
-	};
-
-	rdsCreationParams?: {
-		removalPolicy: RemovalPolicy;
-		enablePerformanceInsights: boolean;
-		rdsInstanceClass: InstanceClass;
-		rdsInstanceSize: InstanceSize;
-	};
 
 	/**
 	 * If not null, adds CPU-based scaling to the backend service
@@ -68,5 +53,46 @@ export interface ICdkEnvironmentSettings {
 	// media convert
 	mediaConvertRoleRemovalPolicy: RemovalPolicy;
 }
+& (WithAutoScalingEnvironmentSettings | WithoutAutoScalingEnvironmentSettings)
+& (WithDatabaseCreationEnvironmentSettings | WithDatabaseReusingEnvironmentSettings);
+
+type WithAutoScalingEnvironmentSettings = {
+	/**
+	 * If true, creates maintenance lambda to enable and disable the environment based on work hours schedule
+	 */
+	withMaintenanceSchedule: true;
+
+	maintenanceSchedule: {
+		envStart: CronOptions;
+		envStop: CronOptions;
+	};
+};
+
+type WithoutAutoScalingEnvironmentSettings = {
+	/**
+	 * If no, makes the environment available all the time
+	 */
+	withMaintenanceSchedule: false;
+};
+
+type WithDatabaseCreationEnvironmentSettings = {
+	databaseMode: 'reuse';
+
+	rdsReuseParams: {
+		dbSecretArn: string;
+		dbSecurityGroupId: string;
+	};
+};
+
+type WithDatabaseReusingEnvironmentSettings = {
+	databaseMode: 'create';
+
+	rdsCreationParams: {
+		removalPolicy: RemovalPolicy;
+		enablePerformanceInsights: boolean;
+		rdsInstanceClass: InstanceClass;
+		rdsInstanceSize: InstanceSize;
+	};
+};
 
 export type ApplicationStage = 'cdk-testing';
