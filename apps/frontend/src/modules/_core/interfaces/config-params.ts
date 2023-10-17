@@ -1,3 +1,3 @@
 export interface IConfigParams {
-  NX_APP_API_URL: string;
+  NX_FRONT_APP_API_URL: string;
 }

@@ -54,7 +54,9 @@ export class Session20230226154759 implements RunnableMigration<MigrationContext
 			name: 'FK_users_userId',
 			columnNames: ['userId'],
 			referencedColumnNames: ['id'],
-			referencedTableName: 'users'
+			referencedTableName: 'users',
+			onDelete: 'CASCADE',
+			onUpdate: 'CASCADE'
 		}));
 	}
 

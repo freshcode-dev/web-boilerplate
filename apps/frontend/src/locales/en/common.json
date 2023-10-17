@@ -1,0 +1,12 @@
+{
+	"lang": {
+		"en": "English"
+	},
+	"nav": {
+		"root-title": "Boilerplate",
+		"demo": "Demo Page",
+		"styled": "Styled Examples",
+		"sign-in": "Login",
+		"sign-up": "Register"
+	}
+}

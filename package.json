@@ -14,7 +14,7 @@
 		"merge-test-reports": "npx jrm ./__reports__/merged.xml \"__reports__/*.xml\""
 	},
 	"private": true,
-	"packageManager": "pnpm@8.9.0",
+	"packageManager": "pnpm@8.9.2",
 	"dependencies": {
 		"@automapper/classes": "8.7.7",
 		"@automapper/core": "8.7.7",
@@ -22,6 +22,7 @@
 		"class-validator": "^0.14.0",
 		"core-js": "^3.32.2",
 		"date-fns": "^2.30.0",
+		"i18next": "^23.5.1",
 		"lodash": "^4.17.21",
 		"reflect-metadata": "^0.1.13",
 		"regenerator-runtime": "^0.14.0",

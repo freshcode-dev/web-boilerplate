@@ -1,0 +1,22 @@
+@keyframes SystemFadeSpinner {
+	50% {
+		opacity: 0.3
+	}
+	100% {
+		opacity: 1
+	}
+}
+
+#root {
+	height: 100%
+}
+
+.notistack-SnackbarContainer.SnackbarContainerOffset {
+	right: 8px;
+	bottom: 2px;
+	max-width: calc(100% - 16px);
+}
+
+.react-datepicker-popper {
+	z-index: 3;
+}

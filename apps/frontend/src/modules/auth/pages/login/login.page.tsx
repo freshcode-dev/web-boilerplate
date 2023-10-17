@@ -11,7 +11,11 @@ const resolver = classValidatorResolver(SignInDto);
 
 export const LoginPage: FC = () => {
   const { handleSubmit, register, formState: { errors } } = useForm<SignInDto>({ resolver });
-	const [signIn, { isLoading }] = useSignInMutation();
+	const [signIn, { isLoading, isError }] = useSignInMutation();
+
+	const handleSignIn = async (values: SignInDto) => {
+		await signIn({...values}).unwrap();
+	}
 
   return (
     <Container component="main" maxWidth="xs">
@@ -30,7 +34,7 @@ export const LoginPage: FC = () => {
           Sign in
         </Typography>
         <Box component="form"
-          onSubmit={handleSubmit(signIn)}
+          onSubmit={handleSubmit(handleSignIn)}
           noValidate sx={{ mt: 1 }}>
           <TextField
             margin="normal"

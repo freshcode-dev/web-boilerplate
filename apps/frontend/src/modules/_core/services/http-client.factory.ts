@@ -5,7 +5,7 @@ import { isTokenExpired } from '../utils/token.utils';
 import { refreshAction, signOutAction } from '../../auth';
 
 const baseQuery = fetchBaseQuery({
-	baseUrl: configService.get('NX_APP_API_URL'),
+	baseUrl: configService.get('NX_FRONT_APP_API_URL'),
 	prepareHeaders: (headers, api) => {
 		const { access } = (api.getState() as RootState).session;
 

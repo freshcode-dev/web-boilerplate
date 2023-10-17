@@ -13,7 +13,7 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 max_line_length = 120
 
-[{*.ats,*.cts,*.mts,*.ts}]
+[{*.ats,*.cts,*.mts,*.ts,*.tsx}]
 ij_continuation_indent_size = 2
 ij_visual_guides = 100
 ij_typescript_align_imports = false

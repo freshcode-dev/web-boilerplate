@@ -1,5 +1,9 @@
 ## React-based projects routing
 
+**!!!Important!!! Needs to be rewritten according to [major changes in react-router](https://reactrouter.com/en/main/upgrading/v6-data)**
+
+<hr>
+
 When building frontend with React, make sure you fully utilize the main react-router capabilities.
 
 Overall, a proper react routing setup should be modular, efficient, and easy to maintain. By following these best practices, you can create a routing setup that provides a seamless user experience and improves the performance of your app.

@@ -51,4 +51,7 @@ const authApi = api.injectEndpoints({
 
 export default authApi;
 
-export const { useSignInMutation, useRegisterMutation } = authApi;
+export const {
+	useSignInMutation,
+	useRegisterMutation
+} = authApi;

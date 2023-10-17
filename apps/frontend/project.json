@@ -16,7 +16,11 @@
 				"main": "apps/frontend/src/main.tsx",
 				"tsConfig": "apps/frontend/tsconfig.app.json",
 				"polyfills": "apps/frontend/src/polyfills.ts",
-				"assets": ["apps/frontend/src/favicon.ico", "apps/frontend/src/assets"],
+				"assets": [
+					"apps/frontend/src/favicon.ico",
+					"apps/frontend/src/assets",
+					"apps/frontend/src/locales"
+				],
 				"styles": [],
 				"scripts": [],
 				"webpackConfig": "apps/frontend/webpack.config.js",

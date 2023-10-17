@@ -1,39 +1,69 @@
-import React, { FC, Suspense, lazy } from 'react';
-import { useRoutes } from 'react-router-dom';
+import React, { FC, lazy } from 'react';
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { NotFoundPage } from './modules/_core';
-import { RequireAuth, RequireUnauthorized, AuthorizedPage, useAuthSubscription } from './modules/auth';
-import RouterSuspense from './modules/_core/components/router-suspense/router-suspense.component';
+import {
+	RequireAuth,
+	RequireUnauthorized,
+	AuthorizedPage,
+	useAuthSubscription,
+	AuthModuleRouter
+} from './modules/auth';
+import { Helmet } from 'react-helmet-async';
+import { useTranslation } from 'react-i18next';
+import RootSuspense from './modules/_core/components/router-suspense/root-suspense.component';
+import { StyledExamplesRouter } from './modules/styles-examples';
 
 const AuthorizedArea = lazy(async () => import('./modules/_core/areas/authorized-area.component'));
 const UnauthorizedArea = lazy(async () => import('./modules/_core/areas/unauthorized-area.component'));
-const AuthModuleRouter = lazy(async () => import('./modules/auth/auth.router'));
-const StyledExamplesRouter = lazy(async () => import('./modules/styles-examples/styled-examples.router'));
 
 const Root: FC = () => {
 	useAuthSubscription();
+	const { t } = useTranslation();
 
-	const routes = useRoutes([
+	/**
+	 * The function is supposed to contain any routes restriction logic
+	 */
+	const getAppRouters = () => ([
+		{ index: true, element: <Navigate to="demo" /> },
+		{ path: 'demo', element: <AuthorizedPage />, handle: { title: 'nav.demo' } },
+		{ path: 'styles-examples/*', children: StyledExamplesRouter, handle: { title: 'nav.styled' }  }
+	]);
+
+	const routes = createBrowserRouter([
 		{
 			path: '/',
-			element: <RequireAuth><AuthorizedArea /></RequireAuth>,
-			children: [
-				{ index: true, element: <AuthorizedPage /> },
-				{ path: '/styles-examples/*', element: <StyledExamplesRouter /> }
-			]
+			element: (
+				<RequireAuth>
+					<RootSuspense>
+						<AuthorizedArea />
+					</RootSuspense>
+				</RequireAuth>
+			),
+			children: getAppRouters()
 		},
 		{
-			element: <RequireUnauthorized><UnauthorizedArea /></RequireUnauthorized>,
-			children: [
-				{ path: 'auth/*', element: <AuthModuleRouter /> }
-			]
+			element: (
+				<RequireUnauthorized>
+					<RootSuspense>
+						<UnauthorizedArea />
+					</RootSuspense>
+				</RequireUnauthorized>
+			),
+			children: AuthModuleRouter
 		},
 		{ path: '*', element: <NotFoundPage /> },
 	]);
 
 	return (
-		<Suspense fallback={<RouterSuspense />}>
-			{routes}
-		</Suspense>
+		<>
+			<Helmet title={t('nav.root-title') ?? ''}>
+				<meta
+					name="viewport"
+					content="width=device-width, maximum-scale=1, minimum-scale=1, initial-scale=1, user-scalable=no"
+				/>
+			</Helmet>
+			<RouterProvider router={routes} />
+		</>
 	);
 };
 
