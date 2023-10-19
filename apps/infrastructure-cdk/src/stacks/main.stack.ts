@@ -1,5 +1,6 @@
 import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as cw from 'aws-cdk-lib/aws-cloudwatch';
 import { Construct } from 'constructs';
 import {
 	Credentials,
@@ -35,7 +36,7 @@ import { ICluster } from 'aws-cdk-lib/aws-ecs/lib/cluster';
 import { getEcrRepositoryName } from '../utils/resource-names.utils';
 import { EcsServiceDefinition } from '../types';
 import { defineSecretWithGeneratedPassword, lookupDefaultVpc, defineEfsStorageForVolume } from '../utils/generators';
-import { defineSystemOverviewDashboard } from '../utils/generators/dashboards.generators';
+import { attachWidgetsToOverviewDashboard, createOverviewDashboard } from '../utils/generators/dashboards.generators';
 
 export interface MainStackProps extends StackProps {
 	stackPrefix: string;
@@ -60,6 +61,7 @@ export class MainStack extends Stack {
 	private readonly coreLoadBalancer: IApplicationLoadBalancer;
 	private readonly stageSettings: ICdkEnvironmentSettings;
 	private readonly dockerImageTag?: string;
+	private readonly stackDashboard: cw.Dashboard;
 
 	constructor(scope: Construct, id: string, props: MainStackProps) {
 		super(scope, id, props);
@@ -104,16 +106,28 @@ export class MainStack extends Stack {
 			this.registerMaintenanceLambda(stackPrefix);
 		}
 
-		defineSystemOverviewDashboard(
-			this,
-			stackPrefix,
-			{
-				region: props.env?.region,
-				loadBalancer: this.coreLoadBalancer,
-				databaseIdentifier: this.rdsDb.instanceIdentifier,
-				appDefinition: this.appDefinition,
-			}
-		);
+		this.stackDashboard = createOverviewDashboard(this, stackPrefix, {
+			dashboardPrefix: 'back',
+		});
+
+		const { offsetY: backWidgetsOffsetY } = attachWidgetsToOverviewDashboard(this, stackPrefix, this.stackDashboard, {
+			dashboardPrefix: 'back',
+			customMetricsPrefix: 'back',
+			region: props.env?.region,
+			loadBalancer: this.coreLoadBalancer,
+			databaseIdentifier: this.rdsDb.instanceIdentifier,
+			appDefinition: this.appDefinition,
+		});
+
+		attachWidgetsToOverviewDashboard(this, stackPrefix, this.stackDashboard, {
+			dashboardPrefix: 'api',
+			customMetricsPrefix: 'api',
+			region: props.env?.region,
+			loadBalancer: this.coreLoadBalancer,
+			databaseIdentifier: this.rdsDb.instanceIdentifier,
+			appDefinition: this.appDefinition,
+			baseOffsetY: backWidgetsOffsetY + 1,
+		});
 	}
 
 	private registerNamespace(stackPrefix: string) {
@@ -240,7 +254,6 @@ export class MainStack extends Stack {
 			removalPolicy: RemovalPolicy.DESTROY,
 			retention: RetentionDays.TWO_WEEKS,
 		});
-
 		const volumePath = '/bitnami/redis/data';
 		const { efsMountTarget, efsStorage, volume } = defineEfsStorageForVolume(this, `${stackPrefix}-${serviceAlias}`, {
 			vpc: this.vpc,
@@ -562,10 +575,8 @@ export class MainStack extends Stack {
 
 		listener.addAction(`${stackPrefix}-ecs-forward`, {
 			action: ListenerAction.forward([targetGroup]),
-			conditions: [
-				ListenerCondition.hostHeaders([this.stageSettings.ecsAppHost])
-			],
-			priority: this.stageSettings.loadBalancerRulePriority
+			conditions: [ListenerCondition.hostHeaders([this.stageSettings.ecsAppHost])],
+			priority: this.stageSettings.loadBalancerRulePriority,
 		});
 
 		const autoscalingSettings = this.stageSettings.ecsAutoscaling;
