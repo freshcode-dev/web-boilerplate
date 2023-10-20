@@ -1,6 +1,5 @@
 import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import * as cw from 'aws-cdk-lib/aws-cloudwatch';
 import { Construct } from 'constructs';
 import {
 	Credentials,
@@ -36,7 +35,8 @@ import { ICluster } from 'aws-cdk-lib/aws-ecs/lib/cluster';
 import { getEcrRepositoryName } from '../utils/resource-names.utils';
 import { EcsServiceDefinition } from '../types';
 import { defineSecretWithGeneratedPassword, lookupDefaultVpc, defineEfsStorageForVolume } from '../utils/generators';
-import { attachWidgetsToOverviewDashboard, createOverviewDashboard } from '../utils/generators/dashboards.generators';
+import { defineSystemOverviewDashboard } from '../utils/generators/dashboards.generators';
+import { defineCommonEcsAppMetricFilters } from '../utils/generators/cloud-watch.generators';
 
 export interface MainStackProps extends StackProps {
 	stackPrefix: string;
@@ -61,7 +61,6 @@ export class MainStack extends Stack {
 	private readonly coreLoadBalancer: IApplicationLoadBalancer;
 	private readonly stageSettings: ICdkEnvironmentSettings;
 	private readonly dockerImageTag?: string;
-	private readonly stackDashboard: cw.Dashboard;
 
 	constructor(scope: Construct, id: string, props: MainStackProps) {
 		super(scope, id, props);
@@ -106,27 +105,13 @@ export class MainStack extends Stack {
 			this.registerMaintenanceLambda(stackPrefix);
 		}
 
-		this.stackDashboard = createOverviewDashboard(this, stackPrefix, {
-			dashboardPrefix: 'back',
-		});
-
-		const { offsetY: backWidgetsOffsetY } = attachWidgetsToOverviewDashboard(this, stackPrefix, this.stackDashboard, {
+		defineSystemOverviewDashboard(this, stackPrefix, {
 			dashboardPrefix: 'back',
 			customMetricsPrefix: 'back',
 			region: props.env?.region,
 			loadBalancer: this.coreLoadBalancer,
 			databaseIdentifier: this.rdsDb.instanceIdentifier,
 			appDefinition: this.appDefinition,
-		});
-
-		attachWidgetsToOverviewDashboard(this, stackPrefix, this.stackDashboard, {
-			dashboardPrefix: 'api',
-			customMetricsPrefix: 'api',
-			region: props.env?.region,
-			loadBalancer: this.coreLoadBalancer,
-			databaseIdentifier: this.rdsDb.instanceIdentifier,
-			appDefinition: this.appDefinition,
-			baseOffsetY: backWidgetsOffsetY + 1,
 		});
 	}
 
@@ -615,12 +600,30 @@ export class MainStack extends Stack {
 			exportName: `${stackPrefix}-ecsServiceName`,
 		});
 
+		const {
+			errorsCount: errorsCountFilter,
+			warningsCount: warningsCountFilter,
+			apiResponseTime: apiResponseTimeFilter,
+			dimensionsMap: customMetricsDimensionsMap,
+		} = defineCommonEcsAppMetricFilters(this, {
+			applicationArn: ecsService.serviceArn,
+			applicationName: ecsService.serviceName,
+			logGroup,
+			stackPrefix,
+		});
+
 		return {
 			service: ecsService,
 			task: taskDefinition,
 			targetGroup,
 			logGroup,
 			portMappingName,
+			metricFilters: {
+				logsErrorsCount: errorsCountFilter,
+				logsWarningsCount: warningsCountFilter,
+				apiResponseTime: apiResponseTimeFilter,
+				dimensionsMap: customMetricsDimensionsMap,
+			},
 		};
 	}
 }

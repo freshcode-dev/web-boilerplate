@@ -17,4 +17,11 @@ export interface EcsServiceDefinition {
 
 	efsStorage?: efs.CfnFileSystem;
 	efsMountTarget?: efs.CfnMountTarget;
+
+	metricFilters?: {
+		dimensionsMap: Record<string, string>;
+		logsErrorsCount: awsLogs.MetricFilter;
+		logsWarningsCount: awsLogs.MetricFilter;
+		apiResponseTime: awsLogs.MetricFilter;
+	};
 }

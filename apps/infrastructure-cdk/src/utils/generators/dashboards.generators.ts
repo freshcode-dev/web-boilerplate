@@ -3,7 +3,6 @@ import * as cw from 'aws-cdk-lib/aws-cloudwatch';
 import * as actions from 'aws-cdk-lib/aws-cloudwatch-actions';
 import * as elb from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import { Topic } from 'aws-cdk-lib/aws-sns';
-import { defineCommonEcsAppMetricFilters } from './cloud-watch.generators';
 import { EcsServiceDefinition } from '../../types';
 import { AwsMetricsEnum, AwsNamespacesEnum } from '../../constants/aws';
 
@@ -32,7 +31,7 @@ export const createOverviewDashboard = (
 		dashboardPrefix?: string;
 	}
 ) => {
-	const dashboardIdentifier = `${[stackPrefix, params.dashboardPrefix].join('-')}-overview-dashboard`;
+	const dashboardIdentifier = `${[stackPrefix, params.dashboardPrefix].filter(Boolean).join('-')}-overview-dashboard`;
 	const dashboard = new cw.Dashboard(stack, dashboardIdentifier, {
 		defaultInterval: Duration.days(7),
 		periodOverride: cw.PeriodOverride.AUTO,
@@ -43,8 +42,6 @@ export const createOverviewDashboard = (
 };
 
 export const attachWidgetsToOverviewDashboard = (
-	stack: Stack,
-	stackPrefix: string,
 	dashboard: cw.Dashboard,
 	params: SystemOverviewDashboardParams
 ): {
@@ -62,18 +59,11 @@ export const attachWidgetsToOverviewDashboard = (
 	const snsTopicArn = params.appDefinition.snsTopicArn;
 
 	const {
-		errorsCount: errorsCountFilter,
-		warningsCount: warningsCountFilter,
+		logsErrorsCount: errorsCountFilter,
+		logsWarningsCount: warningsCountFilter,
 		apiResponseTime: apiResponseTimeFilter,
 		dimensionsMap: customMetricsDimensionsMap,
-	} = defineCommonEcsAppMetricFilters(stack, {
-		applicationArn: params.appDefinition.service.serviceArn,
-		applicationName: params.appDefinition.service.serviceName,
-		logGroup: params.appDefinition.logGroup,
-		customMetricsNamespace,
-		customMetricsPrefix,
-		stackPrefix,
-	});
+	} = params.appDefinition.metricFilters!;
 
 	const apiResponseTimeMetricName = apiResponseTimeFilter.metric().metricName;
 	const errorsCountMetricName = errorsCountFilter.metric().metricName;
@@ -153,7 +143,7 @@ export const defineSystemOverviewDashboard = (
 		dashboardPrefix: params.dashboardPrefix,
 	});
 
-	const { offsetY } = attachWidgetsToOverviewDashboard(stack, stackPrefix, dashboard, params);
+	const { offsetY } = attachWidgetsToOverviewDashboard(dashboard, params);
 
 	return { dashboard, offsetY };
 };
@@ -637,7 +627,7 @@ export const createAlarmsWidget = (
 
 	const topic = Topic.fromTopicArn(dashboard, 'alarm-topic', snsTopicArn);
 
-	const tooManyErrorsBackend = new cw.Alarm(dashboard, `${alarmsPrefix}-too-many-errors-backend`, {
+	const tooManyErrorsBackend = new cw.Alarm(dashboard, `${alarmsPrefix}-too-many-errors`, {
 		alarmName: `Backend Too Many Errors${dashboardPrefix ? ` (${dashboardPrefix})` : ''}`,
 		metric: new cw.Metric({
 			namespace: customMetricsNamespace,
@@ -656,7 +646,7 @@ export const createAlarmsWidget = (
 	});
 	tooManyErrorsBackend.addAlarmAction(new actions.SnsAction(topic));
 
-	const backendCPUOverload = new cw.Alarm(dashboard, `${alarmsPrefix}-backend-cpu-overload`, {
+	const backendCPUOverload = new cw.Alarm(dashboard, `${alarmsPrefix}-cpu-overload`, {
 		alarmName: `Backend CPU Overload${dashboardPrefix ? ` (${dashboardPrefix})` : ''}`,
 		metric: new cw.Metric({
 			namespace: AwsNamespacesEnum.ECS,
@@ -674,7 +664,7 @@ export const createAlarmsWidget = (
 	});
 	backendCPUOverload.addAlarmAction(new actions.SnsAction(topic));
 
-	const backendMemoryOverload = new cw.Alarm(dashboard, `${alarmsPrefix}-backend-memory-overload`, {
+	const backendMemoryOverload = new cw.Alarm(dashboard, `${alarmsPrefix}-memory-overload`, {
 		alarmName: `Backend Memory Overload${dashboardPrefix ? ` (${dashboardPrefix})` : ''}`,
 		metric: new cw.Metric({
 			namespace: AwsNamespacesEnum.ECS,
