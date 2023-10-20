@@ -1,38 +1,79 @@
 ## React-based projects routing
 
-**!!!Important!!! Needs to be rewritten according to [major changes in react-router](https://reactrouter.com/en/main/upgrading/v6-data)**
-
-<hr>
-
-When building frontend with React, make sure you fully utilize the main react-router capabilities.
+When building frontend with React, make sure you fully utilize the `react-router` capabilities.
 
 Overall, a proper react routing setup should be modular, efficient, and easy to maintain. By following these best practices, you can create a routing setup that provides a seamless user experience and improves the performance of your app.
 
-### `useRoutes`
-Define your routes as objects that include a path and an element property. The path property specifies the URL that should match the route, while the element property defines the component that should render when the route is accessed.
+### Routing root
+The complete routing tree is defined in the root component of the app using 
+[createBrowserRouter](https://reactrouter.com/en/main/routers/create-browser-router) 
+function. This function takes an array of nested routes definitions, making them an 
+actual pages hierarchy of the app.
 
-The `useRoutes` hook is a new addition to the `react-router-dom` library that provides an alternative to the traditional component-based approach for defining routes.
+Consider reading the official documentation to have a better understanding. 
 
-The `useRoutes` hook provides a modern and flexible way to define routes in your React application, with improved performance and simplified syntax. While the component-based approach is still valid and useful in some scenarios, the `useRoutes` hook represents a significant improvement that is worth considering for most React routing setups
+### Routes definition
+Define your routes as objects of type `RouteObject`. Such objects should include 
+a path and an element property. The path property specifies the URL that should 
+match the route, while the element property defines the component that should 
+render when the route is accessed.
 
-**[Documentation](https://reactrouter.com/en/main/hooks/use-routes)**
+Nested routes definitions can be passed to the `children` property.
 
-### Use lazy loading
-Use lazy loading to improve performance by only loading the components that are needed. Use the `React.lazy()` function to load each component lazily, and wrap each element with a Suspense component to handle the loading state.
+**[Documentation](https://reactrouter.com/en/main/route/route#type-declaration)**
 
-```typescript jsx
-const AuthModuleRouter = lazy(async () => import('./modules/auth/auth.router'));
-// ...
-const routes = useRoutes([
-	{ path: 'auth/*', element: <AuthModuleRouter /> }
+### Modularity
+According to the article ["React-based projects structure"](./react-based-projects-structure.md), 
+the application should be organized as a set of mostly independent modules.
+
+Speaking of routing for such modules, it's strongly recommended for each module 
+to have it's own routes tree (when it's possible and reasonable).
+
+If module provides any routes, they should be defined in the root of the module, 
+in file `[module name].router.tsx`. Module's `index` file should then export 
+the "router" object. 
+
+For example, simple `auth.router.tsx` can look like this:
+```tsx
+export const AuthModuleRouter: RouteObject[] = [
+  { path: '/auth/login', element: <LoginPage />, handle: { title: 'nav.sign-in' } },
+  { path: '/auth/sign-up', element: <SignUpPage />, handle: { title: 'nav.sign-up' } },
+];
+```
+Which then can be included into the global routing definition like this:
+```tsx
+const routes = createBrowserRouter([
+  // ...
+  {
+    element: (
+      <RequireUnauthorized>
+        <RootSuspense>
+          <UnauthorizedArea />
+        </RootSuspense>
+      </RequireUnauthorized>
+    ),
+    children: AuthModuleRouter
+  },
+  // ...
 ]);
-// ...
 ```
 
-### Combine frontend modularity with lazy-loaded routing
+### Use lazy loading
+Use lazy loading to improve performance by only loading the components that are 
+needed. Use the `React.lazy()` function to load each component lazily, and wrap 
+each element with a Suspense component to handle the loading state.
 
-The perfect way to apply lazy routing is to wrap each module of our modular frontend application with its own routing segment.
-So each module has its own set of routes, and loads only when needed.
+```typescript jsx
+const StylesExamplesPage = lazy(async () => lazyRetry(async () => import('./pages/styles-examples/styles-examples.page')));
+
+export const StyledExamplesRouter: RouteObject[] = [
+    // ...
+    { path: 'page', element: <StylesExamplesPage /> },
+    // ...
+];
+```
+
+**[Documentation](https://reactrouter.com/en/main/route/lazy)**
 
 ### Utilize as much standard API as possible
 1. Use dynamic routing to handle dynamic URLs. You can use parameters in your path property to define dynamic segments of your URL. Use the useParams hook to access the values of these parameters in your component.
@@ -52,22 +93,27 @@ Guard components are components that wrap other components with an extra logic t
 ```typescript jsx
 // declare wrapper component with any logic you need...
 export const RequireAuth = ({ children, isSignedIn }): ReactElement => {
-	if (!isSignedIn) {
-		return <Navigate to="/auth/login" replace />;
-	}
+  if (!isSignedIn) {
+    return <Navigate to="/auth/login" replace />;
+  }
 
-	return children;
+  return children;
 };
 // and then wrap any route with it
-const routes = useRoutes([
-	{
-		path: '/',
-		element: <RequireUnauthorized><AuthorizedArea /></RequireUnauthorized>,
-		children: [
-			{ path: 'auth/*', element: <AuthModuleRouter /> },
-			// ... other modules 
-		]
-	}
+const routes = createBrowserRouter([
+  {
+    path: '/',
+    element: (
+      <RequireAuth>
+        <RootSuspense>
+          <AuthorizedArea />
+        </RootSuspense>
+      </RequireAuth>
+    ),
+    children: [
+      { path: 'demo', element: <AuthorizedPage />, handle: { title: 'nav.demo' } }
+    ]
+  }
 ]);
 ```
 It's important to group routes based on the security requirements you apply to them, so you can apply guards at the highest point possible. 
@@ -83,7 +129,7 @@ import { Outlet } from 'react-router-dom';
 
 export const AuthorizedArea: FC = () => 
 <div>
-	<h1>Header shared by all the nested routes</h1>
+	<h1>Header shared across all the nested routes</h1>
 	<Outlet />
 </div>;
 ```

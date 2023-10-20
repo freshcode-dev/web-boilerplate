@@ -39,19 +39,10 @@ const Root: FC = () => {
 					</RootSuspense>
 				</RequireAuth>
 			),
-			children: getAppRouters()
-		},
-		{
-			element: (
-				<RequireUnauthorized>
-					<RootSuspense>
-						<UnauthorizedArea />
-					</RootSuspense>
-				</RequireUnauthorized>
-			),
-			children: AuthModuleRouter
-		},
-		{ path: '*', element: <NotFoundPage /> },
+			children: [
+				{ path: 'demo', element: <AuthorizedPage />, handle: { title: 'nav.demo' } }
+			]
+		}
 	]);
 
 	return (

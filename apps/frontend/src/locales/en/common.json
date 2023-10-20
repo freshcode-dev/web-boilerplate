@@ -8,5 +8,13 @@
 		"styled": "Styled Examples",
 		"sign-in": "Login",
 		"sign-up": "Register"
+	},
+	"defaults": {
+		"modals": {
+			"confirmation-title": "Confirmation is required",
+			"confirmation-description": "Please confirm the action. This can't be undone!",
+			"confirm-button": "Confirm",
+			"cancel-button": "Cancel"
+		}
 	}
 }

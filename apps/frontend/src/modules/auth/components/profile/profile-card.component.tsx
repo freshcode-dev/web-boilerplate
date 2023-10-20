@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import { CardContent, Typography, CardActions, Card } from '@mui/material';
-import { CoreButton } from '../../../_core/components/_ui';
+import { CoreButton } from '../../../_core/components/_ui/core-button';
 
 interface ProfileCardProps {
 	name: string;
@@ -23,7 +23,7 @@ export const ProfileCard: FC<ProfileCardProps> = (props) => {
 				</Typography>
 			</CardContent>
 			<CardActions>
-				<CoreButton size="small" onClick={onLogout}>Logout</CoreButton>
+				<CoreButton onClick={onLogout}>Logout</CoreButton>
 			</CardActions>
 		</Card>
 	);

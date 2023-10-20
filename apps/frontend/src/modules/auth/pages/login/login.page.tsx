@@ -4,18 +4,50 @@ import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { SignInDto } from '@boilerplate/shared';
-import { useSignInMutation } from "../../../../store/api/auth.api";
+import { SignInDto, waitAsync } from '@boilerplate/shared';
+import { useSignInMutation } from '../../../../store/api/auth.api';
+import { CoreButton } from '../../../_core/components/_ui/core-button';
+import { useMuiModal } from '../../../_core/hooks';
+import { ConfirmationModal } from '../../../_core/components/confirmation-modal';
+import { Exclamation } from '../../../_core/constants/icons.constants';
+import { useTranslation } from 'react-i18next';
 
 const resolver = classValidatorResolver(SignInDto);
 
 export const LoginPage: FC = () => {
+	const { t } = useTranslation();
   const { handleSubmit, register, formState: { errors } } = useForm<SignInDto>({ resolver });
-	const [signIn, { isLoading, isError }] = useSignInMutation();
+	const [signIn, { isLoading }] = useSignInMutation();
+
+	const {
+		openModal: openConfirmationModal,
+		closeModal: closeConfirmationModal
+	} = useMuiModal(ConfirmationModal);
 
 	const handleSignIn = async (values: SignInDto) => {
 		await signIn({...values}).unwrap();
 	}
+
+	const handleOpenConfirmationModal = () => {
+		openConfirmationModal({
+			danger: true,
+			icon: <Exclamation />,
+			title: t('defaults.modals.confirmation-title'),
+			description: t('defaults.modals.confirmation-description'),
+			onSubmit: async () => {
+				await waitAsync(3000);
+				closeConfirmationModal();
+			},
+			leftButtonProps: {
+				variant: 'secondary',
+				children: t('defaults.modals.cancel-button')
+			},
+			rightButtonProps: {
+				variant: 'danger',
+				children: t('defaults.modals.confirm-button')
+			}
+		});
+	};
 
   return (
     <Container component="main" maxWidth="xs">
@@ -69,6 +101,9 @@ export const LoginPage: FC = () => {
           >
             Sign In
           </Button>
+					<CoreButton onClick={handleOpenConfirmationModal}>
+						Trigger Test Modal
+					</CoreButton>
           <Grid container>
             <Grid item>
               <Link to="/auth/signup">

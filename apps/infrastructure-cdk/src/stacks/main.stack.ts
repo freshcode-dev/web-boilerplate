@@ -69,6 +69,7 @@ export class MainStack extends Stack {
 		this.stageSettings = props.stageSettings;
 		this.dockerImageTag = props.dockerImageTag;
 
+
 		this.vpc = lookupDefaultVpc(this, `default-vpc-id`);
 
 		this.mainSubnet = this.vpc.publicSubnets[0]!;
@@ -144,8 +145,8 @@ export class MainStack extends Stack {
 	}
 
 	private importDatabaseSecret(stackPrefix: string): void {
-		if (!this.stageSettings.rdsReuseParams) {
-			throw new Error('rdsReuseParams cannot be null');
+		if (this.stageSettings.databaseMode !== 'reuse') {
+			throw Error(`databaseMode should be 'reuse'`);
 		}
 
 		const secretName = `${stackPrefix}-db-secret`;
@@ -153,8 +154,8 @@ export class MainStack extends Stack {
 	}
 
 	private createDatabase(stackPrefix: string): void {
-		if (!this.stageSettings.rdsCreationParams) {
-			throw Error(`rdsCreationParams can't be empty`);
+		if (this.stageSettings.databaseMode !== 'create') {
+			throw Error(`databaseMode should be 'create'`);
 		}
 
 		const databaseEngine = DatabaseInstanceEngine.postgres({ version: PostgresEngineVersion.VER_15_2 });

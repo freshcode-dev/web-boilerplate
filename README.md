@@ -10,6 +10,7 @@ This project was generated using [Nx](https://nx.dev).
 - [React-based projects structure](misc/instructions/react-based-projects-structure.md)
 - [React-based projects routing](misc/instructions/react-based-projects-routing.md)
 - [React-based projects naming conventions](misc/instructions/react-naming-convention.md)
+- [Working with modal windows in react](misc/instructions/react-working-with-modal-windows.md)
 - [Integrate testing results with gitlab](misc/instructions/integrate-testing-results-with%20gitlab.md)
 - [Releasing manually with git tags](misc/instructions/releasing-manually-with-git-tags.md)
 - [Mapping classes with automapper](misc/instructions/mapping-with-automapper.md)

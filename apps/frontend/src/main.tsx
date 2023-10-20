@@ -8,6 +8,7 @@ import Root from './root';
 import './i18n';
 import './index.scss';
 import { HelmetProvider } from 'react-helmet-async';
+import ModalProvider from 'mui-modal-provider';
 
 const root = ReactDOM.createRoot(
 	document.getElementById('root') as HTMLElement
@@ -18,8 +19,10 @@ root.render(
 		<HelmetProvider>
 			<Provider store={store}>
 				<RootThemeProvider>
-					<CssBaseline />
-					<Root />
+					<ModalProvider>
+						<CssBaseline />
+						<Root />
+					</ModalProvider>
 				</RootThemeProvider>
 			</Provider>
 		</HelmetProvider>
