@@ -212,6 +212,12 @@ export const attachWidgetsToOverviewDashboard = (
 
 	const awsContainerInsightsDimensionsMap = awsEcsDimensionsMap;
 
+	const { offsetY: alarmsWidgetsOffset } = createAlarmsWidget(dashboard, {
+		prefix: dashboardPrefix,
+		alarmsArray,
+		offsetY: baseOffsetY,
+	});
+
 	const { offsetY: backendMetricsWidgetsOffset } = createBackendMetricsWidget(dashboard, {
 		prefix: dashboardPrefix,
 		apiResponseTimeMetricName,
@@ -221,7 +227,7 @@ export const attachWidgetsToOverviewDashboard = (
 		awsEcsDimensionsMap,
 		awsContainerInsightsDimensionsMap,
 		region,
-		offsetY: baseOffsetY,
+		offsetY: alarmsWidgetsOffset,
 	});
 
 	const { offsetY: databaseMetricsWidgetOffset } = createDatabaseMetricsWidget(dashboard, {
@@ -231,7 +237,7 @@ export const attachWidgetsToOverviewDashboard = (
 		offsetY: backendMetricsWidgetsOffset,
 	});
 
-	const { offsetY: backendLogsMetricsWidgetsOffset } = createBackendLogsMetricsWidget(dashboard, {
+	createBackendLogsMetricsWidget(dashboard, {
 		prefix: dashboardPrefix,
 		backendErrorsMetricName: errorsCountMetricName,
 		backendWarningsMetricName: warningsCountMetricName,
@@ -241,12 +247,6 @@ export const attachWidgetsToOverviewDashboard = (
 		customMetricsDimensionsMap,
 		region,
 		offsetY: databaseMetricsWidgetOffset,
-	});
-
-	const { offsetY: alarmsWidgetsOffset } = createAlarmsWidget(dashboard, {
-		prefix: dashboardPrefix,
-		alarmsArray,
-		offsetY: backendLogsMetricsWidgetsOffset,
 	});
 
 	return {
@@ -745,11 +745,11 @@ export const createAlarmsWidget = (
 	}
 
 	let newOffsetY = offsetY;
-	const rowHeight = 9;
+	const rowHeight = 3;
 
 	const alarmWidget = new cw.AlarmStatusWidget({
 		height: rowHeight,
-		width: 5,
+		width: 24,
 		title: `Backend and Database Alarms${dashboardPrefix ? ` (${dashboardPrefix})` : ''}`,
 		alarms: alarmsArray,
 	});
