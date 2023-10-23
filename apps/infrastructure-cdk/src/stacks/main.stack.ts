@@ -19,6 +19,10 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as cloudMap from 'aws-cdk-lib/aws-servicediscovery';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
+import * as sns from 'aws-cdk-lib/aws-sns';
+import * as cw from 'aws-cdk-lib/aws-cloudwatch';
+import * as actions from 'aws-cdk-lib/aws-cloudwatch-actions';
+import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
 import { ICdkEnvironmentSettings } from '../environments';
 import {
 	ApplicationListener,
@@ -37,6 +41,8 @@ import { EcsServiceDefinition } from '../types';
 import { defineSecretWithGeneratedPassword, lookupDefaultVpc, defineEfsStorageForVolume } from '../utils/generators';
 import { defineSystemOverviewDashboard } from '../utils/generators/dashboards.generators';
 import { defineCommonEcsAppMetricFilters } from '../utils/generators/cloud-watch.generators';
+import { AwsMetricsEnum, AwsNamespacesEnum } from '../constants/aws';
+import { Colors } from '../constants/colors';
 
 export interface MainStackProps extends StackProps {
 	stackPrefix: string;
@@ -61,6 +67,7 @@ export class MainStack extends Stack {
 	private readonly coreLoadBalancer: IApplicationLoadBalancer;
 	private readonly stageSettings: ICdkEnvironmentSettings;
 	private readonly dockerImageTag?: string;
+	private readonly snsTopic?: sns.Topic;
 
 	constructor(scope: Construct, id: string, props: MainStackProps) {
 		super(scope, id, props);
@@ -99,6 +106,11 @@ export class MainStack extends Stack {
 		this.registerNamespace(stackPrefix);
 		this.registerEcsCluster(stackPrefix);
 		this.redisDefinition = this.registerRedisService(stackPrefix);
+
+		if (this.stageSettings.maintenersEmails?.length) {
+			this.snsTopic = this.createStackSnsTopic(stackPrefix, this.stageSettings.maintenersEmails);
+		}
+
 		this.appDefinition = this.registerEcsAppService(stackPrefix);
 
 		if (this.stageSettings.withMaintenanceSchedule) {
@@ -107,8 +119,7 @@ export class MainStack extends Stack {
 
 		defineSystemOverviewDashboard(this, stackPrefix, {
 			dashboardPrefix: 'back',
-			customMetricsPrefix: 'back',
-			region: props.env?.region,
+			region: this.region,
 			loadBalancer: this.coreLoadBalancer,
 			databaseIdentifier: this.rdsDb.instanceIdentifier,
 			appDefinition: this.appDefinition,
@@ -605,12 +616,22 @@ export class MainStack extends Stack {
 			warningsCount: warningsCountFilter,
 			apiResponseTime: apiResponseTimeFilter,
 			dimensionsMap: customMetricsDimensionsMap,
+			customMetricsNamespace,
 		} = defineCommonEcsAppMetricFilters(this, {
 			applicationArn: ecsService.serviceArn,
 			applicationName: ecsService.serviceName,
 			logGroup,
 			stackPrefix,
 		});
+
+		const alarms = this.createAlarms(
+			'backend',
+			customMetricsNamespace,
+			customMetricsDimensionsMap,
+			errorsCountFilter.metric().metricName,
+			ecsService.serviceName,
+			ecsService.cluster.clusterName,
+		);
 
 		return {
 			service: ecsService,
@@ -624,6 +645,126 @@ export class MainStack extends Stack {
 				apiResponseTime: apiResponseTimeFilter,
 				dimensionsMap: customMetricsDimensionsMap,
 			},
+			alarms,
+		};
+	}
+
+	private createStackSnsTopic(stackPrefix: string, emails: string[]): sns.Topic {
+		const snsTopicName = `${stackPrefix}-sns-topic`;
+
+		const snsTopic = new sns.Topic(this, snsTopicName, {
+			displayName: snsTopicName,
+			topicName: snsTopicName,
+		});
+
+		for (const email of emails) {
+			const emailSubscription = new subs.EmailSubscription(email);
+			snsTopic.addSubscription(emailSubscription);
+		}
+
+		return snsTopic;
+	}
+
+	private createAlarms(
+		alarmsPrefix: string,
+		customMetricsNamespace: string,
+		customMetricsDimensionsMap: Record<string, string>,
+		backendErrorsMetricName: string,
+		serviceName: string,
+		clusterName: string,
+	): { [alarmName: string]: cw.Alarm } {
+		if (!this.snsTopic) {
+			return {};
+		}
+
+		const topic = this.snsTopic;
+
+		const tooManyErrorsBackend = new cw.Alarm(this, `${alarmsPrefix}-too-many-errors`, {
+			alarmName: `Backend Too Many Errors`,
+			metric: new cw.Metric({
+				namespace: customMetricsNamespace,
+				metricName: backendErrorsMetricName,
+				region: this.region,
+				label: 'Errors Count',
+				color: Colors.red,
+				statistic: cw.Stats.SUM,
+				period: Duration.minutes(this.stageSettings.alarmsParams.tooManyErrors.period),
+				dimensionsMap: customMetricsDimensionsMap,
+			}),
+			threshold: this.stageSettings.alarmsParams.tooManyErrors.threshold,
+			comparisonOperator: cw.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+			evaluationPeriods: 1,
+			actionsEnabled: true,
+		});
+		tooManyErrorsBackend.addAlarmAction(new actions.SnsAction(topic));
+
+		const backendCPUOverload = new cw.Alarm(this, `${alarmsPrefix}-cpu-overload`, {
+			alarmName: `Backend CPU Overload`,
+			metric: new cw.Metric({
+				namespace: AwsNamespacesEnum.ECS,
+				metricName: AwsMetricsEnum.CPUUtilization,
+				region: this.region,
+				label: 'CPUUtilization Average',
+				color: Colors.blue,
+				statistic: cw.Stats.AVERAGE,
+				period: Duration.minutes(this.stageSettings.alarmsParams.appCpuOverload.period),
+				dimensionsMap: {
+					ServiceName: serviceName,
+					ClusterName: clusterName,
+				},
+			}),
+			threshold: this.stageSettings.alarmsParams.appCpuOverload.threshold,
+			comparisonOperator: cw.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+			evaluationPeriods: 1,
+		});
+		backendCPUOverload.addAlarmAction(new actions.SnsAction(topic));
+
+		const backendMemoryOverload = new cw.Alarm(this, `${alarmsPrefix}-memory-overload`, {
+			alarmName: `Backend Memory Overload`,
+			metric: new cw.Metric({
+				namespace: AwsNamespacesEnum.ECS,
+				metricName: AwsMetricsEnum.MemoryUtilization,
+				region: this.region,
+				label: 'MemoryUtilization Average',
+				color: Colors.blue,
+				statistic: cw.Stats.AVERAGE,
+				period: Duration.minutes(this.stageSettings.alarmsParams.appMemoryOverload.period),
+				dimensionsMap: {
+					ServiceName: serviceName,
+					ClusterName: clusterName,
+				},
+			}),
+			threshold: this.stageSettings.alarmsParams.appMemoryOverload.threshold,
+			comparisonOperator: cw.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+			evaluationPeriods: 1,
+		});
+		backendMemoryOverload.addAlarmAction(new actions.SnsAction(topic));
+
+		const databaseCPUOverload = new cw.Alarm(this, `${alarmsPrefix}-database-cpu-overload`, {
+			alarmName: `Database CPU Overload`,
+			metric: new cw.Metric({
+				namespace: AwsNamespacesEnum.RDS,
+				metricName: AwsMetricsEnum.CPUUtilization,
+				region: this.region,
+				label: 'CPUUtilization',
+				color: Colors.blue,
+				statistic: cw.Stats.AVERAGE,
+				period: Duration.minutes(this.stageSettings.alarmsParams.databaseCpuOverload.period),
+				dimensionsMap: {
+					DBInstanceIdentifier: this.rdsDb.instanceIdentifier,
+				},
+			}),
+			threshold: this.stageSettings.alarmsParams.databaseCpuOverload.threshold,
+			comparisonOperator: cw.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+			evaluationPeriods: 1,
+		});
+		databaseCPUOverload.addAlarmAction(new actions.SnsAction(topic));
+
+		return {
+			tooManyErrorsBackend,
+			backendCPUOverload,
+			backendMemoryOverload,
+			databaseCPUOverload,
 		};
 	}
 }

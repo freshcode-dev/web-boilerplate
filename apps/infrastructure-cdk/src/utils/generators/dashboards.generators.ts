@@ -1,21 +1,12 @@
 import { Duration, Stack } from 'aws-cdk-lib';
 import * as cw from 'aws-cdk-lib/aws-cloudwatch';
-import * as actions from 'aws-cdk-lib/aws-cloudwatch-actions';
 import * as elb from 'aws-cdk-lib/aws-elasticloadbalancingv2';
-import { Topic } from 'aws-cdk-lib/aws-sns';
 import { EcsServiceDefinition } from '../../types';
 import { AwsMetricsEnum, AwsNamespacesEnum } from '../../constants/aws';
-
-enum Colors {
-	red = '#d62728',
-	orange = '#ff7f0e',
-	blue = '#1f77b4',
-	green = '#2ca02c',
-}
+import { Colors } from '../../constants/colors';
 
 export type SystemOverviewDashboardParams = {
 	dashboardPrefix?: string;
-	customMetricsPrefix: string;
 	customMetricsNamespace?: string;
 	databaseIdentifier: string;
 	appDefinition: EcsServiceDefinition;
@@ -24,13 +15,81 @@ export type SystemOverviewDashboardParams = {
 	baseOffsetY?: number;
 };
 
+/**
+ * Creates a dashboard with widgets for monitoring a backend and db system.
+ * Widgets include:
+ * - Backend metrics
+ * - Database metrics
+ * - Backend logs metrics
+ * - Alarms widget
+ *
+ * @param stack - the stack to attach the dashboard to
+ * @param stackPrefix - the prefix of the stack
+ * @param params - the parameters for the dashboard
+ *
+ * @example
+ * ```typescript
+ * constructor(scope: Construct, id: string, props: StackProps) {
+ * 	super(scope, id, props);
+ *
+ * 	// services definition
+ *
+ * 	defineSystemOverviewDashboard(this, stackPrefix, {
+ * 		dashboardPrefix: 'app',
+ * 		region: this.region,
+ * 		loadBalancer: this.coreLoadBalancer,
+ * 		databaseIdentifier: this.rdsDb.instanceIdentifier,
+ * 		appDefinition: this.appDefinition,
+ * 		baseOffsetY: 0,
+ * 		customMetricsNamespace: 'CustomMetrics',
+ * 	});
+ * }
+ * ```
+ */
+export const defineSystemOverviewDashboard = (
+	stack: Stack,
+	stackPrefix: string,
+	params: SystemOverviewDashboardParams
+) => {
+	// create dashboard
+	const dashboard = createOverviewDashboard(stack, stackPrefix, {
+		dashboardPrefix: params.dashboardPrefix,
+	});
+
+	// attach widgets to it
+	const { offsetY } = attachWidgetsToOverviewDashboard(dashboard, params);
+
+	return { dashboard, offsetY };
+};
+
+/**
+ * Creates a dashboard with no widgets attached.
+ *
+ * @param stack
+ * @param stackPrefix
+ * @param params
+ * @returns a CloudWatch dashboard with no widgets
+ *
+ * @example
+ * ```typescript
+ * constructor(scope: Construct, id: string, props: StackProps) {
+ * 	super(scope, id, props);
+ *
+ * 	// services definition
+ *
+ * 	this.dashboard = createOverviewDashboard(this, stackPrefix, {
+ * 		dashboardPrefix: 'app',
+ * 	});
+ * }
+ * ```
+ */
 export const createOverviewDashboard = (
 	stack: Stack,
 	stackPrefix: string,
 	params: {
 		dashboardPrefix?: string;
 	}
-) => {
+): cw.Dashboard => {
 	const dashboardIdentifier = `${[stackPrefix, params.dashboardPrefix].filter(Boolean).join('-')}-overview-dashboard`;
 	const dashboard = new cw.Dashboard(stack, dashboardIdentifier, {
 		defaultInterval: Duration.days(7),
@@ -41,29 +100,97 @@ export const createOverviewDashboard = (
 	return dashboard;
 };
 
+/**
+ * Attaches widgets to an existing dashboard.
+ * Widgets include:
+ * - Backend metrics
+ * - Database metrics
+ * - Backend logs metrics
+ * - Alarms widget
+ *
+ * @param dashboard - the dashboard to attach widgets to
+ * @param params - the parameters for the dashboard
+ *
+ * @example
+ * ```typescript
+ * constructor(scope: Construct, id: string, props: StackProps) {
+ * 	super(scope, id, props);
+ *
+ * 	// services definition
+ *
+ * 	this.dashboard = createOverviewDashboard(this, stackPrefix, {
+ * 		dashboardPrefix: 'app',
+ * 	});
+ *
+ * 	attachWidgetsToOverviewDashboard(this.dashboard, {
+ * 		dashboardPrefix: 'app',
+ * 		region: this.region,
+ * 		// ...
+ * 	});
+ * }
+ * ```
+ *
+ * @example
+ * ```typescript
+ * constructor(scope: Construct, id: string, props: StackProps) {
+ * 	super(scope, id, props);
+ *
+ * 	// services definition
+ *
+ * 	this.dashboard = createOverviewDashboard(this, stackPrefix, {
+ * 		dashboardPrefix: 'app',
+ * 	});
+ *
+ * 	const { offsetY: app1WidgetsOffset } = attachWidgetsToOverviewDashboard(this.dashboard, {
+ * 		dashboardPrefix: 'app1',
+ * 		region: this.region,
+ * 		// ...
+ * 	});
+ *
+ * 	attachWidgetsToOverviewDashboard(this.dashboard, {
+ * 		dashboardPrefix: 'app2',
+ * 		region: this.region,
+ * 		// ...
+ * 		offsetY: app1WidgetsOffset,
+ * 	});
+ * }
+ * ```
+ */
 export const attachWidgetsToOverviewDashboard = (
 	dashboard: cw.Dashboard,
 	params: SystemOverviewDashboardParams
 ): {
 	offsetY: number;
 } => {
-	const { customMetricsNamespace = 'CustomMetrics', region = 'us-east-2', customMetricsPrefix } = params;
+	const {
+		baseOffsetY,
+		dashboardPrefix,
+		customMetricsNamespace = 'CustomMetrics',
+		region = 'us-east-2',
+		loadBalancer,
+		appDefinition,
+		databaseIdentifier,
+	} = params;
 
-	const loadBalancerArn = params.loadBalancer.loadBalancerArn.slice(params.loadBalancer.loadBalancerArn.indexOf('/'));
-	const targetGroupArn = params.appDefinition.targetGroup!.targetGroupArn;
+	const loadBalancerArn = loadBalancer.loadBalancerArn.slice(loadBalancer.loadBalancerArn.indexOf('/'));
+	const targetGroupArn = appDefinition.targetGroup!.targetGroupArn;
 	const backendTargetGroupArn = `targetgroup/${targetGroupArn.slice(targetGroupArn.indexOf('/'))}`;
 
-	const serviceName = params.appDefinition.service.serviceName;
-	const clusterName = params.appDefinition.service.cluster.clusterName;
-	const logGroupName = params.appDefinition.logGroup.logGroupName;
-	const snsTopicArn = params.appDefinition.snsTopicArn;
+	const serviceName = appDefinition.service.serviceName;
+	const clusterName = appDefinition.service.cluster.clusterName;
+	const logGroupName = appDefinition.logGroup.logGroupName;
+	const alarmsArray = Object.values(appDefinition.alarms ?? {});
+
+	if (!appDefinition.metricFilters) {
+		throw new Error('Dashboard creation requires metric filters');
+	}
 
 	const {
 		logsErrorsCount: errorsCountFilter,
 		logsWarningsCount: warningsCountFilter,
 		apiResponseTime: apiResponseTimeFilter,
 		dimensionsMap: customMetricsDimensionsMap,
-	} = params.appDefinition.metricFilters!;
+	} = appDefinition.metricFilters;
 
 	const apiResponseTimeMetricName = apiResponseTimeFilter.metric().metricName;
 	const errorsCountMetricName = errorsCountFilter.metric().metricName;
@@ -80,31 +207,32 @@ export const attachWidgetsToOverviewDashboard = (
 	};
 
 	const awsRdsDimensionsMap = {
-		DBInstanceIdentifier: params.databaseIdentifier,
+		DBInstanceIdentifier: databaseIdentifier,
 	};
 
 	const awsContainerInsightsDimensionsMap = awsEcsDimensionsMap;
 
 	const { offsetY: backendMetricsWidgetsOffset } = createBackendMetricsWidget(dashboard, {
-		dashboardPrefix: params.dashboardPrefix,
+		prefix: dashboardPrefix,
 		apiResponseTimeMetricName,
 		customMetricsNamespace,
 		customMetricsDimensionsMap,
 		awsElbDimensionsMap,
 		awsEcsDimensionsMap,
 		awsContainerInsightsDimensionsMap,
-		offsetY: params.baseOffsetY,
+		region,
+		offsetY: baseOffsetY,
 	});
 
 	const { offsetY: databaseMetricsWidgetOffset } = createDatabaseMetricsWidget(dashboard, {
-		dashboardPrefix: params.dashboardPrefix,
+		prefix: dashboardPrefix,
 		awsRdsDimensionsMap,
 		region,
 		offsetY: backendMetricsWidgetsOffset,
 	});
 
 	const { offsetY: backendLogsMetricsWidgetsOffset } = createBackendLogsMetricsWidget(dashboard, {
-		dashboardPrefix: params.dashboardPrefix,
+		prefix: dashboardPrefix,
 		backendErrorsMetricName: errorsCountMetricName,
 		backendWarningsMetricName: warningsCountMetricName,
 		backendLogGroupName: logGroupName,
@@ -116,15 +244,8 @@ export const attachWidgetsToOverviewDashboard = (
 	});
 
 	const { offsetY: alarmsWidgetsOffset } = createAlarmsWidget(dashboard, {
-		dashboardPrefix: params.dashboardPrefix,
-		alarmsPrefix: customMetricsPrefix,
-		backendErrorsMetricName: errorsCountMetricName,
-		customMetricsNamespace,
-		customMetricsDimensionsMap,
-		awsEcsDimensionsMap,
-		awsRdsDimensionsMap,
-		snsTopicArn,
-		region,
+		prefix: dashboardPrefix,
+		alarmsArray,
 		offsetY: backendLogsMetricsWidgetsOffset,
 	});
 
@@ -133,25 +254,86 @@ export const attachWidgetsToOverviewDashboard = (
 	};
 };
 
-export const defineSystemOverviewDashboard = (
-	stack: Stack,
-	stackPrefix: string,
-	params: SystemOverviewDashboardParams
-) => {
-	// create dashboard and widgets
-	const dashboard = createOverviewDashboard(stack, stackPrefix, {
-		dashboardPrefix: params.dashboardPrefix,
-	});
+export interface WidgetResultParams {
+	widgetHeight: number;
+	offsetY: number;
+}
 
-	const { offsetY } = attachWidgetsToOverviewDashboard(dashboard, params);
+export interface BackendMetricsParams {
+	prefix?: string;
+	customMetricsNamespace: string;
+	apiResponseTimeMetricName: string;
+	customMetricsDimensionsMap: { [key: string]: string };
+	awsElbDimensionsMap: { [key: string]: string };
+	awsEcsDimensionsMap: { [key: string]: string };
+	awsContainerInsightsDimensionsMap: { [key: string]: string };
+	offsetY?: number;
+	region?: string;
+}
 
-	return { dashboard, offsetY };
-};
+export interface DatabaseMetricsParams {
+	prefix?: string;
+	awsRdsDimensionsMap: { [key: string]: string };
+	offsetY?: number;
+	region?: string;
+}
 
+export interface BackendLogsMetricsParams {
+	prefix?: string;
+	backendErrorsMetricName: string;
+	backendWarningsMetricName: string;
+	backendLogGroupName: string;
+	backendServiceName: string;
+	customMetricsNamespace: string;
+	customMetricsDimensionsMap: {
+		[key: string]: string;
+	};
+	offsetY?: number;
+	region?: string;
+}
+
+export interface AlarmsParams {
+	prefix?: string;
+	alarmsArray: cw.Alarm[];
+	offsetY?: number;
+}
+
+/**
+ * Creates a widget with backend metrics.
+ * Widgets include:
+ * - Overview graph: Requests, Response Time, 5XX Responses, UnHealthy Hosts
+ * - CPU Utilization
+ * - Memory Utilization
+ * - Memory Utilized
+ *
+ * @example
+ * ```typescript
+ * constructor(scope: Construct, id: string, props: StackProps) {
+ * 	super(scope, id, props);
+ *
+ * 	// services definition
+ *
+ * 	this.dashboard = createOverviewDashboard(this, stackPrefix, {
+ * 		dashboardPrefix: 'app',
+ * 	});
+ *
+ * 	const { offsetY: appBackendMetricsOffset } = createBackendMetricsWidget(this.dashboard, {
+ * 		prefix: 'app',
+ * 		region: this.region,
+ * 		// ...
+ * 	});
+ *
+ * 	createBackendLogsMetricsWidget(this.dashboard, {
+ * 		// ...,
+ * 		offsetY: appBackendMetricsOffset,
+ * 	});
+ * }
+ * ```
+ */
 export const createBackendMetricsWidget = (
 	dashboard: cw.Dashboard,
 	{
-		dashboardPrefix,
+		prefix,
 		apiResponseTimeMetricName,
 		customMetricsNamespace,
 		customMetricsDimensionsMap,
@@ -160,18 +342,8 @@ export const createBackendMetricsWidget = (
 		awsContainerInsightsDimensionsMap,
 		region,
 		offsetY = 0,
-	}: {
-		dashboardPrefix?: string;
-		customMetricsNamespace: string;
-		apiResponseTimeMetricName: string;
-		customMetricsDimensionsMap: { [key: string]: string };
-		awsElbDimensionsMap: { [key: string]: string };
-		awsEcsDimensionsMap: { [key: string]: string };
-		awsContainerInsightsDimensionsMap: { [key: string]: string };
-		offsetY?: number;
-		region?: string;
-	}
-): { widgetHeight: number; offsetY: number } => {
+	}: BackendMetricsParams
+): WidgetResultParams => {
 	let newOffsetY = offsetY;
 
 	// ROW
@@ -193,7 +365,7 @@ export const createBackendMetricsWidget = (
 		height: rowHeight,
 		width: 9,
 		sparkline: true,
-		title: `Overview${dashboardPrefix ? ` (${dashboardPrefix})` : ''}`,
+		title: `Overview${prefix ? ` (${prefix})` : ''}`,
 		metrics: [
 			new cw.Metric({
 				namespace: AwsNamespacesEnum.ApplicationELB,
@@ -243,7 +415,7 @@ export const createBackendMetricsWidget = (
 		height: rowHeight,
 		width: 5,
 		sparkline: true,
-		title: `Backend CPU Utilization${dashboardPrefix ? ` (${dashboardPrefix})` : ''}`,
+		title: `Backend CPU Utilization${prefix ? ` (${prefix})` : ''}`,
 		metrics: [
 			new cw.Metric({
 				namespace: AwsNamespacesEnum.ECS,
@@ -283,7 +455,7 @@ export const createBackendMetricsWidget = (
 		height: rowHeight,
 		width: 5,
 		sparkline: true,
-		title: `Memory Utilization${dashboardPrefix ? ` (${dashboardPrefix})` : ''}`,
+		title: `Memory Utilization${prefix ? ` (${prefix})` : ''}`,
 		metrics: [
 			new cw.Metric({
 				namespace: AwsNamespacesEnum.ECS,
@@ -323,7 +495,7 @@ export const createBackendMetricsWidget = (
 		height: rowHeight,
 		width: 5,
 		sparkline: true,
-		title: `Memory Utilized${dashboardPrefix ? ` (${dashboardPrefix})` : ''}`,
+		title: `Memory Utilized${prefix ? ` (${prefix})` : ''}`,
 		metrics: [
 			new cw.Metric({
 				namespace: AwsNamespacesEnum.ECS_CONTAINER_INSIGHTS,
@@ -376,21 +548,8 @@ export const createBackendMetricsWidget = (
 
 export const createDatabaseMetricsWidget = (
 	dashboard: cw.Dashboard,
-	{
-		dashboardPrefix,
-		awsRdsDimensionsMap,
-		offsetY = 0,
-		region,
-	}: {
-		dashboardPrefix?: string;
-		awsRdsDimensionsMap: { [key: string]: string };
-		offsetY?: number;
-		region?: string;
-	}
-): {
-	widgetHeight: number;
-	offsetY: number;
-} => {
+	{ prefix: dashboardPrefix, awsRdsDimensionsMap, offsetY = 0, region }: DatabaseMetricsParams
+): WidgetResultParams => {
 	let newOffsetY = offsetY;
 
 	// ROW
@@ -450,7 +609,7 @@ export const createDatabaseMetricsWidget = (
 export const createBackendLogsMetricsWidget = (
 	dashboard: cw.Dashboard,
 	{
-		dashboardPrefix,
+		prefix: dashboardPrefix,
 		backendErrorsMetricName,
 		backendWarningsMetricName,
 		backendLogGroupName,
@@ -458,23 +617,8 @@ export const createBackendLogsMetricsWidget = (
 		customMetricsDimensionsMap,
 		offsetY = 0,
 		region,
-	}: {
-		dashboardPrefix?: string;
-		backendErrorsMetricName: string;
-		backendWarningsMetricName: string;
-		backendLogGroupName: string;
-		backendServiceName: string;
-		customMetricsNamespace: string;
-		customMetricsDimensionsMap: {
-			[key: string]: string;
-		};
-		offsetY?: number;
-		region?: string;
-	}
-): {
-	widgetHeight: number;
-	offsetY: number;
-} => {
+	}: BackendLogsMetricsParams
+): WidgetResultParams => {
 	let newOffsetY = offsetY;
 
 	// ROW
@@ -591,114 +735,14 @@ export const createBackendLogsMetricsWidget = (
 
 export const createAlarmsWidget = (
 	dashboard: cw.Dashboard,
-	{
-		dashboardPrefix,
-		alarmsPrefix,
-		backendErrorsMetricName,
-		customMetricsNamespace,
-		customMetricsDimensionsMap,
-		awsEcsDimensionsMap,
-		awsRdsDimensionsMap,
-		snsTopicArn,
-		region,
-		offsetY = 0,
-	}: {
-		dashboardPrefix?: string;
-		backendErrorsMetricName: string;
-		customMetricsNamespace: string;
-		alarmsPrefix: string;
-		customMetricsDimensionsMap: { [key: string]: string };
-		awsEcsDimensionsMap: { [key: string]: string };
-		awsRdsDimensionsMap: { [key: string]: string };
-		snsTopicArn?: string;
-		region?: string;
-		offsetY?: number;
-	}
-): {
-	widgetHeight: number;
-	offsetY: number;
-} => {
-	if (!snsTopicArn) {
+	{ prefix: dashboardPrefix, alarmsArray, offsetY = 0 }: AlarmsParams
+): WidgetResultParams => {
+	if (!alarmsArray.length) {
 		return {
 			widgetHeight: 0,
 			offsetY,
 		};
 	}
-
-	const topic = Topic.fromTopicArn(dashboard, 'alarm-topic', snsTopicArn);
-
-	const tooManyErrorsBackend = new cw.Alarm(dashboard, `${alarmsPrefix}-too-many-errors`, {
-		alarmName: `Backend Too Many Errors${dashboardPrefix ? ` (${dashboardPrefix})` : ''}`,
-		metric: new cw.Metric({
-			namespace: customMetricsNamespace,
-			metricName: backendErrorsMetricName,
-			region,
-			label: 'Errors Count',
-			color: Colors.red,
-			statistic: cw.Stats.SUM,
-			period: Duration.minutes(15),
-			dimensionsMap: customMetricsDimensionsMap,
-		}),
-		threshold: 10,
-		comparisonOperator: cw.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-		evaluationPeriods: 1,
-		actionsEnabled: true,
-	});
-	tooManyErrorsBackend.addAlarmAction(new actions.SnsAction(topic));
-
-	const backendCPUOverload = new cw.Alarm(dashboard, `${alarmsPrefix}-cpu-overload`, {
-		alarmName: `Backend CPU Overload${dashboardPrefix ? ` (${dashboardPrefix})` : ''}`,
-		metric: new cw.Metric({
-			namespace: AwsNamespacesEnum.ECS,
-			metricName: AwsMetricsEnum.CPUUtilization,
-			region,
-			label: 'CPUUtilization Average',
-			color: Colors.blue,
-			statistic: cw.Stats.AVERAGE,
-			period: Duration.minutes(15),
-			dimensionsMap: awsEcsDimensionsMap,
-		}),
-		threshold: 70,
-		comparisonOperator: cw.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-		evaluationPeriods: 1,
-	});
-	backendCPUOverload.addAlarmAction(new actions.SnsAction(topic));
-
-	const backendMemoryOverload = new cw.Alarm(dashboard, `${alarmsPrefix}-memory-overload`, {
-		alarmName: `Backend Memory Overload${dashboardPrefix ? ` (${dashboardPrefix})` : ''}`,
-		metric: new cw.Metric({
-			namespace: AwsNamespacesEnum.ECS,
-			metricName: AwsMetricsEnum.MemoryUtilization,
-			region,
-			label: 'MemoryUtilization Average',
-			color: Colors.blue,
-			statistic: cw.Stats.AVERAGE,
-			period: Duration.minutes(15),
-			dimensionsMap: awsEcsDimensionsMap,
-		}),
-		threshold: 70,
-		comparisonOperator: cw.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-		evaluationPeriods: 1,
-	});
-	backendMemoryOverload.addAlarmAction(new actions.SnsAction(topic));
-
-	const databaseCPUOverload = new cw.Alarm(dashboard, `${alarmsPrefix}-database-cpu-overload`, {
-		alarmName: `Database CPU Overload${dashboardPrefix ? ` (${dashboardPrefix})` : ''}`,
-		metric: new cw.Metric({
-			namespace: AwsNamespacesEnum.RDS,
-			metricName: AwsMetricsEnum.CPUUtilization,
-			region,
-			label: 'CPUUtilization',
-			color: Colors.blue,
-			statistic: cw.Stats.AVERAGE,
-			period: Duration.minutes(15),
-			dimensionsMap: awsRdsDimensionsMap,
-		}),
-		threshold: 70,
-		comparisonOperator: cw.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-		evaluationPeriods: 1,
-	});
-	databaseCPUOverload.addAlarmAction(new actions.SnsAction(topic));
 
 	let newOffsetY = offsetY;
 	const rowHeight = 9;
@@ -707,7 +751,7 @@ export const createAlarmsWidget = (
 		height: rowHeight,
 		width: 5,
 		title: `Backend and Database Alarms${dashboardPrefix ? ` (${dashboardPrefix})` : ''}`,
-		alarms: [tooManyErrorsBackend, backendCPUOverload, backendMemoryOverload, databaseCPUOverload],
+		alarms: alarmsArray,
 	});
 	alarmWidget.position(0, newOffsetY);
 	newOffsetY += rowHeight;

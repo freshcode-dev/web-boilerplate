@@ -11,6 +11,15 @@ export interface DefineCommonEcsAppMetricFiltersProps {
 	stackPrefix: string;
 }
 
+export interface DefineCommonEcsAppMetricFiltersResult {
+	errorsCount: logs.MetricFilter;
+	warningsCount: logs.MetricFilter;
+	apiResponseTime: logs.MetricFilter;
+
+	dimensionsMap: Record<string, string>;
+	customMetricsNamespace: string;
+}
+
 export const defineCommonEcsAppMetricFilters = (
 	stack: Stack,
 	{
@@ -19,11 +28,12 @@ export const defineCommonEcsAppMetricFilters = (
 		customMetricsPrefix,
 		customMetricsNamespace = 'CustomMetrics',
 	}: DefineCommonEcsAppMetricFiltersProps
-) => {
+): DefineCommonEcsAppMetricFiltersResult => {
 	const metricIdPrefix = [stackPrefix, customMetricsPrefix].filter(Boolean).join('-');
 
-	const dimensions = {
+	const dimensions: Record<string, string> = {
 		// TODO uncomment when aws metric filter will support static-value dimensions
+		// https://github.com/aws-cloudformation/aws-cloudformation-resource-providers-logs/issues/64#issuecomment-1714555385
 		// AppArn: applicationArn,
 		// AppName: applicationName,
 		// LogGroupName: logGroup.logGroupName,
@@ -74,5 +84,6 @@ export const defineCommonEcsAppMetricFilters = (
 		warningsCount,
 		apiResponseTime,
 		dimensionsMap: dimensions,
+		customMetricsNamespace,
 	};
 };

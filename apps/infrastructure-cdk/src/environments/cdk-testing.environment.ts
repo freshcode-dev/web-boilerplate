@@ -2,6 +2,10 @@ import { ICdkEnvironmentSettings } from './types';
 import { RemovalPolicy } from 'aws-cdk-lib';
 import { InstanceClass, InstanceSize } from 'aws-cdk-lib/aws-ec2';
 
+const { NX_CDK_MAINTAINERS_EMAILS } = process.env;
+
+const maintenersEmails: string[] = [...(JSON.parse(NX_CDK_MAINTAINERS_EMAILS ?? '[]') as string[])];
+
 export const cdkTestingEnvironmentSettings: ICdkEnvironmentSettings = {
 	withMaintenanceSchedule: true,
 	databaseMode: 'create',
@@ -9,7 +13,7 @@ export const cdkTestingEnvironmentSettings: ICdkEnvironmentSettings = {
 		removalPolicy: RemovalPolicy.DESTROY,
 		enablePerformanceInsights: false,
 		rdsInstanceClass: InstanceClass.T3,
-		rdsInstanceSize: InstanceSize.MICRO
+		rdsInstanceSize: InstanceSize.MICRO,
 	},
 	s3RemovalPolicy: RemovalPolicy.DESTROY,
 	ecsAutoscaling: null,
@@ -24,7 +28,7 @@ export const cdkTestingEnvironmentSettings: ICdkEnvironmentSettings = {
 		NX_FRONT_APP_API_URL: '/api',
 		NX_FRONT_STAGE_NAME_TO_DISPLAY: 'dev',
 		NX_USE_AWS_CREDENTIALS: 'false',
-		NX_DATABASE_REJECT_UNAUTHORIZED: 'true'
+		NX_DATABASE_REJECT_UNAUTHORIZED: 'true',
 	},
 	ecsApplicationTaskCpu: 256,
 	ecsApplicationTaskMemory: 512,
@@ -32,17 +36,37 @@ export const cdkTestingEnvironmentSettings: ICdkEnvironmentSettings = {
 	ecsRedisTaskCpu: 256,
 	ecsRedisTaskMemory: 512,
 
-	snsTopicArn: '',
+	maintenersEmails: maintenersEmails ?? [],
+	alarmsParams: {
+		tooManyErrors: {
+			period: 15,
+			threshold: 10,
+		},
+		appCpuOverload: {
+			period: 15,
+			threshold: 70,
+		},
+		appMemoryOverload: {
+			period: 15,
+			threshold: 70,
+		},
+		databaseCpuOverload: {
+			period: 15,
+			threshold: 70,
+		},
+	},
 
-	loadBalancerListenerArn: 'arn:aws:elasticloadbalancing:us-east-2:730819153141:listener/app/outsource-shared-lb/df9deec44e861dca/ee3c3c9db74798e3',
+	loadBalancerListenerArn:
+		'arn:aws:elasticloadbalancing:us-east-2:730819153141:listener/app/outsource-shared-lb/df9deec44e861dca/ee3c3c9db74798e3',
 	ecsAppHost: 'boilerplate.freshcode.org',
 	loadBalancerSecurityGroupId: 'sg-040e5d3c92516f586',
 	loadBalancerRulePriority: 999,
-	loadBalancerArn: 'arn:aws:elasticloadbalancing:us-east-2:730819153141:loadbalancer/app/outsource-shared-lb/df9deec44e861dca',
+	loadBalancerArn:
+		'arn:aws:elasticloadbalancing:us-east-2:730819153141:loadbalancer/app/outsource-shared-lb/df9deec44e861dca',
 
 	maintenanceSchedule: {
 		envStart: { minute: '0', hour: '10', weekDay: 'MON-FRI', month: '*', year: '*' },
 		envStop: { minute: '0', hour: '11', weekDay: 'MON-FRI', month: '*', year: '*' },
 	},
-	mediaConvertRoleRemovalPolicy: RemovalPolicy.DESTROY
+	mediaConvertRoleRemovalPolicy: RemovalPolicy.DESTROY,
 };

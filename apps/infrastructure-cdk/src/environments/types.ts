@@ -1,6 +1,11 @@
-import { RemovalPolicy } from "aws-cdk-lib";
+import { RemovalPolicy } from 'aws-cdk-lib';
 import { CronOptions } from 'aws-cdk-lib/aws-events/lib/schedule';
 import { InstanceClass, InstanceSize } from 'aws-cdk-lib/aws-ec2';
+
+export type AlarmParams = {
+	period: number;
+	threshold: number;
+};
 
 export type ICdkEnvironmentSettings = {
 	s3RemovalPolicy: RemovalPolicy;
@@ -58,7 +63,15 @@ export type ICdkEnvironmentSettings = {
 	mediaConvertRoleRemovalPolicy: RemovalPolicy;
 
 	// sns
-	snsTopicArn?: string;
+	/**
+	 * User Emails for SNS topic to send notifications to
+	 */
+	maintenersEmails: string[];
+
+	// alarms
+	alarmsParams: {
+		[alarmName: string]: AlarmParams;
+	};
 }
 & (WithAutoScalingEnvironmentSettings | WithoutAutoScalingEnvironmentSettings)
 & (WithDatabaseCreationEnvironmentSettings | WithDatabaseReusingEnvironmentSettings);

@@ -2,6 +2,7 @@ import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as sm from 'aws-cdk-lib/aws-secretsmanager';
 import * as elb from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as efs from 'aws-cdk-lib/aws-efs';
+import * as cw from 'aws-cdk-lib/aws-cloudwatch';
 import * as awsLogs from 'aws-cdk-lib/aws-logs';
 
 export interface EcsServiceDefinition {
@@ -10,7 +11,6 @@ export interface EcsServiceDefinition {
 	targetGroup?: elb.ApplicationTargetGroup;
 	logGroup: awsLogs.LogGroup;
 	portMappingName: string;
-	snsTopicArn?: string;
 	port?: number;
 	namespaceDnsName?: string;
 	passwordSecret?: sm.Secret;
@@ -23,5 +23,9 @@ export interface EcsServiceDefinition {
 		logsErrorsCount: awsLogs.MetricFilter;
 		logsWarningsCount: awsLogs.MetricFilter;
 		apiResponseTime: awsLogs.MetricFilter;
+	};
+
+	alarms?: {
+		[alarmName: string]: cw.Alarm;
 	};
 }
