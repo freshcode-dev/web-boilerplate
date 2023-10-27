@@ -460,7 +460,7 @@ export class MainStack extends Stack {
 		this.ecsCluster = new ecs.Cluster(this, clusterName, {
 			clusterName,
 			vpc: this.vpc,
-			containerInsights: false,
+			containerInsights: true,
 		});
 	}
 
