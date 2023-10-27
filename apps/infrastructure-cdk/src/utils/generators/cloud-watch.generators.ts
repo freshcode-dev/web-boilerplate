@@ -63,7 +63,7 @@ export const defineCommonEcsAppMetricFilters = (
 
 	const apiResponseTime = new logs.MetricFilter(
 		stack,
-		`${[stackPrefix, customMetricsPrefix].filter(Boolean).filter(Boolean).join('-')}-logs-api-response-time`,
+		`${metricIdPrefix}-logs-api-response-time`,
 		{
 			filterName: `Api Response Time`,
 			metricNamespace: customMetricsNamespace,

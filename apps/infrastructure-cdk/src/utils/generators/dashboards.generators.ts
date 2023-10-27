@@ -52,9 +52,7 @@ export const defineSystemOverviewDashboard = (
 	params: SystemOverviewDashboardParams
 ) => {
 	// create dashboard
-	const dashboard = createOverviewDashboard(stack, stackPrefix, {
-		dashboardPrefix: params.dashboardPrefix,
-	});
+	const dashboard = createOverviewDashboard(stack, stackPrefix, params);
 
 	// attach widgets to it
 	const { offsetY } = attachWidgetsToOverviewDashboard(dashboard, params);
@@ -90,7 +88,9 @@ export const createOverviewDashboard = (
 		dashboardPrefix?: string;
 	}
 ): cw.Dashboard => {
-	const dashboardIdentifier = `${[stackPrefix, params.dashboardPrefix].filter(Boolean).join('-')}-overview-dashboard`;
+	const { dashboardPrefix } = params;
+
+	const dashboardIdentifier = `${[stackPrefix, dashboardPrefix].filter(Boolean).join('-')}-overview-dashboard`;
 	const dashboard = new cw.Dashboard(stack, dashboardIdentifier, {
 		defaultInterval: Duration.days(7),
 		periodOverride: cw.PeriodOverride.AUTO,
@@ -172,18 +172,22 @@ export const attachWidgetsToOverviewDashboard = (
 		databaseIdentifier,
 	} = params;
 
-	const loadBalancerArn = loadBalancer.loadBalancerArn.slice(loadBalancer.loadBalancerArn.indexOf('/'));
-	const targetGroupArn = appDefinition.targetGroup!.targetGroupArn;
-	const backendTargetGroupArn = `targetgroup/${targetGroupArn.slice(targetGroupArn.indexOf('/'))}`;
+	if (!appDefinition.metricFilters) {
+		throw new Error('Dashboard creation requires metric filters');
+	}
+
+	if (!appDefinition.targetGroup) {
+		throw new Error('Dashboard creation requires appDefinition target group');
+	}
+
+	const loadBalancerIndex = loadBalancer.loadBalancerArn.indexOf('/');
+	const loadBalancerArn = loadBalancer.loadBalancerArn.slice(loadBalancerIndex === -1 ? 0 : loadBalancerIndex + 1);
+	const backendTargetGroup = appDefinition.targetGroup.targetGroupFullName;
 
 	const serviceName = appDefinition.service.serviceName;
 	const clusterName = appDefinition.service.cluster.clusterName;
 	const logGroupName = appDefinition.logGroup.logGroupName;
 	const alarmsArray = Object.values(appDefinition.alarms ?? {});
-
-	if (!appDefinition.metricFilters) {
-		throw new Error('Dashboard creation requires metric filters');
-	}
 
 	const {
 		logsErrorsCount: errorsCountFilter,
@@ -198,7 +202,7 @@ export const attachWidgetsToOverviewDashboard = (
 
 	const awsElbDimensionsMap = {
 		LoadBalancer: loadBalancerArn,
-		TargetGroup: backendTargetGroupArn,
+		TargetGroup: backendTargetGroup,
 	};
 
 	const awsEcsDimensionsMap = {
@@ -671,7 +675,7 @@ export const createBackendLogsMetricsWidget = (
 		width: 12,
 		queryLines: [
 			'fields @timestamp, @message, @logStream, @log',
-			'filter level = "Error"',
+			'filter level = "error"',
 			'sort @timestamp desc',
 			'limit 20',
 		],
