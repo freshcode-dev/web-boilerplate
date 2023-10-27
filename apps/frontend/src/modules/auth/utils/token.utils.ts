@@ -1,5 +1,6 @@
-import jwtDecode, { JwtPayload } from 'jwt-decode';
+import jwtDecode from 'jwt-decode';
 import { SessionState } from '../store/session.slice';
+import { JwtPayload } from '@boilerplate/shared';
 
 export const createTokenPair = (access: string | null, refresh: string | null): SessionState => {
 	try {

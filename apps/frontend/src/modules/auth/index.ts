@@ -13,9 +13,11 @@ export { syncSessionAction } from './store/actions/sync-session.action';
 export { clearSession, sessionSlice, setTokenPair, useCurrentAccessTokenSelector } from './store/session.slice';
 
 // Constants
+export * from '../../../../../../boilerplate-v2/apps/frontend/src/modules/auth/constants/auth-cache.constants';
 
 // Hooks
 export { useAuthSubscription } from './hooks/use-auth-subscription.hook';
+export { useSignOut } from './hooks/use-sign-out.hook';
 
 // Router
 export { AuthModuleRouter } from './auth.router';

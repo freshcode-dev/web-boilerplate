@@ -1,18 +1,19 @@
 import {
 	AuthResponseDto,
-	CreateUserDto,
 	RefreshDto,
 	SignInDto,
-	UserDto
+	SignUpDto,
+	IdDto,
+	AuthVerifyDto
 } from '@boilerplate/shared';
 import api from '.';
 import { updateSessionAction } from '../../modules/auth';
 
 const authApi = api.injectEndpoints({
 	endpoints: builder => ({
-		refresh: builder.mutation<AuthResponseDto, RefreshDto>({
+		sendOtp: builder.mutation<IdDto, AuthVerifyDto>({
 			query: data => ({
-				url: 'auth/refresh',
+				url: 'auth/send-otp',
 				method: 'POST',
 				body: data
 			}),
@@ -20,12 +21,30 @@ const authApi = api.injectEndpoints({
 				skipAuth: true
 			}
 		}),
-		register: builder.mutation<UserDto, CreateUserDto>({
+		refresh: builder.mutation<AuthResponseDto, RefreshDto>({
 			query: data => ({
-				url: 'users',
+				url: 'auth/refresh',
 				method: 'POST',
 				body: data
 			}),
+			invalidatesTags: ['UserProfile'],
+			extraOptions: {
+				skipAuth: true
+			}
+		}),
+		register: builder.mutation<AuthResponseDto, SignUpDto>({
+			query: data => ({
+				url: 'auth/sign-up',
+				method: 'POST',
+				body: data
+			}),
+			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+				try {
+					const response = await queryFulfilled;
+					dispatch(updateSessionAction(response.data));
+				} catch { /* empty */ }
+			},
+			invalidatesTags: ['UserProfile'],
 			extraOptions: {
 				skipAuth: true
 			}
@@ -42,6 +61,7 @@ const authApi = api.injectEndpoints({
 					dispatch(updateSessionAction(response.data));
 				} catch { /* empty */ }
 			},
+			invalidatesTags: ['UserProfile'],
 			extraOptions: {
 				skipAuth: true
 			}
@@ -52,6 +72,7 @@ const authApi = api.injectEndpoints({
 export default authApi;
 
 export const {
+	useSendOtpMutation,
 	useSignInMutation,
 	useRegisterMutation
 } = authApi;

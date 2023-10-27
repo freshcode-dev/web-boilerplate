@@ -1,97 +1,118 @@
-import * as React from 'react';
-import { Avatar, Box, Button, Container, Grid, TextField, Typography } from '@mui/material';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { FC } from 'react';
-import { Link, Navigate } from 'react-router-dom';
-import { useRegisterMutation } from "../../../../store/api/auth.api";
-import { classValidatorResolver } from "@hookform/resolvers/class-validator";
-import { CreateUserDto } from "@boilerplate/shared";
-import { useForm } from "react-hook-form";
+import React, { FC, useCallback, useEffect, useState } from 'react';
+import SignUpForm from '../../components/signup-form/signup-form.component';
+import { AuthReasonEnum, ConfirmationCodeDto } from '@boilerplate/shared';
+import ConfirmationForm from '../../components/confirmation-form/confirmation-form.component';
+import DocumentTitle from '../../../_core/components/_ui/document-title/document-title.component';
+import { useRegisterMutation, useSendOtpMutation } from '../../../../store/api/auth.api';
+import {
+	REGISTER_CACHE_KEY,
+	VERIFY_CACHE_KEY
+} from '../../../../../../../../boilerplate-v2/apps/frontend/src/modules/auth/constants/auth-cache.constants';
+import { SignUpFormDto } from '../../schemas/sign-up-form.dto';
+import { Box } from '@mui/material';
+import { containerStyles } from './signup.styles';
+import { useLangParam } from '../../hooks/use-lang-param.hook';
+import { useReferral } from '../../../users';
+import { getErrorStatusCode, getFieldFromConflictError } from '../../../_core/utils/error.utils';
 
-const resolver = classValidatorResolver(CreateUserDto);
+interface FormsState {
+	activeForm: 'profile' | 'code';
+	profile: Partial<SignUpFormDto>;
+}
 
 export const SignUpPage: FC = () => {
-	const { handleSubmit, register, formState: { errors } } = useForm<CreateUserDto>({ resolver });
-  const [registerUser, { isLoading, data }] = useRegisterMutation();
+	useLangParam();
+	const { referralId } = useReferral();
 
-	if (data) {
-		return <Navigate to="/auth/login"/>;
-	}
+	const [register, { error: registerError, reset: resetRegister }] = useRegisterMutation({
+		fixedCacheKey: REGISTER_CACHE_KEY
+	});
 
-  return (
-    <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-          <LockOutlinedIcon />
-        </Avatar>
-        <Typography component="h1" variant="h5">
-          Sign up
-        </Typography>
-        <Box component="form" noValidate onSubmit={handleSubmit(registerUser)} sx={{ mt: 3 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                autoComplete="name"
-                required
-                fullWidth
-                id="name"
-                label="Full Name"
-                autoFocus
-								error={!!errors.name}
-								{...register('name')}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                id="email"
-                label="Email Address"
-                autoComplete="email"
-								error={!!errors.email}
-								{...register('email')}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                label="Password"
-                type="password"
-                id="password"
-                autoComplete="new-password"
-								error={!!errors.password}
-								{...register('password')}
-              />
-            </Grid>
-          </Grid>
-          <Button
-            type="submit"
-            fullWidth
-						disabled={isLoading}
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-          >
-            Sign Up
-          </Button>
-          <Grid container justifyContent="flex-end">
-            <Grid item>
-              <Link to={'/auth/login'}>
-                Already have an account? Sign in
-              </Link>
-            </Grid>
-          </Grid>
-        </Box>
-      </Box>
-    </Container>
-  );
+	const [sendOtp, { error: otpError, reset: resetOtp }] = useSendOtpMutation({
+		fixedCacheKey: VERIFY_CACHE_KEY
+	});
+
+	const [{ activeForm, profile }, setFormsState] = useState<FormsState>({
+		activeForm: 'profile',
+		profile: {
+			email: '',
+			fullName: '',
+			jobTitle: '',
+			phoneNumber: '',
+			companyName: ''
+		}
+	});
+
+	const handleSignupSubmit = useCallback(async (profile: SignUpFormDto, markError: (field?: string) => void) => {
+		try {
+			await sendOtp({
+				phoneNumber: profile.phoneNumber,
+				email: profile.email,
+				reason: AuthReasonEnum.SignUp
+			}).unwrap();
+
+			setFormsState({
+				activeForm: 'code',
+				profile
+			});
+		} catch (error: any) {
+			const status = getErrorStatusCode(error);
+
+			if (status === 409) {
+				const field = getFieldFromConflictError(error);
+
+				markError(field ?? undefined);
+			}
+		}
+	}, [sendOtp]);
+
+	const goToSignup = useCallback(() => {
+		setFormsState(state => ({
+			...state,
+			activeForm: 'profile'
+		}));
+	}, []);
+
+	const handleCodeSubmit = useCallback(async ({ code }: ConfirmationCodeDto, markError: () => void) => {
+		try {
+			await register({
+				...(profile as SignUpFormDto),
+				code,
+				referralId: referralId ?? undefined
+			}).unwrap();
+		} catch {
+			markError();
+		}
+	}, [referralId, profile, register]);
+
+	useEffect(() => () => {
+			resetOtp();
+			resetRegister();
+		}, []);
+
+	return (
+		<Box sx={containerStyles}>
+			<DocumentTitle />
+			{activeForm === 'profile' && (
+				<SignUpForm
+					error={otpError}
+					profile={profile}
+					onSubmit={handleSignupSubmit}
+				/>
+			)}
+			{activeForm === 'code' && (
+				<ConfirmationForm
+					phoneNumber={profile.phoneNumber}
+					error={registerError}
+					onSubmit={handleCodeSubmit}
+					onBack={goToSignup}
+				/>
+			)}
+			<div>
+
+			</div>
+		</Box>
+	);
 };
 
 export default SignUpPage;

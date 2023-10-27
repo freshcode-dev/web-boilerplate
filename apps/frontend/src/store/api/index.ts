@@ -5,7 +5,7 @@ const api = createApi({
 	reducerPath: 'api',
 	baseQuery: baseQueryWithReAuth,
 	endpoints: () => ({}),
-	tagTypes: [],
+	tagTypes: ['UserProfile'],
 });
 
 export default api;

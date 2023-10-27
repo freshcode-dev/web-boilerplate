@@ -12,6 +12,7 @@ yarn-error.log*
 
 # dependencies
 **/node_modules
+/.nx
 
 # IDEs and editors
 /.idea
