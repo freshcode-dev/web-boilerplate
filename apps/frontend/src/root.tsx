@@ -18,7 +18,7 @@ const UnauthorizedArea = lazy(async () => import('./modules/_core/areas/unauthor
 
 const Root: FC = () => {
 	useAuthSubscription();
-	const { t } = useTranslation();
+	const [t] = useTranslation();
 
 	/**
 	 * The function is supposed to contain any routes restriction logic

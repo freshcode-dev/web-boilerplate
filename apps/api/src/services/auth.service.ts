@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { AuthResponseDto, SignInDto, UserDto } from '@boilerplate/shared';
+import { AuthResponseDto, SignInEmailDto, UserDto } from '@boilerplate/shared';
 import { verify } from 'argon2';
 import { argon2DefaultConfig } from '../constants';
 import { SessionsService } from './sessions.service';
@@ -14,7 +14,7 @@ export class AuthService {
 	) {
 	}
 
-	public async authenticateUser(credentials: SignInDto): Promise<AuthResponseDto> {
+	public async authenticateUser(credentials: SignInEmailDto): Promise<AuthResponseDto> {
 		const { email, password } = credentials;
 
 		const user = await this.verifyUserCredentials(email, password);

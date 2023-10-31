@@ -8,7 +8,7 @@ import { TitleHandle } from '../interfaces/title-handle.interface';
  * @example { ...routeDefinition, handle: { title: 'nav.demo' } }
  */
 export const usePageTitle = (): string => {
-	const { t } = useTranslation();
+	const [t] = useTranslation();
 
 	const matches = useMatches();
 
@@ -16,12 +16,12 @@ export const usePageTitle = (): string => {
 		const matchWithTitle = matches.find(({ handle }) => !!(handle as TitleHandle)?.title);
 
 		if (!matchWithTitle) {
-			return t('nav.root-title');
+			return t('nav.root-title') as string;
 		}
 
 		const handle = matchWithTitle.handle as TitleHandle;
 
-		return t(handle.title);
+		return t(handle.title) as string;
 	}, [t, matches]);
 };
 

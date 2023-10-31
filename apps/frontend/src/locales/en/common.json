@@ -9,6 +9,43 @@
 		"sign-in": "Login",
 		"sign-up": "Register"
 	},
+	"sign-up": {
+		"account-register": "Create a Personal Account",
+		"user-already-registered": "The user with the entered data is already registered in the system.",
+		"too-many-requests": "Too many attempts. Please try again in 5 minutes",
+		"check-data-or-login": "Registration is not possible. Please correct the entered data\nor <0>Log in</0>",
+		"registration-form": {
+			"company-name-ph": "Enter the company name...",
+			"full-name-ph": "Enter the full name...",
+			"email-ph": "Enter your email...",
+			"company-name": "Company",
+			"full-name": "Full name",
+			"phone-number": "Phone number",
+			"email": "Email",
+			"confirm": "Next"
+		}
+	},
+	"sign-in": {
+		"too-many-requests": "Too many attempts. Please try again in 5 minutes",
+		"account-sign-in": "Login to Personal Account",
+		"check-number-or-register": "Please check if the entered phone number is correct, or <0>Register</0>",
+		"administration-contact": "Need to change your phone number? Contact us: Email: <0>office@barvainvest.com</0> Phone: <1>+38 (044)-384-25-84</1>",
+		"sign-in-form": {
+			"phone-number": "Phone number",
+			"confirm": "Next"
+		}
+	},
+	"auth-confirmation": {
+		"too-many-requests": "Too many attempts. Please try again in 5 minutes",
+		"enter-code": "Enter the Verification Code",
+		"resend-code": "Didn't receive a verification code? Click <0>Resend</0>",
+		"check-and-resend-code": "Incorrect code. Please check if the entered code is correct or click <0>Resend</0>",
+		"confirmation-flow-description": "You should receive a text message (SMS) on your phone with a confirmation code",
+		"confirm-form": {
+			"back": "Back",
+			"confirm": "Next"
+		}
+	},
 	"defaults": {
 		"modals": {
 			"confirmation-title": "Confirmation is required",

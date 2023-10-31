@@ -7,8 +7,8 @@ import { useRegisterMutation, useSendOtpMutation } from '../../../../store/api/a
 import {
 	REGISTER_CACHE_KEY,
 	VERIFY_CACHE_KEY
-} from '../../../../../../../../boilerplate-v2/apps/frontend/src/modules/auth/constants/auth-cache.constants';
-import { SignUpFormDto } from '../../schemas/sign-up-form.dto';
+} from '../../constants/auth-cache.constants';
+import { SignUpFormDto } from '../../models/sign-up-form.dto';
 import { Box } from '@mui/material';
 import { containerStyles } from './signup.styles';
 import { useLangParam } from '../../hooks/use-lang-param.hook';
@@ -36,8 +36,7 @@ export const SignUpPage: FC = () => {
 		activeForm: 'profile',
 		profile: {
 			email: '',
-			fullName: '',
-			jobTitle: '',
+			name: '',
 			phoneNumber: '',
 			companyName: ''
 		}
@@ -55,11 +54,11 @@ export const SignUpPage: FC = () => {
 				activeForm: 'code',
 				profile
 			});
-		} catch (error: any) {
-			const status = getErrorStatusCode(error);
+		} catch (error) {
+			const status = getErrorStatusCode(error as Error);
 
 			if (status === 409) {
-				const field = getFieldFromConflictError(error);
+				const field = getFieldFromConflictError(error as Error);
 
 				markError(field ?? undefined);
 			}
@@ -88,7 +87,7 @@ export const SignUpPage: FC = () => {
 	useEffect(() => () => {
 			resetOtp();
 			resetRegister();
-		}, []);
+		}, [resetOtp, resetRegister]);
 
 	return (
 		<Box sx={containerStyles}>

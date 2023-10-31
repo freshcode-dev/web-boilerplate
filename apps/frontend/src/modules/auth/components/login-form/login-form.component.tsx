@@ -4,14 +4,14 @@ import CoreButton from '../../../_core/components/_ui/core-button/core-button.co
 import { useTranslation } from 'react-i18next';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { FormControlsContainer } from '../_ui/form-controls/form-controls-container.component';
-import { PhoneInput } from '../../../_core/components/phone-input';
+import { PhoneInput } from '../../../_core/components/_ui/phone-input';
 import { useForm } from 'react-hook-form';
-import { PhoneDto } from '@barva/shared';
 import { errorMessage } from '../../../_core/utils/lang.utils';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
 import { SerializedError } from '@reduxjs/toolkit';
 import LoginErrorLabel from './login-error-label.component';
 import { titleStyles } from './login-form.styles';
+import { PhoneDto } from '@boilerplate/shared';
 
 const resolver = classValidatorResolver(PhoneDto);
 
@@ -24,43 +24,34 @@ interface LoginFormProps {
 const LoginForm: FC<LoginFormProps> = (props) => {
 	const { error, onSubmit, phoneNumber } = props;
 
-	const { t } = useTranslation();
+	const [t] = useTranslation();
 
 	const {
 		control,
 		handleSubmit,
 		setError,
-		formState: {
-			errors,
-			isValid,
-			isSubmitted,
-			isDirty,
-			isSubmitting,
-		}
+		formState: { errors, isValid, isSubmitted, isDirty, isSubmitting },
 	} = useForm<PhoneDto>({
 		resolver,
 		defaultValues: {
-			phoneNumber
-		}
+			phoneNumber,
+		},
 	});
 
 	const disableSubmit = !isValid && (isDirty || isSubmitted);
 
-	const handleFormSubmit = useCallback((values: PhoneDto) => onSubmit(
-			values,
-			() => setError('phoneNumber', { type: "isPhoneNumber" })
-		), [setError, onSubmit]);
+	const handleFormSubmit = useCallback(
+		(values: PhoneDto) => {
+			onSubmit(values, () => {
+				setError('phoneNumber', { type: 'isPhoneNumber' });
+			});
+		},
+		[setError, onSubmit]
+	);
 
 	return (
-		<Box
-			component='form'
-			noValidate
-			onSubmit={handleSubmit(handleFormSubmit)}
-		>
-			<Typography
-				variant='h1'
-				sx={titleStyles}
-			>
+		<Box component="form" noValidate onSubmit={handleSubmit(handleFormSubmit)}>
+			<Typography variant="h1" sx={titleStyles}>
 				{t('sign-in.account-sign-in')}
 			</Typography>
 			<PhoneInput
@@ -72,16 +63,9 @@ const LoginForm: FC<LoginFormProps> = (props) => {
 				error={!!errors.phoneNumber}
 				helperText={errorMessage(t, errors.phoneNumber?.type)}
 			/>
-			{error && (
-				<LoginErrorLabel error={error} />
-			)}
+			{error && <LoginErrorLabel error={error} />}
 			<FormControlsContainer>
-				<CoreButton
-					type="submit"
-					disabled={disableSubmit}
-					loading={isSubmitting}
-					sx={{ minWidth: 104 }}
-				>
+				<CoreButton type="submit" disabled={disableSubmit} loading={isSubmitting} sx={{ minWidth: 104 }}>
 					{t('sign-in.sign-in-form.confirm')}
 				</CoreButton>
 			</FormControlsContainer>

@@ -49,7 +49,9 @@ const ConfirmationForm: FC<ConfirmationFormProps> = (props) => {
 
 		return onSubmit(
 			values,
-			() => setError('code', { type: 'invalidCodeError' })
+			() => {
+				setError('code', { type: 'invalidCodeError' });
+			},
 		);
 	}, [onSubmit, reset, setError]);
 

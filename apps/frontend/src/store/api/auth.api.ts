@@ -1,10 +1,11 @@
 import {
 	AuthResponseDto,
 	RefreshDto,
-	SignInDto,
+	SignInEmailDto,
 	SignUpDto,
 	IdDto,
-	AuthVerifyDto
+	AuthVerifyDto,
+	SignInPhoneDto
 } from '@boilerplate/shared';
 import api from '.';
 import { updateSessionAction } from '../../modules/auth';
@@ -49,9 +50,26 @@ const authApi = api.injectEndpoints({
 				skipAuth: true
 			}
 		}),
-		signIn: builder.mutation<AuthResponseDto, SignInDto>({
+		signInWithPhone: builder.mutation<AuthResponseDto, SignInPhoneDto>({
 			query: data => ({
-				url: `auth/sign-in`,
+				url: `auth/sign-in/phone`,
+				method: 'POST',
+				body: data
+			}),
+			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+				try {
+					const response = await queryFulfilled;
+					dispatch(updateSessionAction(response.data));
+				} catch { /* empty */ }
+			},
+			invalidatesTags: ['UserProfile'],
+			extraOptions: {
+				skipAuth: true
+			}
+		}),
+		signInWithEmail: builder.mutation<AuthResponseDto, SignInEmailDto>({
+			query: data => ({
+				url: `auth/sign-in/email`,
 				method: 'POST',
 				body: data
 			}),
@@ -73,6 +91,7 @@ export default authApi;
 
 export const {
 	useSendOtpMutation,
-	useSignInMutation,
+	useSignInWithPhoneMutation,
+	useSignInWithEmailMutation,
 	useRegisterMutation
 } = authApi;

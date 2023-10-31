@@ -4,4 +4,3 @@ export class ConfirmationCodeDto {
 	@VerificationCode()
 	code: string;
 }
-

@@ -1,1 +1,1 @@
-export * from './core-textfield';
+export * from './core-textfield.component';

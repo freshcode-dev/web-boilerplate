@@ -15,7 +15,7 @@ interface CountryOptionProps extends CountryPhoneOption {
 const CountryOption: FC<CountryOptionProps> = (props) => {
 	const { code, callingCode, onChange, selected, ...menuItemProps } = props;
 
-	const { t } = useTranslation();
+	const [t] = useTranslation();
 
 	const handleClick = useCallback(() => {
 		onChange?.(code);

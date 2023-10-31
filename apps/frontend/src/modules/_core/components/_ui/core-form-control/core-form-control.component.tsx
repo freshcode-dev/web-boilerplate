@@ -1,6 +1,6 @@
 import React, { FC, ReactNode } from "react";
 import { Box, FormControl, FormHelperText, FormLabel, SxProps, Theme } from "@mui/material";
-import { labelStyle } from "apps/frontend/src/modules/_core/components/_ui/core-form-control/core-form-control.styles";
+import { labelStyle } from "./core-form-control.styles";
 import ExclamationTooltip from "../exclamation-tooltip/exclamation-tooltip.component";
 
 export interface CoreFormControlProps {

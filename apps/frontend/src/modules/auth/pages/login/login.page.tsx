@@ -3,12 +3,13 @@ import { Box } from '@mui/material';
 import LoginForm from "../../components/login-form/login-form.component";
 import LoginFooter from '../../components/_ui/login-footer/login-footer.component';
 import ConfirmationForm from "../../components/confirmation-form/confirmation-form.component";
-import { AuthReasonEnum, ConfirmationCodeDto, PhoneDto } from "@barva/shared";
 import DocumentTitle from "../../../_core/components/_ui/document-title/document-title.component";
-import { useSignInMutation, useSendOtpMutation } from "../../../../store/api/auth.api";
-import { SIGN_IN_CACHE_KEY, VERIFY_CACHE_KEY } from "../../../../../../../../boilerplate-v2/apps/frontend/src/modules/auth/constants/auth-cache.constants";
+import { useSendOtpMutation, useSignInWithPhoneMutation } from "../../../../store/api/auth.api";
+import { SIGN_IN_CACHE_KEY, VERIFY_CACHE_KEY } from "../../constants/auth-cache.constants";
 import { wrapperStyles } from "./login.styles";
 import { useLangParam } from "../../hooks/use-lang-param.hook";
+import { getErrorStatusCode } from '../../../_core/utils/error.utils';
+import { AuthReasonEnum, ConfirmationCodeDto, PhoneDto } from '@boilerplate/shared';
 
 interface FormsState {
 	activeForm: 'phone' | 'code';
@@ -18,7 +19,7 @@ interface FormsState {
 const LoginPage: FC = () => {
 	useLangParam();
 
-	const [signIn, { error: signInError, reset: resetSignIn }] = useSignInMutation({
+	const [signInPhone, { error: signInError, reset: resetSignIn }] = useSignInWithPhoneMutation({
 		fixedCacheKey: SIGN_IN_CACHE_KEY
 	});
 
@@ -42,8 +43,8 @@ const LoginPage: FC = () => {
 				activeForm: 'code',
 				phoneNumber
 			});
-		} catch (error: any) {
-			const status = 'status' in error ? error.status : null;
+		} catch (error) {
+			const status = getErrorStatusCode(error as Error);
 
 			if (status === 404) {
 				markError();
@@ -60,19 +61,19 @@ const LoginPage: FC = () => {
 
 	const handleCodeSubmit = useCallback(async ({ code }: ConfirmationCodeDto, markError: () => void) => {
 		try {
-			await signIn({
+			await signInPhone({
 				code,
 				phoneNumber: phoneNumber as string
 			}).unwrap();
 		} catch {
 			markError();
 		}
-	}, [signIn, phoneNumber]);
+	}, [signInPhone, phoneNumber]);
 
 	useEffect(() => () => {
 		resetSignIn();
 		resetOtp();
-	}, []);
+	}, [resetOtp, resetSignIn]);
 
 	return (
 		<Box
@@ -86,7 +87,6 @@ const LoginPage: FC = () => {
 			<Box sx={wrapperStyles}>
 				{activeForm === 'phone' && (
 					<LoginForm
-						key={}
 						error={otpError}
 						onSubmit={handleLoginFormSubmit}
 						phoneNumber={phoneNumber ?? undefined}

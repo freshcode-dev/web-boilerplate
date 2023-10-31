@@ -13,6 +13,9 @@ export class User {
 	email: string;
 
 	@Column()
+	phoneNumber: string;
+
+	@Column()
 	password: string;
 
 	@OneToMany(() => Session, session => session.user)

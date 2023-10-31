@@ -12,7 +12,7 @@ interface SignupErrorLabelProps {
 const SignupErrorLabel: FC<SignupErrorLabelProps> = (props) => {
 	const { error } = props;
 
-	const { t } = useTranslation();
+	const [t] = useTranslation();
 
 	const getErrorText = () => {
 		const status = 'status' in error ? error.status : null;

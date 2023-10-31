@@ -10,7 +10,7 @@ export class AuthVerifyDto implements PhoneDto, Partial<EmailDto> {
 	@IsPhoneNumber()
 	phoneNumber: string;
 
-	@ValidateIf(object => object.reason === AuthReasonEnum.SignUp)
+	@ValidateIf((object: AuthVerifyDto) => object.reason === AuthReasonEnum.SignUp)
 	@IsEmail()
 	email?: string;
 }

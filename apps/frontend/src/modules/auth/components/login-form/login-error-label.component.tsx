@@ -12,7 +12,7 @@ interface LoginErrorLabelProps {
 const LoginErrorLabel: FC<LoginErrorLabelProps> = (props) => {
 	const { error } = props;
 
-	const { t } = useTranslation();
+	const [t] = useTranslation();
 
 	const status = 'status' in error ? error.status : null;
 

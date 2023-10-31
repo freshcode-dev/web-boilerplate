@@ -1,6 +1,6 @@
 import { Body, Controller, Post, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
-import { AuthResponseDto, SessionDto, SignInDto } from '@boilerplate/shared';
+import { AuthResponseDto, SessionDto, SignInEmailDto } from '@boilerplate/shared';
 import { JwtRefreshGuard } from '../services/guard/jwt-refresh.guard';
 import { AuthRequest } from '../interfaces/auth-request';
 import { SessionsService } from '../services/sessions.service';
@@ -13,8 +13,8 @@ export class AuthController {
 	) {
 	}
 
-	@Post('sign-in')
-	async signIn(@Body() credentials: SignInDto): Promise<AuthResponseDto> {
+	@Post('sign-in/email')
+	async signIn(@Body() credentials: SignInEmailDto): Promise<AuthResponseDto> {
 		return await this.authService.authenticateUser(credentials);
 	}
 

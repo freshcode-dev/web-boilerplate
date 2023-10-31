@@ -1,16 +1,17 @@
-import React, { FC, useCallback, useRef, useState } from 'react';
-import Flags, { FlagComponent } from 'country-flag-icons/react/3x2';
-import { Country } from 'react-phone-number-input';
+import React, { FC, useCallback, useRef, useState } from "react";
+import Flags, { FlagComponent } from "country-flag-icons/react/3x2";
+import { Country } from "react-phone-number-input";
 import Input from 'react-phone-number-input/react-hook-form';
-import { CoreFormControlProps } from '../_ui/core-form-control';
-import PhoneForwardedTextField from './phone-forwarded-text-field.component';
-import CountriesMenu from './countries-menu.component';
-import { CountryPhoneOptions } from '../../constants/country-phone.constants';
-import { Control } from 'react-hook-form';
+import { CoreFormControlProps } from "../core-form-control/core-form-control.component";
+import PhoneForwardedTextField from "./phone-forwarded-text-field.component";
+import CountriesMenu from "./countries-menu.component";
+import { CountryPhoneOptions } from "../../../constants/country-phone.constants";
+import { Control } from "react-hook-form";
 
-export const FlagsList = Flags as Record<Country, FlagComponent>;
+export const FlagsList: Record<Country, FlagComponent> = Flags as Record<Country, FlagComponent>;
 
 interface PhoneInputProps extends CoreFormControlProps {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	control: Control<any>;
 	name: string;
 }

@@ -1,6 +1,6 @@
 import { IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { OrderedBy } from '../models/filters/order-by.filter';
+import { OrderedBy } from '../models/filters';
 
 interface OrderedByClass<T> {
 	new(): OrderedBy<T>;

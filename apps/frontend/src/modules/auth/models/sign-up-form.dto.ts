@@ -1,5 +1,3 @@
-import { UserPayloadDto } from '@barva/shared';
+import { SignUpDto } from '@boilerplate/shared';
 
-export class SignUpFormDto extends UserPayloadDto {
-	companyName: string;
-}
+export class SignUpFormDto extends SignUpDto {}
