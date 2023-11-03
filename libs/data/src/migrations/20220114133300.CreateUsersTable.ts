@@ -29,18 +29,18 @@ export class CreateUsersTable20220114133300 implements RunnableMigration<Migrati
 					name: 'email',
 					type: 'text',
 					isUnique: true,
-					isNullable: false
+					isNullable: true
 				},
 				{
 					name: 'phoneNumber',
 					type: 'text',
 					isUnique: true,
-					isNullable: false
+					isNullable: true
 				},
 				{
 					name: 'password',
 					type: 'text',
-					isNullable: false
+					isNullable: true
 				},
 				{
 					name: 'createdAt',

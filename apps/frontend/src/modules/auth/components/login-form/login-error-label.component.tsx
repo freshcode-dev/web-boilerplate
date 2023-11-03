@@ -1,37 +1,39 @@
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
-import { SerializedError } from "@reduxjs/toolkit";
-import React, { FC } from "react";
-import { Trans, useTranslation } from "react-i18next";
-import CoreLinkButton from "../../../_core/components/_ui/core-button/core-link-button.component";
-import { Typography } from "@mui/material";
+import React, { FC } from 'react';
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
+import { SerializedError } from '@reduxjs/toolkit';
+import { Trans, useTranslation } from 'react-i18next';
+import CoreLinkButton from '../../../_core/components/_ui/core-button/core-link-button.component';
+import { Typography } from '@mui/material';
+import { AuthRoutes } from '../../../../constants/routes';
 
 interface LoginErrorLabelProps {
-	error: FetchBaseQueryError | SerializedError;
+	error?: FetchBaseQueryError | SerializedError;
+	errorI18nKey?: string;
 }
 
 const LoginErrorLabel: FC<LoginErrorLabelProps> = (props) => {
-	const { error } = props;
+	const { error, errorI18nKey } = props;
 
 	const [t] = useTranslation();
 
-	const status = 'status' in error ? error.status : null;
+	const status = error && 'status' in error ? error.status : null;
 
 	const getErrorText = () => {
 		if (status === 429) {
-			return (
-				<>
-					{t('sign-in.too-many-requests')}
-				</>
-			);
+			return <>{t('sign-in.too-many-requests')}</>;
 		}
 
 		return (
 			<Trans
-				i18nKey='sign-in.check-number-or-register'
-				components={[<CoreLinkButton to='/auth/sign-up'/>]}
+				i18nKey={errorI18nKey ?? 'sign-in.check-number-or-register'}
+				components={[<CoreLinkButton to={AuthRoutes.signUp} />]}
 			/>
 		);
 	};
+
+	if (!error) {
+		return null;
+	}
 
 	return (
 		<Typography
@@ -40,15 +42,13 @@ const LoginErrorLabel: FC<LoginErrorLabelProps> = (props) => {
 				{
 					textAlign: 'center',
 					mt: 4,
-					color: ({ colors }) => (status === 429
-						? colors.red
-						: colors.black)
+					color: ({ colors }) => (status === 429 ? colors.red : colors.black),
 				},
 				({ breakpoints }) => ({
 					[breakpoints.down('sm')]: {
-						mt: 3
-					}
-				})
+						mt: 3,
+					},
+				}),
 			]}
 		>
 			{getErrorText()}

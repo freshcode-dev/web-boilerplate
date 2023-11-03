@@ -14,10 +14,10 @@ export class SessionsService {
 	) {}
 
 	public async updateSessionToken(id: string, tokenId: string, issuedAt: Date): Promise<SessionDto> {
-		const session = new Session();
+		const session = await this.getSessionById(id);
 
 		session.tokenId = randomUUID();
-		session.expiredAt = this.tokensService.getRefreshExpirationDate(issuedAt);
+		session.expiredAt = this.tokensService.getRefreshExpirationDate(issuedAt, session.rememberMe);
 
 		const { affected } = await this.sessionRepository.update(
 			{ id, tokenId },
@@ -33,12 +33,14 @@ export class SessionsService {
 
 	public async createSession(
 		userId: string,
-		issuedAt: Date
+		issuedAt: Date,
+		isRememberMe = true
 	): Promise<SessionDto> {
 		const session = new Session();
 
 		session.userId = userId;
-		session.expiredAt = this.tokensService.getRefreshExpirationDate(issuedAt);
+		session.rememberMe = isRememberMe;
+		session.expiredAt = this.tokensService.getRefreshExpirationDate(issuedAt, isRememberMe);
 
 		await this.sessionRepository.insert(session);
 

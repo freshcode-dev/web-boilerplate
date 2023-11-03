@@ -7,22 +7,23 @@ import { FormControlsContainer } from '../_ui/form-controls/form-controls-contai
 import { PhoneInput } from '../../../_core/components/_ui/phone-input/phone-input.component';
 import { useForm } from 'react-hook-form';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
-import { SignUpFormDto } from '../../models/sign-up-form.dto';
 import { SerializedError } from '@reduxjs/toolkit';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
 import SignupErrorLabel from './signup-error-label.component';
 import { titleStyles } from '../login-form/login-form.styles';
 import { textFieldWrapperStyles } from './signup-form.styles';
+import { SignUpWithEmailFormData } from '../../models/sign-up-form.dto';
+import { CorePasswordInput } from '../../../_core/components/_ui/core-password-input';
 
-const resolver = classValidatorResolver(SignUpFormDto);
+const resolver = classValidatorResolver(SignUpWithEmailFormData);
 
-interface SignUpFormProps {
+export interface SignUpWithEmailFormProps {
 	error?: FetchBaseQueryError | SerializedError;
-	profile: Partial<SignUpFormDto>;
-	onSubmit(values: SignUpFormDto, markError: () => void): void;
+	profile: Partial<SignUpWithEmailFormData>;
+	onSubmit(values: SignUpWithEmailFormData, markError: () => void): void;
 }
 
-const SignUpForm: FC<SignUpFormProps> = (props) => {
+const SignUpWithEmailForm: FC<SignUpWithEmailFormProps> = (props) => {
 	const { error, onSubmit, profile } = props;
 
 	const [t] = useTranslation();
@@ -33,7 +34,7 @@ const SignUpForm: FC<SignUpFormProps> = (props) => {
 		setError,
 		register,
 		formState: { isSubmitting, isSubmitted, isDirty, isValid, errors },
-	} = useForm<SignUpFormDto>({
+	} = useForm<SignUpWithEmailFormData>({
 		resolver,
 		defaultValues: profile,
 	});
@@ -41,7 +42,7 @@ const SignUpForm: FC<SignUpFormProps> = (props) => {
 	const disableSubmit = !isValid && (isDirty || isSubmitted);
 
 	const handleFormSubmit = useCallback(
-		(values: SignUpFormDto) => {
+		(values: SignUpWithEmailFormData) => {
 			onSubmit(values, (field?: string) => {
 				if (field === 'phoneNumber') {
 					setError('phoneNumber', { type: 'isUniqueNumber' });
@@ -58,15 +59,6 @@ const SignUpForm: FC<SignUpFormProps> = (props) => {
 			<Typography variant="h1" sx={titleStyles}>
 				{t('sign-up.account-register')}
 			</Typography>
-			<CoreTextField
-				fullWidth
-				id="company-name"
-				controlSx={textFieldWrapperStyles}
-				label={t('sign-up.registration-form.company-name')}
-				placeholder={t('sign-up.registration-form.company-name-ph') ?? ''}
-				{...register('companyName')}
-				error={!!errors.companyName}
-			/>
 			<CoreTextField
 				fullWidth
 				id="full-name"
@@ -90,10 +82,29 @@ const SignUpForm: FC<SignUpFormProps> = (props) => {
 				id="email"
 				placeholder={t('sign-up.registration-form.email-ph') ?? ''}
 				label={t('sign-up.registration-form.email')}
+				controlSx={textFieldWrapperStyles}
 				{...register('email')}
 				error={!!errors.email}
 			/>
-			{error && <SignupErrorLabel error={error} />}
+			<CorePasswordInput
+				fullWidth
+				id="password"
+				placeholder={t('sign-up.registration-form.password-ph') ?? ''}
+				label={t('sign-up.registration-form.password')}
+				controlSx={textFieldWrapperStyles}
+				{...register('password')}
+				error={!!errors.password}
+			/>
+			<CorePasswordInput
+				fullWidth
+				id="confirm-password"
+				placeholder={t('sign-up.registration-form.confirmPassword') ?? ''}
+				label={t('sign-up.registration-form.confirmPassword')}
+				controlSx={textFieldWrapperStyles}
+				{...register('confirmPassword')}
+				error={!!errors.confirmPassword}
+			/>
+			<SignupErrorLabel error={error} />
 			<FormControlsContainer>
 				<CoreButton loading={isSubmitting} type="submit" disabled={disableSubmit} sx={{ minWidth: 104 }}>
 					{t('sign-up.registration-form.confirm')}
@@ -103,4 +114,4 @@ const SignUpForm: FC<SignUpFormProps> = (props) => {
 	);
 };
 
-export default SignUpForm;
+export default SignUpWithEmailForm;

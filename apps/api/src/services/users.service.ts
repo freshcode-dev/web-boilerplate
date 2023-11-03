@@ -1,8 +1,8 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUserDto, UserDto } from '@boilerplate/shared';
+import { CreateUserDto, IdDto, UserDto } from '@boilerplate/shared';
 import { User } from '@boilerplate/data';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QueryFailedError, Repository } from 'typeorm';
+import { ILike, Not, QueryFailedError, Repository } from 'typeorm';
 import { hash } from 'argon2';
 import { argon2DefaultConfig, DbErrorCodes } from '../constants';
 import { DatabaseError } from 'pg';
@@ -16,18 +16,23 @@ export class UsersService {
 		@InjectMapper() private readonly mapper: Mapper
 	) {}
 
+	public async findUserByPhone(phoneNumber: string): Promise<User | null> {
+		return this.usersRepository.findOne({ where: { phoneNumber }});
+	}
+
 	public async findByEmail(email: string): Promise<User | null> {
 		return this.usersRepository.findOne({ where: { email } });
 	}
 
-	public async create(userDto: CreateUserDto): Promise<UserDto> {
+	public async registerUser(userDto: CreateUserDto): Promise<UserDto> {
 		try {
 			const { name, password, email } = userDto;
 
 			const user = new User();
 			user.name = name;
+			user.phoneNumber = userDto.phoneNumber;
 			user.email = email;
-			user.password = await hash(password, argon2DefaultConfig);
+			user.password = password ? await hash(password, argon2DefaultConfig): password;
 
 			await this.usersRepository.insert(user);
 
@@ -62,4 +67,49 @@ export class UsersService {
 
 		return user;
 	}
+
+	public async verifyIsPhoneUnique(phoneNumber: string, phoneBlacklistUserId?: string): Promise<IdDto> {
+		const user = await this.usersRepository.findOne({
+			where: {
+				id: phoneBlacklistUserId
+					? Not(phoneBlacklistUserId)
+					: undefined,
+				phoneNumber
+			}
+		});
+
+		if (user) {
+			throw new ConflictException(
+				{ field: 'phoneNumber' },
+				'Phone number is already in use'
+			);
+		}
+
+		return {
+			id: phoneNumber
+		};
+	}
+
+	public async verifyIsEmailUnique(email: string, phoneBlacklistUserId?: string): Promise<IdDto> {
+		const user = await this.usersRepository.findOne({
+			where: {
+				id: phoneBlacklistUserId
+					? Not(phoneBlacklistUserId)
+					: undefined,
+				email: ILike(email),
+			}
+		});
+
+		if (user) {
+			throw new ConflictException(
+				{ field: 'email' },
+				'Email is already in use'
+			);
+		}
+
+		return {
+			id: email
+		};
+	}
+
 }

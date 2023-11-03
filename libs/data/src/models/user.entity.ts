@@ -10,13 +10,13 @@ export class User {
 	name: string;
 
 	@Column()
-	email: string;
+	email?: string;
 
 	@Column()
-	phoneNumber: string;
+	phoneNumber?: string;
 
 	@Column()
-	password: string;
+	password?: string;
 
 	@OneToMany(() => Session, session => session.user)
 	sessions: Session[];

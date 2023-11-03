@@ -57,7 +57,7 @@ export const CoreFormControl: FC<CoreFormControlProps> = (props) => {
 					{requiredMark && (
 						<Box
 							component="span"
-							sx={{ color: theme => theme.colors.red }}
+							sx={{ color: theme => theme.colors.red, ml: 0.5 }}
 						>
 							*
 						</Box>

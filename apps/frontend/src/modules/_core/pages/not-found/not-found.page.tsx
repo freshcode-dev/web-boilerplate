@@ -6,7 +6,7 @@ const NotFoundPage: FC = () => (
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: "15%",
+    paddingTop: "15%",
   }}>
     404 ERROR: PAGE NOT FOUND
   </Box>

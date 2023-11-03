@@ -7,3 +7,9 @@ export const selectPaperStyles: SxProps<Theme> = {
 	boxShadow: '0px 4px 4px rgba(68, 71, 77, 0.08)',
 	marginTop: '4px'
 };
+
+export const selectCheckboxStyles: SxProps<Theme> = {
+	// marginLeft: '-13px',
+	marginRight: '14px',
+	padding: '0'
+};

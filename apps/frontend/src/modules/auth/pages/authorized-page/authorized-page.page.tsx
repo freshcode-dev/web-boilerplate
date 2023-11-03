@@ -17,8 +17,7 @@ export const AuthorizedPage: FC = () => {
 		<Container component="main" maxWidth="xs">
 			{data && (
 				<ProfileCard
-					name={data.name}
-					email={data.email}
+					profile={data}
 					onLogout={handleLogout}
 				/>
 			)}

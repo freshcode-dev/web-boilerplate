@@ -13,14 +13,16 @@
 		"account-register": "Create a Personal Account",
 		"user-already-registered": "The user with the entered data is already registered in the system.",
 		"too-many-requests": "Too many attempts. Please try again in 5 minutes",
+		"login-link": "Already have an account? <0>Login</0>",
 		"check-data-or-login": "Registration is not possible. Please correct the entered data\nor <0>Log in</0>",
 		"registration-form": {
-			"company-name-ph": "Enter the company name...",
 			"full-name-ph": "Enter the full name...",
 			"email-ph": "Enter your email...",
-			"company-name": "Company",
 			"full-name": "Full name",
 			"phone-number": "Phone number",
+			"password-ph": "Enter Password",
+			"password": "Password",
+			"confirmPassword": "Confirm Password",
 			"email": "Email",
 			"confirm": "Next"
 		}
@@ -28,10 +30,19 @@
 	"sign-in": {
 		"too-many-requests": "Too many attempts. Please try again in 5 minutes",
 		"account-sign-in": "Login to Personal Account",
+		"login-via-email": "Login via email",
+		"login-via-phone": "Login via phone",
 		"check-number-or-register": "Please check if the entered phone number is correct, or <0>Register</0>",
-		"administration-contact": "Need to change your phone number? Contact us: Email: <0>office@barvainvest.com</0> Phone: <1>+38 (044)-384-25-84</1>",
+		"check-email-or-register": "Please check if the entered email is correct, or <0>Register</0>",
+		"register-link": "Don't have an account? <0>Register</0>",
+		"enter-password": "Enter your password",
 		"sign-in-form": {
 			"phone-number": "Phone number",
+			"email": "Email",
+			"password": "Password",
+			"forgot-password": "Forgot password?",
+			"remember-me": "Remember me",
+			"back": "Back",
 			"confirm": "Next"
 		}
 	},
@@ -45,6 +56,13 @@
 			"back": "Back",
 			"confirm": "Next"
 		}
+	},
+	"profile": {
+		"title": "Profile",
+		"logout": "Logout",
+		"name": "Name",
+		"phone": "Phone",
+		"email": "Email"
 	},
 	"defaults": {
 		"modals": {

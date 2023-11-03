@@ -4,6 +4,7 @@ export * from './confirmation-code.dto';
 export * from './create-user.dto';
 export * from './email.dto';
 export * from './id.dto';
+export * from './password.dto';
 export * from './phone.dto';
 export * from './session.dto';
 export * from './sign-in.dto';

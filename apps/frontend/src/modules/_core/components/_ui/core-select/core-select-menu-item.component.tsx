@@ -2,7 +2,7 @@ import { forwardRef, FC } from "react";
 import { styled } from "@mui/material/styles";
 import { MenuItem, MenuItemProps, Typography } from "@mui/material";
 import { CoreCheckbox } from "../core-checkbox/core-checkbox.component";
-import { autocompleteCheckboxStyles } from "../core-autocomplete/core-autocomplete.styles";
+import { selectCheckboxStyles } from "./core-select.styles";
 
 interface CoreSelectMenuItemProps extends MenuItemProps {
 	withCheckbox?: boolean;
@@ -34,7 +34,7 @@ export const CoreSelectMenuItem: FC<CoreSelectMenuItemProps> = styled(
 			{withCheckbox && (
 				<CoreCheckbox
 					checked={isMenuItemSelected}
-					sx={autocompleteCheckboxStyles}
+					sx={selectCheckboxStyles}
 				/>
 			)}
 			{customContainer && children}

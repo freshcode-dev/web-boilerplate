@@ -12,6 +12,7 @@ import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import RootSuspense from './modules/_core/components/router-suspense/root-suspense.component';
 import { StyledExamplesRouter } from './modules/styles-examples';
+import { RootRoutes } from './constants/routes';
 
 const AuthorizedArea = lazy(async () => import('./modules/_core/areas/authorized-area.component'));
 const UnauthorizedArea = lazy(async () => import('./modules/_core/areas/unauthorized-area.component'));
@@ -24,9 +25,9 @@ const Root: FC = () => {
 	 * The function is supposed to contain any routes restriction logic
 	 */
 	const getAppRouters = () => ([
-		{ index: true, element: <Navigate to="demo" /> },
-		{ path: 'demo', element: <AuthorizedPage />, handle: { title: 'nav.demo' } },
-		{ path: 'styles-examples/*', children: StyledExamplesRouter, handle: { title: 'nav.styled' }  }
+		{ index: true, element: <Navigate to={RootRoutes.profile} /> },
+		{ path: RootRoutes.profile, element: <AuthorizedPage />, handle: { title: 'nav.demo' } },
+		{ path: `${RootRoutes.stylesExamples}/*`, children: StyledExamplesRouter, handle: { title: 'nav.styled' }  }
 	]);
 
 	const routes = createBrowserRouter([

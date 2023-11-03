@@ -4,9 +4,10 @@ import React, { FC } from "react";
 import CoreLinkButton from "../../../_core/components/_ui/core-button/core-link-button.component";
 import { Trans, useTranslation } from "react-i18next";
 import { Typography } from "@mui/material";
+import { AuthRoutes } from "../../../../constants/routes";
 
 interface SignupErrorLabelProps {
-	error: SerializedError | FetchBaseQueryError;
+	error?: SerializedError | FetchBaseQueryError;
 }
 
 const SignupErrorLabel: FC<SignupErrorLabelProps> = (props) => {
@@ -15,7 +16,7 @@ const SignupErrorLabel: FC<SignupErrorLabelProps> = (props) => {
 	const [t] = useTranslation();
 
 	const getErrorText = () => {
-		const status = 'status' in error ? error.status : null;
+		const status = error && 'status' in error ? error.status : null;
 
 		if (status === 429) {
 			return (
@@ -38,13 +39,17 @@ const SignupErrorLabel: FC<SignupErrorLabelProps> = (props) => {
 				i18nKey='sign-up.check-data-or-login'
 				components={[
 					<CoreLinkButton
-						to='/auth/login'
+						to={AuthRoutes.loginEmail}
 						sx={{ color: theme => theme.colors.red }}
 					/>
 				]}
 			/>
 		);
 	};
+
+	if (!error) {
+		return null;
+	}
 
 	return (
 		<Typography

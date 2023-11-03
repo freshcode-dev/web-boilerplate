@@ -9,6 +9,7 @@ import * as path from 'path';
 import { IApiConfigParams } from './interfaces/api-config-params';
 import { AutomapperModule } from '@automapper/nestjs';
 import { classes } from '@automapper/classes';
+import { LoggingModule } from './core/logging/logging.module';
 
 const serveStatic = process.env.NX_SERVE_STATIC === 'true';
 const databaseRejectUnauthorized = process.env.NX_DATABASE_REJECT_UNAUTHORIZED === 'true';
@@ -19,6 +20,7 @@ const databaseRejectUnauthorized = process.env.NX_DATABASE_REJECT_UNAUTHORIZED =
 			strategyInitializer: classes()
 		}),
     ConfigModule.forRoot(),
+		LoggingModule,
 		ServeStaticModule.forRoot({
 			rootPath: (serveStatic ? path.resolve(process.env.NX_SERVE_STATIC_PATH || 'client') : null) as string,
 		}),

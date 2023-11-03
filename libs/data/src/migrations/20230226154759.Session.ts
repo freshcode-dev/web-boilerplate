@@ -31,6 +31,11 @@ export class Session20230226154759 implements RunnableMigration<MigrationContext
 					isNullable: false
 				},
 				{
+					name: 'rememberMe',
+					type: 'boolean',
+					isNullable: false
+				},
+				{
 					name: 'expiredAt',
 					type: 'timestamptz',
 					isNullable: false

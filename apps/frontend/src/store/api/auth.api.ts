@@ -1,11 +1,12 @@
 import {
 	AuthResponseDto,
 	RefreshDto,
-	SignInEmailDto,
-	SignUpDto,
+	SignInWithEmailDto,
+	SignUpWithPhoneDto,
 	IdDto,
 	AuthVerifyDto,
-	SignInPhoneDto
+	SignInWithPhoneDto,
+	SignUpWithEmailDto
 } from '@boilerplate/shared';
 import api from '.';
 import { updateSessionAction } from '../../modules/auth';
@@ -33,9 +34,9 @@ const authApi = api.injectEndpoints({
 				skipAuth: true
 			}
 		}),
-		register: builder.mutation<AuthResponseDto, SignUpDto>({
+		registerWithEmail: builder.mutation<AuthResponseDto, SignUpWithEmailDto>({
 			query: data => ({
-				url: 'auth/sign-up',
+				url: 'auth/sign-up/email',
 				method: 'POST',
 				body: data
 			}),
@@ -50,7 +51,24 @@ const authApi = api.injectEndpoints({
 				skipAuth: true
 			}
 		}),
-		signInWithPhone: builder.mutation<AuthResponseDto, SignInPhoneDto>({
+		registerWithPhone: builder.mutation<AuthResponseDto, SignUpWithPhoneDto>({
+			query: data => ({
+				url: 'auth/sign-up/phone',
+				method: 'POST',
+				body: data
+			}),
+			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+				try {
+					const response = await queryFulfilled;
+					dispatch(updateSessionAction(response.data));
+				} catch { /* empty */ }
+			},
+			invalidatesTags: ['UserProfile'],
+			extraOptions: {
+				skipAuth: true
+			}
+		}),
+		signInWithPhone: builder.mutation<AuthResponseDto, SignInWithPhoneDto>({
 			query: data => ({
 				url: `auth/sign-in/phone`,
 				method: 'POST',
@@ -67,7 +85,7 @@ const authApi = api.injectEndpoints({
 				skipAuth: true
 			}
 		}),
-		signInWithEmail: builder.mutation<AuthResponseDto, SignInEmailDto>({
+		signInWithEmail: builder.mutation<AuthResponseDto, SignInWithEmailDto>({
 			query: data => ({
 				url: `auth/sign-in/email`,
 				method: 'POST',
@@ -93,5 +111,6 @@ export const {
 	useSendOtpMutation,
 	useSignInWithPhoneMutation,
 	useSignInWithEmailMutation,
-	useRegisterMutation
+	useRegisterWithPhoneMutation,
+	useRegisterWithEmailMutation
 } = authApi;

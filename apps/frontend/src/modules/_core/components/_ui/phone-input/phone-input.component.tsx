@@ -38,6 +38,7 @@ export const PhoneInput: FC<PhoneInputProps> = (props) => {
 	return (
 		<Input
 			{...props}
+			limitMaxLength
 			inputComponent={PhoneForwardedTextField}
 			countryCallingCodeEditable
 			international

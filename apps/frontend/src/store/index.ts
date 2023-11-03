@@ -2,13 +2,11 @@ import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import { useDispatch, TypedUseSelectorHook, useSelector } from 'react-redux';
 import { sessionSlice } from '../modules/auth';
-import { referralSlice } from '../modules/users';
 import api from './api';
 
 const store = configureStore({
     reducer: {
         session: sessionSlice.reducer,
-				referral: referralSlice.reducer,
         [api.reducerPath]: api.reducer,
     },
     // Adding the api middleware enables caching, invalidation, polling,

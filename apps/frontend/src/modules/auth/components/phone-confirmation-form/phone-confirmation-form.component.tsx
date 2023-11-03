@@ -9,23 +9,23 @@ import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { AuthReasonEnum, ConfirmationCodeDto, VERIFICATION_CODE_LENGTH } from '@boilerplate/shared';
 import { SerializedError } from '@reduxjs/toolkit';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
-import ConfirmationErrorLabel from './confirmation-error-label.component';
-import { titleStyles, labelStyles } from './confirmation-form.styles';
+import ConfirmationErrorLabel from './phone-confirmation-error-label.component';
+import { titleStyles, labelStyles } from './phone-confirmation-form.styles';
 import { useSendOtpMutation } from '../../../../store/api/auth.api';
 
 const resolver = classValidatorResolver(ConfirmationCodeDto);
 
-interface ConfirmationFormProps {
+interface PhoneConfirmationFormProps {
 	phoneNumber?: string | null;
 	error?: SerializedError | FetchBaseQueryError;
 	onSubmit(value: ConfirmationCodeDto, markError: () => void): Promise<void> | void;
 	onBack(): void;
 }
 
-const ConfirmationForm: FC<ConfirmationFormProps> = (props) => {
+const PhoneConfirmationForm: FC<PhoneConfirmationFormProps> = (props) => {
 	const { phoneNumber, error, onBack, onSubmit } = props;
 
-	const { t } = useTranslation();
+	const [t] = useTranslation();
 
 	const {
 		handleSubmit,
@@ -128,4 +128,4 @@ const ConfirmationForm: FC<ConfirmationFormProps> = (props) => {
 	);
 };
 
-export default ConfirmationForm;
+export default PhoneConfirmationForm;

@@ -4,46 +4,47 @@ import CoreButton from '../../../_core/components/_ui/core-button/core-button.co
 import { useTranslation } from 'react-i18next';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { FormControlsContainer } from '../_ui/form-controls/form-controls-container.component';
-import { PhoneInput } from '../../../_core/components/_ui/phone-input';
 import { useForm } from 'react-hook-form';
 import { errorMessage } from '../../../_core/utils/lang.utils';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
 import { SerializedError } from '@reduxjs/toolkit';
 import LoginErrorLabel from './login-error-label.component';
 import { titleStyles } from './login-form.styles';
-import { PhoneDto } from '@boilerplate/shared';
+import { EmailDto, RememberMeDto } from '@boilerplate/shared';
+import { CoreTextField } from '../../../_core/components/_ui/core-textfield';
+import { CoreLabeledCheckbox } from '../../../_core/components/_ui/core-labeled-checkbox/core-labeled-checkbox.component';
 
-const resolver = classValidatorResolver(PhoneDto);
+const resolver = classValidatorResolver(EmailDto);
 
-interface LoginFormProps {
+export interface LoginWithPhoneFormProps {
 	error?: FetchBaseQueryError | SerializedError;
-	phoneNumber?: string;
-	onSubmit(values: PhoneDto, markError: () => void): void;
+	email?: string;
+	onSubmit(values: EmailDto & RememberMeDto, markError: () => void): void;
 }
 
-const LoginForm: FC<LoginFormProps> = (props) => {
-	const { error, onSubmit, phoneNumber } = props;
+const LoginWithEmailForm: FC<LoginWithPhoneFormProps> = (props) => {
+	const { error, onSubmit, email } = props;
 
 	const [t] = useTranslation();
 
 	const {
-		control,
+		register,
 		handleSubmit,
 		setError,
 		formState: { errors, isValid, isSubmitted, isDirty, isSubmitting },
-	} = useForm<PhoneDto>({
+	} = useForm<EmailDto & RememberMeDto>({
 		resolver,
 		defaultValues: {
-			phoneNumber,
+			email,
 		},
 	});
 
 	const disableSubmit = !isValid && (isDirty || isSubmitted);
 
 	const handleFormSubmit = useCallback(
-		(values: PhoneDto) => {
+		(values: EmailDto & RememberMeDto) => {
 			onSubmit(values, () => {
-				setError('phoneNumber', { type: 'isPhoneNumber' });
+				setError('email', { type: 'isEmail' });
 			});
 		},
 		[setError, onSubmit]
@@ -54,16 +55,18 @@ const LoginForm: FC<LoginFormProps> = (props) => {
 			<Typography variant="h1" sx={titleStyles}>
 				{t('sign-in.account-sign-in')}
 			</Typography>
-			<PhoneInput
-				control={control}
-				name="phoneNumber"
+			<CoreTextField
+				{...register('email')}
 				fullWidth
-				id="phone-number"
-				label={t('sign-in.sign-in-form.phone-number')}
-				error={!!errors.phoneNumber}
-				helperText={errorMessage(t, errors.phoneNumber?.type)}
+				requiredMark
+				id="email"
+				label={t('sign-in.sign-in-form.email')}
+				error={!!errors.email}
+				helperText={errorMessage(t, errors.email?.type)}
+				autoComplete="email"
 			/>
-			{error && <LoginErrorLabel error={error} />}
+			<CoreLabeledCheckbox {...register('rememberMe')} label={t('sign-in.sign-in-form.remember-me')} />
+			<LoginErrorLabel error={error} />
 			<FormControlsContainer>
 				<CoreButton type="submit" disabled={disableSubmit} loading={isSubmitting} sx={{ minWidth: 104 }}>
 					{t('sign-in.sign-in-form.confirm')}
@@ -73,4 +76,4 @@ const LoginForm: FC<LoginFormProps> = (props) => {
 	);
 };
 
-export default LoginForm;
+export default LoginWithEmailForm;

@@ -18,6 +18,9 @@ export class Session {
 	@Generated('uuid')
 	tokenId: string;
 
+	@Column()
+	rememberMe: boolean;
+
 	@Column({ type: 'timestamptz' })
 	expiredAt: Date;
 
