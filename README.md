@@ -7,20 +7,27 @@ This project was generated using [Nx](https://nx.dev).
 ## Specific instructions
 - [Packages management](misc/instructions/packages-management.md)
 - [Infrastructure and deployment](misc/instructions/infrastructure-and-deployment.md)
-- [React-based projects structure](misc/instructions/react-based-projects-structure.md)
-- [React-based projects routing](misc/instructions/react-based-projects-routing.md)
-- [React-based projects naming conventions](misc/instructions/react-naming-convention.md)
-- [Working with modal windows in react](misc/instructions/react-working-with-modal-windows.md)
 - [Integrate testing results with gitlab](misc/instructions/integrate-testing-results-with%20gitlab.md)
 - [Releasing manually with git tags](misc/instructions/releasing-manually-with-git-tags.md)
+- **[Common mistakes](misc/instructions/common-mistakes.md)**
+
+### Backend
+- [Backend naming conventions](misc/instructions/backend-naming-conventions.md)
 - [Mapping classes with automapper](misc/instructions/mapping-with-automapper.md)
 - [Exceptions handling](misc/instructions/exceptions-handling.md)
 - [Logging](misc/instructions/logging.md)
 - [Working with database layer](misc/instructions/working-with-database-layer.md)
-- **[Common mistakes](misc/instructions/common-mistakes.md)**
+
+### React
+- [React-based projects structure](misc/instructions/react-based-projects-structure.md)
+- [React-based projects naming conventions](misc/instructions/react-naming-convention.md)
+- [React-based projects routing](misc/instructions/react-based-projects-routing.md)
+- [Working with modal windows in react](misc/instructions/react-working-with-modal-windows.md)
 
 Before starting working on the project, it's highly recommended to go through all the articles. 
 **If any part seem controversial, feel free to discuss it with the project team-lead**
+
+<hr>
 
 ## Automation
 The repository has a few automated tasks configured.
