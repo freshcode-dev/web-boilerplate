@@ -1,5 +1,5 @@
 import React, { ElementType, FC, forwardRef, useRef } from "react";
-import { CoreFormControl, CoreFormControlProps } from "../core-form-control/core-form-control.component";
+import CoreFormControl, { CoreFormControlProps } from "../core-form-control/core-form-control.component";
 import { InputBaseProps, Select, SelectProps, SxProps, Theme } from "@mui/material";
 import { selectPaperStyles } from "./core-select.styles";
 import DropdownArrow from "./dropdown-arrow.component";
@@ -16,7 +16,7 @@ export interface CoreSelectProps extends CoreFormControlProps, InputBaseProps, C
 	onClose?(): void;
 }
 
-export const CoreSelect: FC<CoreSelectProps> = forwardRef((props, ref) => {
+const CoreSelect: FC<CoreSelectProps> = forwardRef((props, ref) => {
 	const {
 		menuMinWidth,
 		children,
@@ -108,3 +108,5 @@ export const CoreSelect: FC<CoreSelectProps> = forwardRef((props, ref) => {
 		</CoreFormControl>
 	);
 });
+
+export default CoreSelect;

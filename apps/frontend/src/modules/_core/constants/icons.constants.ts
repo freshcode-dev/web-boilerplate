@@ -1,8 +1,11 @@
 export { ReactComponent as Close } from '../../../assets/icons/Close.svg';
 export { ReactComponent as Exclamation } from '../../../assets/icons/Exclamation.svg';
 export { ReactComponent as Info } from '../../../assets/icons/Info.svg';
-
 export { ReactComponent as User } from '../../../assets/icons/User.svg';
-
 export { ReactComponent as DropdownArrow } from '../../../assets/icons/DropdownArrow.svg';
 export { ReactComponent as ChipClose } from '../../../assets/icons/ChipClose.svg';
+export { ReactComponent as Dots } from '../../../assets/icons/Dots.svg';
+export { ReactComponent as SearchLarge } from '../../../assets/icons/SearchLarge.svg';
+export { ReactComponent as Sort } from '../../../assets/icons/Sort.svg';
+export { ReactComponent as SortDesc } from '../../../assets/icons/SortDesc.svg';
+export { ReactComponent as SortAsc } from '../../../assets/icons/SortAsc.svg';

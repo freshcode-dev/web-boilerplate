@@ -24,15 +24,15 @@ const authApi = api.injectEndpoints({
 			}
 		}),
 		refresh: builder.mutation<AuthResponseDto, RefreshDto>({
-			query: data => ({
+			query: (data) => ({
 				url: 'auth/refresh',
 				method: 'POST',
-				body: data
+				body: data,
 			}),
 			invalidatesTags: ['UserProfile'],
 			extraOptions: {
-				skipAuth: true
-			}
+				skipAuth: true,
+			},
 		}),
 		authWithGoogleToken: builder.mutation<AuthResponseDto, string>({
 			query: idToken => ({
@@ -55,13 +55,15 @@ const authApi = api.injectEndpoints({
 			query: data => ({
 				url: 'auth/sign-up/email',
 				method: 'POST',
-				body: data
+				body: data,
 			}),
 			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
 				try {
 					const response = await queryFulfilled;
 					dispatch(updateSessionAction(response.data));
-				} catch { /* empty */ }
+				} catch {
+					/* empty */
+				}
 			},
 			invalidatesTags: ['UserProfile'],
 			extraOptions: {
@@ -116,9 +118,9 @@ const authApi = api.injectEndpoints({
 			},
 			invalidatesTags: ['UserProfile'],
 			extraOptions: {
-				skipAuth: true
-			}
-		})
+				skipAuth: true,
+			},
+		}),
 	}),
 });
 
