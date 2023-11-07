@@ -43,7 +43,7 @@ export const ConfirmationModal: FC<ConfirmationModalProps> = (props) => {
 
 		onClose?.();
 		onHideCompleted?.();
-	}, [onClose, onHideCompleted]);
+	}, [beforeClose, onClose, onHideCompleted]);
 
 	const handleSubmit = useCallback(async () => {
 		setSubmitting(true);

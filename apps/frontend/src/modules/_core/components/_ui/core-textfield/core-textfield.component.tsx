@@ -1,6 +1,6 @@
-import { forwardRef, Ref } from "react";
-import { CoreFormControl, CoreFormControlProps } from "../core-form-control/core-form-control.component";
-import { CoreInput, CoreInputProps } from "../core-input/core-input.component";
+import React, { forwardRef, Ref } from "react";
+import { CoreFormControl, CoreFormControlProps } from "../core-form-control";
+import { CoreInput, CoreInputProps } from "../core-input";
 import { InputBaseProps } from "@mui/material";
 
 export interface CoreTextFieldProps extends CoreFormControlProps, InputBaseProps, CoreInputProps {

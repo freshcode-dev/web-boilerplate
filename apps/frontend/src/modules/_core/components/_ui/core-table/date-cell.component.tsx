@@ -9,7 +9,7 @@ interface DateCellProps extends FormatDateProps {
 	sx?: SxProps<Theme>;
 }
 
-const DateCell: FC<DateCellProps> = (props) => {
+export const DateCell: FC<DateCellProps> = memo((props) => {
 	const { date, sx, ...formatProps } = props;
 
 	useTranslation();
@@ -19,6 +19,4 @@ const DateCell: FC<DateCellProps> = (props) => {
 			{date ? formatDate(date, formatProps) : '—'}
 		</Typography>
 	);
-};
-
-export default memo(DateCell);
+});

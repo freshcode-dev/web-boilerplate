@@ -94,6 +94,7 @@ const SignUpWithEmailForm: FC<SignUpWithEmailFormProps> = (props) => {
 				controlSx={textFieldWrapperStyles}
 				{...register('password')}
 				error={!!errors.password}
+				autoComplete='off'
 			/>
 			<CorePasswordInput
 				fullWidth
@@ -103,6 +104,7 @@ const SignUpWithEmailForm: FC<SignUpWithEmailFormProps> = (props) => {
 				controlSx={textFieldWrapperStyles}
 				{...register('confirmPassword')}
 				error={!!errors.confirmPassword}
+				autoComplete='off'
 			/>
 			<SignupErrorLabel error={error} />
 			<FormControlsContainer>

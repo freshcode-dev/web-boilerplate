@@ -15,7 +15,7 @@ interface CoreTableHeaderCellProps {
 	onToggle?(event: unknown): void;
 }
 
-const CoreTableHeaderCell: FC<CoreTableHeaderCellProps> = (props) => {
+export const CoreTableHeaderCell: FC<CoreTableHeaderCellProps> = (props) => {
 	const { children, sortable, order, onToggle, size, meta } = props;
 
 	return (
@@ -37,5 +37,3 @@ const CoreTableHeaderCell: FC<CoreTableHeaderCellProps> = (props) => {
 		</CoreTableHeaderCellBase>
 	);
 };
-
-export default CoreTableHeaderCell;

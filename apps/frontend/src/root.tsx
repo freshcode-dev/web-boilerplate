@@ -1,18 +1,13 @@
 import React, { FC, lazy } from 'react';
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { NotFoundPage } from './modules/_core';
-import {
-	RequireAuth,
-	RequireUnauthorized,
-	AuthorizedPage,
-	useAuthSubscription,
-	AuthModuleRouter
-} from './modules/auth';
+import { RequireAuth, RequireUnauthorized, useAuthSubscription, AuthModuleRouter } from './modules/auth';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
-import RootSuspense from './modules/_core/components/router-suspense/root-suspense.component';
+import { RootSuspense } from './modules/_core/components/router-suspense';
 import { StyledExamplesRouter } from './modules/styles-examples';
-import { RootRoutes } from './constants/routes';
+import { ProfileModuleRouter } from './modules/profile/profile.router';
+import { RootRoutes } from './constants';
 
 const AuthorizedArea = lazy(async () => import('./modules/_core/areas/authorized-area.component'));
 const UnauthorizedArea = lazy(async () => import('./modules/_core/areas/unauthorized-area.component'));
@@ -24,11 +19,13 @@ const Root: FC = () => {
 	/**
 	 * The function is supposed to contain any routes restriction logic
 	 */
-	const getAppRouters = () => ([
-		{ index: true, element: <Navigate to={RootRoutes.profile} /> },
-		{ path: RootRoutes.profile, element: <AuthorizedPage />, handle: { title: 'nav.demo' } },
-		{ path: `${RootRoutes.stylesExamples}/*`, children: StyledExamplesRouter, handle: { title: 'nav.styled' }  }
-	]);
+	const getAppRouters = () => [
+		{ index: true, element: <Navigate to="/profile" /> },
+		{ path: `${RootRoutes.StylesExamples}/*`, children: StyledExamplesRouter, handle: { title: 'nav.styled' } },
+		{
+			children: ProfileModuleRouter,
+		},
+	];
 
 	const routes = createBrowserRouter([
 		{

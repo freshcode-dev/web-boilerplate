@@ -1,5 +1,5 @@
 import React, { FC, ReactNode } from "react";
-import { CoreTooltip } from "../core-tooltip/core-tooltip.component";
+import { CoreTooltip } from "../core-tooltip";
 import { Box, SxProps, Theme, TooltipProps } from "@mui/material";
 import { Info } from "../../../constants/icons.constants";
 
@@ -9,7 +9,7 @@ interface ExclamationTooltipProps {
 	placement?: TooltipProps['placement'];
 }
 
-const ExclamationTooltip: FC<ExclamationTooltipProps> = (props) => {
+export const ExclamationTooltip: FC<ExclamationTooltipProps> = (props) => {
 	const { title, placement, iconSx } = props;
 
 	return (
@@ -28,5 +28,3 @@ const ExclamationTooltip: FC<ExclamationTooltipProps> = (props) => {
 		</CoreTooltip>
 	);
 };
-
-export default ExclamationTooltip;

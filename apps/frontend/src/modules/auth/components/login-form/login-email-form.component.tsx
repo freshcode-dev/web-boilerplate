@@ -1,18 +1,20 @@
 import React, { FC, useCallback } from 'react';
-import { Box, Typography } from '@mui/material';
-import CoreButton from '../../../_core/components/_ui/core-button/core-button.component';
-import { useTranslation } from 'react-i18next';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
-import { FormControlsContainer } from '../_ui/form-controls/form-controls-container.component';
-import { useForm } from 'react-hook-form';
-import { errorMessage } from '../../../_core/utils/lang.utils';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
 import { SerializedError } from '@reduxjs/toolkit';
+import { Box, Typography } from '@mui/material';
+import { useTranslation } from 'react-i18next';
+import { useForm } from 'react-hook-form';
+import { Link } from 'react-router-dom';
+import { FormControlsContainer } from '../_ui/form-controls/form-controls-container.component';
+import CoreButton from '../../../_core/components/_ui/core-button/core-button.component';
+import { errorMessage } from '../../../_core/utils/lang.utils';
 import LoginErrorLabel from './login-error-label.component';
-import { titleStyles } from './login-form.styles';
+import { formElementStyles, linkStyles, titleStyles } from './login-form.styles';
 import { EmailDto, RememberMeDto } from '@boilerplate/shared';
 import { CoreTextField } from '../../../_core/components/_ui/core-textfield';
 import { CoreLabeledCheckbox } from '../../../_core/components/_ui/core-labeled-checkbox/core-labeled-checkbox.component';
+import { AuthRoutes } from '../../constants';
 
 const resolver = classValidatorResolver(EmailDto);
 
@@ -55,7 +57,12 @@ const LoginWithEmailForm: FC<LoginWithPhoneFormProps> = (props) => {
 			<Typography variant="h1" sx={titleStyles}>
 				{t('sign-in.account-sign-in')}
 			</Typography>
+			<Box
+				sx={linkStyles}
+				component={(props) => <Link {...props} to={AuthRoutes.LoginPhone} children="Login using phone" />}
+			/>
 			<CoreTextField
+				sx={formElementStyles}
 				{...register('email')}
 				fullWidth
 				requiredMark
@@ -65,7 +72,9 @@ const LoginWithEmailForm: FC<LoginWithPhoneFormProps> = (props) => {
 				helperText={errorMessage(t, errors.email?.type)}
 				autoComplete="email"
 			/>
-			<CoreLabeledCheckbox {...register('rememberMe')} label={t('sign-in.sign-in-form.remember-me')} />
+			<Box sx={formElementStyles}>
+				<CoreLabeledCheckbox {...register('rememberMe')} label={t('sign-in.sign-in-form.remember-me')} />
+			</Box>
 			<LoginErrorLabel error={error} />
 			<FormControlsContainer>
 				<CoreButton type="submit" disabled={disableSubmit} loading={isSubmitting} sx={{ minWidth: 104 }}>

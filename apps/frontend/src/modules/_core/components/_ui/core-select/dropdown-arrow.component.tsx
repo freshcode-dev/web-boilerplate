@@ -5,7 +5,7 @@ interface DropdownArrowProps extends SvgIconProps {
 	forceFocus?: boolean;
 }
 
-const DropdownArrow: FC<DropdownArrowProps> = (props) => {
+export const DropdownArrow: FC<DropdownArrowProps> = (props) => {
 	const { forceFocus, ...iconProps } = props;
 
 	const rotate = forceFocus ? 180 : 0;
@@ -28,5 +28,3 @@ const DropdownArrow: FC<DropdownArrowProps> = (props) => {
 		</SvgIcon>
 	);
 };
-
-export default DropdownArrow;

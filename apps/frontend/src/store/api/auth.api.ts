@@ -6,13 +6,20 @@ import {
 	IdDto,
 	AuthVerifyDto,
 	SignInWithPhoneDto,
-	SignUpWithEmailDto
+	SignUpWithEmailDto,
+	UserDto
 } from '@boilerplate/shared';
 import api from '.';
 import { updateSessionAction } from '../../modules/auth';
 
 const authApi = api.injectEndpoints({
 	endpoints: builder => ({
+		getProfile: builder.query<UserDto, void>({
+			query: () => ({
+				url: `auth/profile`,
+			}),
+			providesTags: ['UserProfile'],
+		}),
 		sendOtp: builder.mutation<IdDto, AuthVerifyDto>({
 			query: data => ({
 				url: 'auth/send-otp',
@@ -127,6 +134,7 @@ const authApi = api.injectEndpoints({
 export default authApi;
 
 export const {
+	useGetProfileQuery,
 	useSendOtpMutation,
 	useSignInWithPhoneMutation,
 	useSignInWithEmailMutation,

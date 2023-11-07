@@ -3,12 +3,6 @@ import api from '.';
 
 const usersApi = api.injectEndpoints({
 	endpoints: (builder) => ({
-		getProfile: builder.query<UserDto, void>({
-			query: () => ({
-				url: `users/profile`,
-			}),
-			providesTags: ['UserProfile'],
-		}),
 		getUserById: builder.query<UserDto, string>({
 			query: (id) => ({
 				url: `users/user/${id}`,
@@ -19,4 +13,4 @@ const usersApi = api.injectEndpoints({
 
 export default usersApi;
 
-export const { useGetProfileQuery } = usersApi;
+export const { useGetUserByIdQuery } = usersApi;

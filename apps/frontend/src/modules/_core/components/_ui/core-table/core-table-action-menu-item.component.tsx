@@ -1,14 +1,14 @@
 import React, { FC, useCallback } from "react";
-import { ActionMenuItem } from "./core-table-action-menu.component";
 import { Box, Typography } from "@mui/material";
-import { CoreSelectMenuItem } from "../core-select/core-select-menu-item.component";
-import { CoreTooltip } from "../core-tooltip/core-tooltip.component";
+import { ActionMenuItem } from "./core-table-action-menu.component";
+import { CoreSelectMenuItem } from "../core-select";
+import { CoreTooltip } from "../core-tooltip";
 
 interface CoreTableActionMenuItemProps extends ActionMenuItem {
 	onClose(): void;
 }
 
-const CoreTableActionMenuItem: FC<CoreTableActionMenuItemProps> = (props) => {
+export const CoreTableActionMenuItem: FC<CoreTableActionMenuItemProps> = (props) => {
 	const { tooltip, onClick, label, icon, onClose, disabled, ...menuProps } = props;
 
 	const handleClick = useCallback(() => {
@@ -53,5 +53,3 @@ const CoreTableActionMenuItem: FC<CoreTableActionMenuItemProps> = (props) => {
 		</CoreTooltip>
 	);
 };
-
-export default CoreTableActionMenuItem;

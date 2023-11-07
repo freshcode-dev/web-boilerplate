@@ -34,7 +34,7 @@ export class Session {
 	userAgent: string;
 
 	@ManyToOne(() => User, user => user.sessions)
-	user: User;
+	user?: User;
 
 	@CreateDateColumn({ type: 'timestamptz' })
 	createdAt: Date;

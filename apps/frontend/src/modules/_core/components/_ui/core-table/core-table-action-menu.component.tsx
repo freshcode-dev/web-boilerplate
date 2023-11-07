@@ -3,7 +3,7 @@ import { CoreActionButton, CoreActionButtonProps } from "./core-action-button.co
 import { Dots } from "../../../constants/icons.constants";
 import { Menu } from "@mui/material";
 import { selectPaperStyles } from "../core-select/core-select.styles";
-import CoreTableActionMenuItem from "./core-table-action-menu-item.component";
+import { CoreTableActionMenuItem } from "./core-table-action-menu-item.component";
 
 export interface ActionMenuItem {
 	id: string;

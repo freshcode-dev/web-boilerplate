@@ -1,5 +1,5 @@
 import { OrderParamPair } from '../../interfaces/filters/order-param-pair';
-import { NonFunctionPropertyNames } from '../../utils/utility-types';
+import type { NonFunctionPropertyNames } from '../../utils/utility-types';
 import { IsBoolean, IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class OrderedBy<T> implements OrderParamPair<T> {

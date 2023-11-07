@@ -4,10 +4,31 @@
 	},
 	"nav": {
 		"root-title": "Boilerplate",
-		"demo": "Demo Page",
 		"styled": "Styled Examples",
 		"sign-in": "Login",
-		"sign-up": "Register"
+		"sign-up": "Register",
+		"profile": "Profile",
+		"security": "Security"
+	},
+	"profile": {
+		"title": "Profile",
+		"name": "Name",
+		"email": "Email",
+		"phone": "Phone",
+		"sessions": {
+			"signOutAllSessions": "Sign out other sessions",
+			"table": {
+				"empty-title": "",
+				"empty-description": "No sessions",
+				"columns": {
+					"ipAddress": "IP Address",
+					"userAgent": "Device",
+					"createdAt": "Logged in at",
+					"updatedAt": "Last Activity",
+					"actions": "Actions"
+				}
+			}
+		}
 	},
 	"sign-up": {
 		"account-register": "Create a Personal Account",
@@ -56,13 +77,6 @@
 			"back": "Back",
 			"confirm": "Next"
 		}
-	},
-	"profile": {
-		"title": "Profile",
-		"logout": "Logout",
-		"name": "Name",
-		"phone": "Phone",
-		"email": "Email"
 	},
 	"defaults": {
 		"modals": {

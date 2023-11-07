@@ -4,7 +4,6 @@ import { TokenWithPayload } from '../interfaces';
 import { createTokenPair } from '../utils/token.utils';
 import { ACCESS_TOKEN_STORAGE_KEY, REFRESH_TOKEN_STORAGE_KEY } from '../../_core/constants';
 
-
 export interface TokenPairWithPayload {
 	access: TokenWithPayload;
 	refresh: TokenWithPayload;
@@ -37,3 +36,4 @@ export const sessionSlice = createSlice({
 export const { setTokenPair, clearSession } = sessionSlice.actions;
 
 export const useCurrentAccessTokenSelector = () => useAppSelector(state => state.session.access);
+export const useCurrentRefreshTokenSelector = () => useAppSelector(state => state.session.refresh);

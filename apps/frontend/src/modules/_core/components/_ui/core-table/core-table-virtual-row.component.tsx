@@ -3,7 +3,7 @@ import { CoreTableCell } from "./core-table-cell.component";
 import { Row, RowData } from "@tanstack/react-table";
 import { Box } from "@mui/material";
 import { VirtualItem } from "@tanstack/react-virtual";
-import CoreTableCellWithTooltip from "./core-table-cell-with-tooltip.component";
+import { CoreTableCellWithTooltip } from "./core-table-cell-with-tooltip.component";
 
 interface CoreTableVirtualRowProps<TData extends RowData> {
 	virtualRow: VirtualItem;
@@ -17,7 +17,7 @@ export interface Meta {
 	heightAuto?: boolean;
 }
 
-const CoreTableVirtualRow = <TData extends RowData>(props: CoreTableVirtualRowProps<TData>) => {
+export const CoreTableVirtualRow = <TData extends RowData>(props: CoreTableVirtualRowProps<TData>) => {
 	const { virtualRow, row, measureElement } = props;
 
 	return (
@@ -45,5 +45,3 @@ const CoreTableVirtualRow = <TData extends RowData>(props: CoreTableVirtualRowPr
 		</Box>
 	);
 };
-
-export default CoreTableVirtualRow;

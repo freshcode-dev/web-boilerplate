@@ -17,7 +17,9 @@ export const ProfileCard: FC<ProfileCardProps> = (props) => {
 	return (
 		<Card>
 			<CardContent>
-				<Typography variant="h5" sx={{ mb: 1 }}>{t('profile.title')}</Typography>
+				<Typography variant="h5" sx={{ mb: 1 }}>
+					{t('profile.title')}
+				</Typography>
 				<Typography gutterBottom>
 					{t('profile.name')}: {profile.name}
 				</Typography>

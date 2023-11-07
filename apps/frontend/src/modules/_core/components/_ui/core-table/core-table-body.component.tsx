@@ -2,14 +2,14 @@ import React, { MutableRefObject } from "react";
 import { RowData, RowModel } from "@tanstack/react-table";
 import { Box } from "@mui/material";
 import { useVirtualizer } from '@tanstack/react-virtual';
-import CoreTableVirtualRow from "./core-table-virtual-row.component";
+import { CoreTableVirtualRow } from "./core-table-virtual-row.component";
 
 interface CoreTableBodyProps<TData extends RowData> {
 	rowModel: RowModel<TData>;
 	containerRef: MutableRefObject<HTMLDivElement | null>;
 }
 
-const CoreTableBody = <TData extends RowData>(props: CoreTableBodyProps<TData>) => {
+export const CoreTableBody = <TData extends RowData>(props: CoreTableBodyProps<TData>) => {
 	const { rowModel, containerRef } = props;
 
 	const { rows } = rowModel;
@@ -47,5 +47,3 @@ const CoreTableBody = <TData extends RowData>(props: CoreTableBodyProps<TData>) 
 		</Box>
 	);
 };
-
-export default CoreTableBody;

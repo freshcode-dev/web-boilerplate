@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
 import { DatabaseModule, Session, User } from '@boilerplate/data';
 import { PassportModule } from '@nestjs/passport';
-import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersService } from './users.service';
 import { AuthService } from './auth.service';
@@ -15,14 +15,18 @@ import { UserProfile } from './profiles/user.profile';
 import { PhoneVerificationService } from './phone-verification.service';
 import { LoggingModule } from '../core/logging/logging.module';
 import { GoogleAuthService } from './google-auth.service';
+import { ExternalApisService } from './external.service';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
 	imports: [
+		ConfigModule,
 		DatabaseModule.forFeature([User, Session]),
 		PassportModule,
 		LoggingModule,
 		ConfigModule,
 		JwtModule.register({}),
+		HttpModule
 	],
 	providers: [
 		UserProfile,
@@ -36,7 +40,8 @@ import { GoogleAuthService } from './google-auth.service';
 		JwtRefreshStrategy,
 		PhoneVerificationService,
 		GoogleAuthService,
+		ExternalApisService
 	],
-	exports: [UsersService, AuthService, SessionsService, PhoneVerificationService],
+	exports: [UsersService, AuthService, SessionsService, PhoneVerificationService, ExternalApisService],
 })
 export class ServicesModule {}

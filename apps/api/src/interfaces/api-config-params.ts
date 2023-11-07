@@ -14,4 +14,6 @@ export interface IApiConfigParams extends IDatabaseConfigParams {
 	NX_GOOGLE_API_CLIENT_ID: string;
 	NX_GOOGLE_API_CLIENT_SECRET: string;
 	NX_GOOGLE_API_REDIRECT_URL: string;
+
+	NX_PARSE_IP_WITH_THIRD_PARTY_SERVICE: string;
 }

@@ -1,17 +1,17 @@
+import React, { useCallback, useRef, useState } from "react";
 import { Cell, flexRender, RowData } from "@tanstack/react-table";
 import { CoreTableOverflowWrapper } from "./core-table-overflow-wrapper.component";
 import { CoreTableCell } from "./core-table-cell.component";
-import React, { useCallback, useRef, useState } from "react";
 import { Meta } from "./core-table-virtual-row.component";
-import { CoreTooltip } from "../core-tooltip/core-tooltip.component";
-import TooltipTransition from "./tooltip-transition.component";
+import { CoreTooltip } from "../core-tooltip";
+import { TooltipTransition } from "./tooltip-transition.component";
 import { TransitionProps } from "@mui/material/transitions";
 
 interface CoreTableCellWithTooltipProps<TData extends RowData> {
 	cell: Cell<TData, unknown>;
 }
 
-const CoreTableCellWithTooltip = <TData extends RowData>(props: CoreTableCellWithTooltipProps<TData>) => {
+export const CoreTableCellWithTooltip = <TData extends RowData>(props: CoreTableCellWithTooltipProps<TData>) => {
 	const { cell } = props;
 
 	const overflowWrapper = useRef<HTMLDivElement | null>(null);
@@ -87,5 +87,3 @@ const CoreTableCellWithTooltip = <TData extends RowData>(props: CoreTableCellWit
 		</CoreTooltip>
 	);
 };
-
-export default CoreTableCellWithTooltip;

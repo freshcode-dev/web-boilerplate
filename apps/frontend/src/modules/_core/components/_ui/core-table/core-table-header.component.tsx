@@ -1,13 +1,13 @@
 import React from "react";
 import { HeaderGroup, RowData, flexRender } from "@tanstack/react-table";
 import { Box } from "@mui/material";
-import CoreTableHeaderCell from "./core-table-header-cell.component";
+import { CoreTableHeaderCell } from "./core-table-header-cell.component";
 
 interface CoreTableHeaderProps<TData extends RowData> {
 	headerGroups: HeaderGroup<TData>[];
 }
 
-const CoreTableHeader = <TData extends RowData>(props: CoreTableHeaderProps<TData>) => {
+export const CoreTableHeader = <TData extends RowData>(props: CoreTableHeaderProps<TData>) => {
 	const { headerGroups } = props;
 
   return (
@@ -47,5 +47,3 @@ const CoreTableHeader = <TData extends RowData>(props: CoreTableHeaderProps<TDat
 		</Box>
 	);
 };
-
-export default CoreTableHeader;

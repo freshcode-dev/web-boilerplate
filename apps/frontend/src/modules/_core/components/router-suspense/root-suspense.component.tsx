@@ -1,12 +1,12 @@
 import React, { FC, ReactNode, Suspense } from "react";
-import SuspenseSpinner from "./suspense-spinner.component";
+import { SuspenseSpinner } from "./suspense-spinner.component";
 import { Box } from "@mui/material";
 
 interface RootSuspenseProps {
 	children: ReactNode;
 }
 
-const RootSuspense: FC<RootSuspenseProps> = (props) => {
+export const RootSuspense: FC<RootSuspenseProps> = (props) => {
 	const { children } = props;
 
 	return (
@@ -21,5 +21,3 @@ const RootSuspense: FC<RootSuspenseProps> = (props) => {
 		</Suspense>
 	);
 };
-
-export default RootSuspense;

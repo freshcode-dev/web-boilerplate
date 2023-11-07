@@ -1,3 +1,5 @@
+import { IpAddressDetails } from "./ip-details.dto";
+
 export class SessionDto {
 	id: string;
 	tokenId: string;
@@ -8,4 +10,9 @@ export class SessionDto {
 	expiredAt: Date;
 	createdAt: Date;
 	updatedAt: Date;
+
+	ipAddressText?: string;
+	userAgentText?: string;
+
+	ipAddressDetails?: IpAddressDetails;
 }

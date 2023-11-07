@@ -1,10 +1,10 @@
 import React, { ForwardedRef, ReactNode, useCallback, forwardRef, Ref } from "react";
 import { Box } from "@mui/material";
-import CoreTableHeader from "./core-table-header.component";
 import { HeaderGroup, RowData, RowModel } from '@tanstack/react-table';
-import CoreTableBody from "./core-table-body.component";
+import { CoreTableBody } from "./core-table-body.component";
 import { useScrollFetcher } from "../../../hooks/use-scroll-fetcher.hook";
-import { CoreLoadingWall } from "../core-loading-wall/core-loading-wall.component";
+import { CoreTableHeader } from "./core-table-header.component";
+import { CoreLoadingWall } from "../core-loading-wall";
 
 interface CoreTableProps<TData extends RowData> {
 	headerGroups: HeaderGroup<TData>[];
@@ -17,7 +17,7 @@ interface CoreTableProps<TData extends RowData> {
 	fetchMore?(count: number): void;
 }
 
-const CoreTable = <TData extends RowData>(
+const CoreTableBase = <TData extends RowData>(
 	props: CoreTableProps<TData>,
 	ref: ForwardedRef<HTMLDivElement>
 ) => {
@@ -76,6 +76,6 @@ const CoreTable = <TData extends RowData>(
 	);
 };
 
-export default forwardRef(CoreTable) as <T>(
+export const CoreTable = forwardRef(CoreTableBase) as <T>(
 	props: CoreTableProps<T> & { ref?: Ref<HTMLDivElement>}
-) => ReturnType<typeof CoreTable>;
+) => ReturnType<typeof CoreTableBase>;

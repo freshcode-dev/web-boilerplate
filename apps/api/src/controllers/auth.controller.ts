@@ -1,6 +1,6 @@
-import { Body, Controller, Post, UseGuards, Request } from '@nestjs/common';
-import { ApiExcludeEndpoint } from '@nestjs/swagger';
+import { Body, Controller, Post, UseGuards, Request, Get } from '@nestjs/common';
 import { RealIP } from 'nestjs-real-ip';
+import { AuthService } from '../services/auth.service';
 import {
 	AuthResponseDto,
 	AuthVerifyDto,
@@ -10,17 +10,32 @@ import {
 	SignInWithPhoneDto,
 	SignUpWithEmailDto,
 	SignUpWithPhoneDto,
+	UserDto,
 } from '@boilerplate/shared';
-import { AuthService } from '../services/auth.service';
 import { JwtRefreshGuard } from '../services/guard/jwt-refresh.guard';
 import { AuthRequest } from '../interfaces/auth-request';
 import { SessionsService } from '../services/sessions.service';
+import { UserAgent } from '../services/decorators/params/user-agent.decorator';
+import { JwtAuthGuard } from '../services/guard/jwt.guard';
+import { UsersService } from '../services/users.service';
 import { LoggerSettings } from '../services/decorators/route/logging-settings.decorator';
-import { UserAgent } from '../services/decorators/param/user-agent.decorator';
+import { ApiExcludeEndpoint } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
-	constructor(private readonly authService: AuthService, private readonly sessionService: SessionsService) {}
+	constructor(
+		private readonly authService: AuthService,
+		private readonly sessionService: SessionsService,
+		private readonly usersService: UsersService
+	) {}
+
+	@Get('profile')
+	@UseGuards(JwtAuthGuard)
+	async currentUser(@Request() req: AuthRequest): Promise<UserDto> {
+		const { sub: userId } = req.user;
+
+		return await this.usersService.getOne({ id: userId });
+	}
 
 	@Post('send-otp')
 	async sendOtp(@Body() verify: AuthVerifyDto): Promise<IdDto> {
@@ -35,28 +50,48 @@ export class AuthController {
 	}
 
 	@Post('sign-up/phone')
-	async signUpWithPhone(@Body() userPayload: SignUpWithPhoneDto, @RealIP() ipAddress: string, @UserAgent() userAgent: string): Promise<AuthResponseDto> {
+	async signUpWithPhone(
+		@Body() userPayload: SignUpWithPhoneDto,
+		@RealIP() ipAddress: string,
+		@UserAgent() userAgent: string
+	): Promise<AuthResponseDto> {
 		return await this.authService.registerWithPhone(userPayload, ipAddress, userAgent);
 	}
 
 	@Post('sign-up/email')
-	async signUpWithEmail(@Body() userPayload: SignUpWithEmailDto, @RealIP() ipAddress: string, @UserAgent() userAgent: string): Promise<AuthResponseDto> {
+	async signUpWithEmail(
+		@Body() userPayload: SignUpWithEmailDto,
+		@RealIP() ipAddress: string,
+		@UserAgent() userAgent: string
+	): Promise<AuthResponseDto> {
 		return await this.authService.registerWithEmail(userPayload, ipAddress, userAgent);
 	}
 
 	@Post('sign-in/phone')
-	async signInWithPhone(@Body() credentials: SignInWithPhoneDto, @RealIP() ipAddress: string, @UserAgent() userAgent: string): Promise<AuthResponseDto> {
+	async signInWithPhone(
+		@Body() credentials: SignInWithPhoneDto,
+		@RealIP() ipAddress: string,
+		@UserAgent() userAgent: string
+	): Promise<AuthResponseDto> {
 		return await this.authService.authenticateUserWithPhone(credentials, ipAddress, userAgent);
 	}
 
 	@Post('sign-in/email')
-	async signInWithEmail(@Body() credentials: SignInWithEmailDto, @RealIP() ipAddress: string, @UserAgent() userAgent: string): Promise<AuthResponseDto> {
+	async signInWithEmail(
+		@Body() credentials: SignInWithEmailDto,
+		@RealIP() ipAddress: string,
+		@UserAgent() userAgent: string
+	): Promise<AuthResponseDto> {
 		return await this.authService.authenticateUserWithEmail(credentials, ipAddress, userAgent);
 	}
 
 	@Post('refresh')
 	@UseGuards(JwtRefreshGuard)
-	async refreshTokens(@Request() req: AuthRequest, @RealIP() ipAddress: string, @UserAgent() userAgent: string): Promise<AuthResponseDto> {
+	async refreshTokens(
+		@Request() req: AuthRequest,
+		@RealIP() ipAddress: string,
+		@UserAgent() userAgent: string
+	): Promise<AuthResponseDto> {
 		const { sub: sessionId, jti: tokenId } = req.user;
 
 		return await this.authService.refreshToken(sessionId, tokenId, ipAddress, userAgent);
@@ -67,6 +102,6 @@ export class AuthController {
 	async signOut(@Request() req: AuthRequest): Promise<SessionDto> {
 		const { sub: sessionId, jti: tokenId } = req.user;
 
-		return await this.sessionService.removeSession(sessionId, tokenId);
+		return await this.sessionService.interruptSession(sessionId, tokenId);
 	}
 }

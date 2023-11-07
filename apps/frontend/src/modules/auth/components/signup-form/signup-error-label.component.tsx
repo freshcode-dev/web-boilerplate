@@ -4,7 +4,7 @@ import React, { FC } from "react";
 import CoreLinkButton from "../../../_core/components/_ui/core-button/core-link-button.component";
 import { Trans, useTranslation } from "react-i18next";
 import { Typography } from "@mui/material";
-import { AuthRoutes } from "../../../../constants/routes";
+import { AuthRoutes } from "../../constants";
 
 interface SignupErrorLabelProps {
 	error?: SerializedError | FetchBaseQueryError;
@@ -39,7 +39,7 @@ const SignupErrorLabel: FC<SignupErrorLabelProps> = (props) => {
 				i18nKey='sign-up.check-data-or-login'
 				components={[
 					<CoreLinkButton
-						to={AuthRoutes.loginEmail}
+						to={AuthRoutes.LoginEmail}
 						sx={{ color: theme => theme.colors.red }}
 					/>
 				]}

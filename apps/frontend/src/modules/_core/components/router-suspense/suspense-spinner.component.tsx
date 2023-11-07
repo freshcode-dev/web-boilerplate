@@ -5,7 +5,7 @@ interface SuspenseSpinnerProps {
 	full?: boolean;
 }
 
-const SuspenseSpinner: FC<SuspenseSpinnerProps> = (props) => {
+export const SuspenseSpinner: FC<SuspenseSpinnerProps> = (props) => {
 	const { full } = props;
 
 	return (
@@ -22,5 +22,3 @@ const SuspenseSpinner: FC<SuspenseSpinnerProps> = (props) => {
 		</Box>
 	);
 };
-
-export default SuspenseSpinner;

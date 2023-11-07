@@ -5,7 +5,7 @@ interface TooltipTransitionProps extends GrowProps {
 	onTooltipTransitionEnd?(): void;
 }
 
-const TooltipTransition = forwardRef<unknown, TooltipTransitionProps>((props, ref) => {
+export const TooltipTransition = forwardRef<unknown, TooltipTransitionProps>((props, ref) => {
 	const { onExited, onTooltipTransitionEnd, ...growProps } = props;
 
 	const handleExited = useCallback((node: HTMLElement) => {
@@ -21,5 +21,3 @@ const TooltipTransition = forwardRef<unknown, TooltipTransitionProps>((props, re
 		/>
 	);
 });
-
-export default TooltipTransition;

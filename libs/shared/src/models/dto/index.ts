@@ -10,3 +10,6 @@ export * from './session.dto';
 export * from './sign-in.dto';
 export * from './sign-up.dto';
 export * from './user.dto';
+export * from './list-with-totals.dto';
+export * from './ip-details.dto';
+export * from "./menu-option.dto";

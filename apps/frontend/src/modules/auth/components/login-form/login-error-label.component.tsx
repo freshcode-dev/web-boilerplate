@@ -4,7 +4,7 @@ import { SerializedError } from '@reduxjs/toolkit';
 import { Trans, useTranslation } from 'react-i18next';
 import CoreLinkButton from '../../../_core/components/_ui/core-button/core-link-button.component';
 import { Typography } from '@mui/material';
-import { AuthRoutes } from '../../../../constants/routes';
+import { AuthRoutes } from '../../constants';
 
 interface LoginErrorLabelProps {
 	error?: FetchBaseQueryError | SerializedError;
@@ -26,7 +26,7 @@ const LoginErrorLabel: FC<LoginErrorLabelProps> = (props) => {
 		return (
 			<Trans
 				i18nKey={errorI18nKey ?? 'sign-in.check-number-or-register'}
-				components={[<CoreLinkButton to={AuthRoutes.signUp} />]}
+				components={[<CoreLinkButton to={AuthRoutes.SignUp} />]}
 			/>
 		);
 	};

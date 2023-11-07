@@ -1,4 +1,10 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+	ConflictException,
+	ForbiddenException,
+	Injectable,
+	NotFoundException,
+	UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
 	AuthReasonEnum,
@@ -25,7 +31,7 @@ export class AuthService {
 		private readonly sessionService: SessionsService,
 		private readonly tokensService: TokensService,
 		private readonly phoneVerificationService: PhoneVerificationService,
-		private readonly googleAuthService: GoogleAuthService,
+		private readonly googleAuthService: GoogleAuthService
 	) {}
 
 	public async sendOtp(payload: AuthVerifyDto): Promise<IdDto> {
@@ -52,11 +58,14 @@ export class AuthService {
 		};
 	}
 
-	public async registerWithPhone(payload: SignUpWithPhoneDto, ipAddress: string, userAgent: string): Promise<AuthResponseDto> {
+	public async registerWithPhone(
+		payload: SignUpWithPhoneDto,
+		ipAddress: string,
+		userAgent: string
+	): Promise<AuthResponseDto> {
 		const { code, ...createUser } = payload;
 
-		await this.phoneVerificationService
-			.approveVerification(createUser.phoneNumber, code);
+		await this.phoneVerificationService.approveVerification(createUser.phoneNumber, code);
 
 		await this.usersService.verifyIsPhoneUnique(createUser.phoneNumber);
 
@@ -65,7 +74,11 @@ export class AuthService {
 		return await this.createSession(user, ipAddress, userAgent);
 	}
 
-	public async registerWithEmail(payload: SignUpWithEmailDto, ipAddress: string, userAgent: string): Promise<AuthResponseDto> {
+	public async registerWithEmail(
+		payload: SignUpWithEmailDto,
+		ipAddress: string,
+		userAgent: string
+	): Promise<AuthResponseDto> {
 		const { ...createUser } = payload;
 
 		await this.usersService.verifyIsEmailUnique(createUser.email);
@@ -75,7 +88,11 @@ export class AuthService {
 		return await this.createSession(user, ipAddress, userAgent);
 	}
 
-	public async authenticateUserWithPhone(credentials: SignInWithPhoneDto, ipAddress: string, userAgent: string): Promise<AuthResponseDto> {
+	public async authenticateUserWithPhone(
+		credentials: SignInWithPhoneDto,
+		ipAddress: string,
+		userAgent: string
+	): Promise<AuthResponseDto> {
 		const { phoneNumber, code, rememberMe } = credentials;
 
 		const user = await this.verifyUserPhoneCredentials(phoneNumber, code);
@@ -83,7 +100,11 @@ export class AuthService {
 		return await this.createSession(user, ipAddress, userAgent, rememberMe);
 	}
 
-	public async authenticateUserWithEmail(credentials: SignInWithEmailDto, ipAddress: string, userAgent: string): Promise<AuthResponseDto> {
+	public async authenticateUserWithEmail(
+		credentials: SignInWithEmailDto,
+		ipAddress: string,
+		userAgent: string
+	): Promise<AuthResponseDto> {
 		const { email, password, rememberMe } = credentials;
 
 		const user = await this.verifyUserEmailCredentials(email, password);
@@ -108,8 +129,7 @@ export class AuthService {
 	}
 
 	public async verifyUserPhoneCredentials(phoneNumber: string, code: string): Promise<UserDto> {
-		await this.phoneVerificationService
-			.approveVerification(phoneNumber, code);
+		await this.phoneVerificationService.approveVerification(phoneNumber, code);
 
 		const user = await this.usersService.findOne({ phoneNumber });
 
@@ -120,7 +140,12 @@ export class AuthService {
 		return user;
 	}
 
-	public async refreshToken(sessionId: string, tokenId: string, ipAddress: string, userAgent: string): Promise<AuthResponseDto> {
+	public async refreshToken(
+		sessionId: string,
+		tokenId: string,
+		ipAddress: string,
+		userAgent: string
+	): Promise<AuthResponseDto> {
 		const issuedAt = new Date();
 
 		const session = await this.sessionService.updateSessionToken(sessionId, tokenId, issuedAt, ipAddress, userAgent);
@@ -164,7 +189,11 @@ export class AuthService {
 		return await this.createSession(user, ipAddress, userAgent);
 	}
 
-	public async signUpWithGoogleEmail(createUser: CreateUserDto, ipAddress: string, userAgent: string): Promise<AuthResponseDto> {
+	public async signUpWithGoogleEmail(
+		createUser: CreateUserDto,
+		ipAddress: string,
+		userAgent: string
+	): Promise<AuthResponseDto> {
 		await this.usersService.verifyIsGoogleEmailUnique(createUser.googleEmail as string);
 
 		const user = await this.usersService.registerUser(createUser);
@@ -172,7 +201,12 @@ export class AuthService {
 		return await this.createSession(user, ipAddress, userAgent);
 	}
 
-	private async createSession(user: UserDto, ipAddress: string, userAgent: string, rememberMe?: boolean): Promise<AuthResponseDto> {
+	private async createSession(
+		user: UserDto,
+		ipAddress: string,
+		userAgent: string,
+		rememberMe?: boolean
+	): Promise<AuthResponseDto> {
 		const issuedAt = new Date();
 
 		const session = await this.sessionService.createSession(user.id, issuedAt, ipAddress, userAgent, rememberMe);

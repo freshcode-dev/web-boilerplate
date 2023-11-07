@@ -8,7 +8,7 @@ interface CoreTableEmptyBodyProps {
 	descriptionSx?: SxProps<Theme>;
 }
 
-const CoreTableEmptyBody: FC<CoreTableEmptyBodyProps> = (props) => {
+export const CoreTableEmptyBody: FC<CoreTableEmptyBodyProps> = (props) => {
 	const { label, description, icon, descriptionSx } = props;
 
 	return (
@@ -51,5 +51,3 @@ const CoreTableEmptyBody: FC<CoreTableEmptyBodyProps> = (props) => {
 		</Box>
 	);
 };
-
-export default CoreTableEmptyBody;

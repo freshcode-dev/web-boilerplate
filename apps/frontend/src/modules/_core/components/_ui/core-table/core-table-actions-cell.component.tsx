@@ -19,7 +19,7 @@ interface CoreTableActionsCellProps {
 	actions: CellAction[];
 }
 
-const CoreTableActionsCell: FC<CoreTableActionsCellProps> = (props) => {
+export const CoreTableActionsCell: FC<CoreTableActionsCellProps> = (props) => {
 	const { actions } = props;
 
 	const renderAction = (action: CellAction) => {
@@ -51,5 +51,3 @@ const CoreTableActionsCell: FC<CoreTableActionsCellProps> = (props) => {
 		</CoreActionsRow>
 	);
 };
-
-export default CoreTableActionsCell;

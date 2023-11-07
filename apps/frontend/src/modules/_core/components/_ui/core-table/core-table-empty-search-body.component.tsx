@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import CoreTableEmptyBody from "./core-table-empty-body.component";
+import { CoreTableEmptyBody } from "./core-table-empty-body.component";
 import { useTranslation } from "react-i18next";
 import { SearchLarge } from "../../../constants/icons.constants";
 
@@ -8,7 +8,7 @@ interface CoreTableEmptyBodyProps {
 	description?: string | null;
 }
 
-const CoreTableEmptySearchBody: FC<CoreTableEmptyBodyProps> = (props) => {
+export const CoreTableEmptySearchBody: FC<CoreTableEmptyBodyProps> = (props) => {
 	const { label, description } = props;
 	const { t } = useTranslation();
 
@@ -21,5 +21,3 @@ const CoreTableEmptySearchBody: FC<CoreTableEmptyBodyProps> = (props) => {
 		/>
 	);
 };
-
-export default CoreTableEmptySearchBody;

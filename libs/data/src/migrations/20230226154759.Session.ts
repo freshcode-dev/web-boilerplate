@@ -19,6 +19,17 @@ export class Session20230226154759 implements RunnableMigration<MigrationContext
 					generationStrategy: 'uuid'
 				},
 				{
+					name: 'ipAddress',
+					type: 'varchar',
+					length: '255',
+					isNullable: false
+				},
+				{
+					name: 'userAgent',
+					type: 'text',
+					isNullable: false
+				},
+				{
 					name: 'tokenId',
 					type: 'uuid',
 					isGenerated: true,

@@ -2,7 +2,7 @@ import React, { FC, memo } from "react";
 import { Country } from 'react-phone-number-input';
 import { flagIconStyle } from "./country-option.styles";
 import { FlagsList } from "./phone-input.component";
-import DropdownArrow from "../core-select/dropdown-arrow.component";
+import { DropdownArrow } from "../core-select";
 import { ButtonBase, Box } from "@mui/material";
 import { Public } from '@mui/icons-material';
 

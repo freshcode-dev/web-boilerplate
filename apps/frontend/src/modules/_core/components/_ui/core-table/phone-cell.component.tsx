@@ -5,7 +5,7 @@ interface PhoneCellProps {
 	phone: string;
 }
 
-const PhoneCell: FC<PhoneCellProps> = (props) => {
+export const PhoneCell: FC<PhoneCellProps> = memo((props) => {
 	const { phone } = props;
 
 	return (
@@ -13,6 +13,4 @@ const PhoneCell: FC<PhoneCellProps> = (props) => {
 			{formatPhoneNumberIntl(phone)}
 		</>
 	);
-};
-
-export default memo(PhoneCell);
+});

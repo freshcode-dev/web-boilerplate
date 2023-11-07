@@ -6,7 +6,7 @@ interface MenuOptionCellProps {
 	emptyLabel?: string | null;
 }
 
-const MenuOptionCell: FC<MenuOptionCellProps> = (props) => {
+export const MenuOptionCell: FC<MenuOptionCellProps> = memo((props) => {
 	const { emptyLabel, options } = props;
 
 	if (!options || options.length === 0) {
@@ -22,6 +22,4 @@ const MenuOptionCell: FC<MenuOptionCellProps> = (props) => {
 				.join(', ')}
 		</>
 	);
-};
-
-export default memo(MenuOptionCell);
+});
