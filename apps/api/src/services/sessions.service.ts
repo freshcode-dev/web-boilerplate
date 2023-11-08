@@ -13,11 +13,13 @@ export class SessionsService {
 		private readonly tokensService: TokensService
 	) {}
 
-	public async updateSessionToken(id: string, tokenId: string, issuedAt: Date): Promise<SessionDto> {
+	public async updateSessionToken(id: string, tokenId: string, issuedAt: Date, ipAddress: string, userAgent: string): Promise<SessionDto> {
 		const session = await this.getSessionById(id);
 
 		session.tokenId = randomUUID();
 		session.expiredAt = this.tokensService.getRefreshExpirationDate(issuedAt, session.rememberMe);
+		session.ipAddress = ipAddress ?? '';
+		session.userAgent = userAgent ?? '';
 
 		const { affected } = await this.sessionRepository.update(
 			{ id, tokenId },
@@ -34,6 +36,8 @@ export class SessionsService {
 	public async createSession(
 		userId: string,
 		issuedAt: Date,
+		ipAddress: string,
+		userAgent: string,
 		isRememberMe = true
 	): Promise<SessionDto> {
 		const session = new Session();
@@ -41,6 +45,8 @@ export class SessionsService {
 		session.userId = userId;
 		session.rememberMe = isRememberMe;
 		session.expiredAt = this.tokensService.getRefreshExpirationDate(issuedAt, isRememberMe);
+		session.ipAddress = ipAddress ?? '';
+		session.userAgent = userAgent ?? '';
 
 		await this.sessionRepository.insert(session);
 

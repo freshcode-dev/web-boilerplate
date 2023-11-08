@@ -14,6 +14,7 @@ import { JwtRefreshStrategy } from './strategy/jwt-refresh.strategy';
 import { UserProfile } from './profiles/user.profile';
 import { PhoneVerificationService } from './phone-verification.service';
 import { LoggingModule } from '../core/logging/logging.module';
+import { GoogleAuthService } from './google-auth.service';
 
 @Module({
 	imports: [
@@ -34,6 +35,7 @@ import { LoggingModule } from '../core/logging/logging.module';
 		JwtRefreshGuard,
 		JwtRefreshStrategy,
 		PhoneVerificationService,
+		GoogleAuthService,
 	],
 	exports: [UsersService, AuthService, SessionsService, PhoneVerificationService],
 })

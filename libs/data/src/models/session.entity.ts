@@ -27,6 +27,12 @@ export class Session {
 	@Column({ select: false })
 	userId: string;
 
+	@Column()
+	ipAddress: string;
+
+	@Column()
+	userAgent: string;
+
 	@ManyToOne(() => User, user => user.sessions)
 	user: User;
 

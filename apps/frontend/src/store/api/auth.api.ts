@@ -34,6 +34,23 @@ const authApi = api.injectEndpoints({
 				skipAuth: true
 			}
 		}),
+		authWithGoogleToken: builder.mutation<AuthResponseDto, string>({
+			query: idToken => ({
+				url: 'auth/google',
+				method: 'POST',
+				body: { idToken }
+			}),
+			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+				try {
+					const response = await queryFulfilled;
+					dispatch(updateSessionAction(response.data));
+				} catch { /* empty */ }
+			},
+			invalidatesTags: ['UserProfile'],
+			extraOptions: {
+				skipAuth: true
+			}
+		}),
 		registerWithEmail: builder.mutation<AuthResponseDto, SignUpWithEmailDto>({
 			query: data => ({
 				url: 'auth/sign-up/email',
@@ -112,5 +129,6 @@ export const {
 	useSignInWithPhoneMutation,
 	useSignInWithEmailMutation,
 	useRegisterWithPhoneMutation,
-	useRegisterWithEmailMutation
+	useRegisterWithEmailMutation,
+	useAuthWithGoogleTokenMutation
 } = authApi;

@@ -10,12 +10,14 @@ export class UsersController {
 
 	@Get('user/:id')
 	async getUserById(@Param('id') id: string): Promise<UserDto> {
-		return await this.userService.getUserById(id);
+		return await this.userService.getOne({ id });
 	}
 
 	@Get('profile')
 	@UseGuards(JwtAuthGuard)
 	async currentUser(@Request() req: AuthRequest): Promise<UserDto> {
-		return await this.userService.getUserById(req.user.sub);
+		const { sub: id } = req.user;
+
+		return await this.userService.getOne({ id });
 	}
 }

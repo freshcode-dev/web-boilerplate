@@ -36,6 +36,16 @@ export class Session20230226154759 implements RunnableMigration<MigrationContext
 					isNullable: false
 				},
 				{
+					name: 'ipAddress',
+					type: 'text',
+					isNullable: false
+				},
+				{
+					name: 'userAgent',
+					type: 'text',
+					isNullable: false
+				},
+				{
 					name: 'expiredAt',
 					type: 'timestamptz',
 					isNullable: false

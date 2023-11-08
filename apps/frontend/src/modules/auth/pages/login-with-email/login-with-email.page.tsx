@@ -2,7 +2,7 @@ import React, { FC, useCallback, useEffect, useState } from 'react';
 import { Box, Container } from '@mui/material';
 import LoginFooter from '../../components/_ui/login-footer/login-footer.component';
 import DocumentTitle from '../../../_core/components/_ui/document-title/document-title.component';
-import { useSignInWithEmailMutation } from '../../../../store/api/auth.api';
+import { useAuthWithGoogleTokenMutation, useSignInWithEmailMutation } from '../../../../store/api/auth.api';
 import { SIGN_IN_CACHE_KEY } from '../../constants/auth-cache.constants';
 import { containerStyles, wrapperStyles } from './login-with-email.styles';
 import { useLangParam } from '../../hooks/use-lang-param.hook';
@@ -12,6 +12,7 @@ import LoginWithEmailForm from '../../components/login-form/login-email-form.com
 import PasswordForm from '../../components/password-form/password-form.component';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { SerializedError } from '@reduxjs/toolkit';
+import GoogleAuthButton from '../../components/_ui/google-auth-button/google-auth-button.component';
 
 interface FormsState {
 	activeForm: 'email' | 'password';
@@ -26,6 +27,8 @@ const LoginWithEmailPage: FC = () => {
 	const [signInEmail, { reset: resetSignIn }] = useSignInWithEmailMutation({
 		fixedCacheKey: SIGN_IN_CACHE_KEY,
 	});
+
+	const [authWithGoogleToken, { reset: resetAuthWithGoogleToken }] = useAuthWithGoogleTokenMutation();
 
 	const [signInError, setSignInError] = useState<FetchBaseQueryError | SerializedError | undefined>();
 
@@ -80,11 +83,18 @@ const LoginWithEmailPage: FC = () => {
 		[signInEmail, email, rememberMe]
 	);
 
+	const handleLoginWithGoogle = useCallback(async (response: { credential: string }) => {
+		const idToken = response.credential;
+
+		await authWithGoogleToken(idToken);
+	}, [authWithGoogleToken]);
+
 	useEffect(
 		() => () => {
 			resetSignIn();
+			resetAuthWithGoogleToken();
 		},
-		[resetSignIn]
+		[resetSignIn, resetAuthWithGoogleToken]
 	);
 
 	return (
@@ -95,6 +105,9 @@ const LoginWithEmailPage: FC = () => {
 				{activeForm === 'password' && (
 					<PasswordForm error={signInError} onSubmit={handlePasswordSubmit} onBack={goToLoginForm} />
 				)}
+			</Box>
+			<Box>
+				<GoogleAuthButton onSuccess={handleLoginWithGoogle} />
 			</Box>
 			<LoginFooter />
 		</Container>

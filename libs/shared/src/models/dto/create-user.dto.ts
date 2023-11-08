@@ -15,4 +15,8 @@ export class CreateUserDto {
 
 	@Length(1, 100)
 	name: string;
+
+	@IsOptional()
+	@IsEmail()
+	googleEmail?: string;
 }

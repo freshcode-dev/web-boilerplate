@@ -1,9 +1,10 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
 	AuthReasonEnum,
 	AuthResponseDto,
 	AuthVerifyDto,
+	CreateUserDto,
 	IdDto,
 	SignInWithEmailDto,
 	SignInWithPhoneDto,
@@ -16,9 +17,7 @@ import { argon2DefaultConfig } from '../constants';
 import { SessionsService } from './sessions.service';
 import { TokensService } from './tokens.service';
 import { PhoneVerificationService } from './phone-verification.service';
-import { Mapper } from '@automapper/core';
-import { InjectMapper } from '@automapper/nestjs';
-import { User } from '@boilerplate/data';
+import { GoogleAuthService } from './google-auth.service';
 @Injectable()
 export class AuthService {
 	constructor(
@@ -26,7 +25,7 @@ export class AuthService {
 		private readonly sessionService: SessionsService,
 		private readonly tokensService: TokensService,
 		private readonly phoneVerificationService: PhoneVerificationService,
-		@InjectMapper() private readonly mapper: Mapper
+		private readonly googleAuthService: GoogleAuthService,
 	) {}
 
 	public async sendOtp(payload: AuthVerifyDto): Promise<IdDto> {
@@ -36,7 +35,7 @@ export class AuthService {
 			await this.usersService.verifyIsEmailUnique(email);
 		}
 
-		const user = await this.usersService.findUserByPhone(phoneNumber);
+		const user = await this.usersService.findOne({ phoneNumber });
 
 		if (reason === AuthReasonEnum.SignIn && !user) {
 			throw new NotFoundException('User not found, please try to register');
@@ -53,103 +52,47 @@ export class AuthService {
 		};
 	}
 
-	public async registerWithPhone(payload: SignUpWithPhoneDto): Promise<AuthResponseDto> {
-		const { code, ...userPayload } = payload;
+	public async registerWithPhone(payload: SignUpWithPhoneDto, ipAddress: string, userAgent: string): Promise<AuthResponseDto> {
+		const { code, ...createUser } = payload;
 
 		await this.phoneVerificationService
-			.approveVerification(userPayload.phoneNumber, code);
+			.approveVerification(createUser.phoneNumber, code);
 
-		const user = await this.usersService.registerUser(userPayload);
-		const issuedAt = new Date();
+		await this.usersService.verifyIsPhoneUnique(createUser.phoneNumber);
 
-		const session = await this.sessionService.createSession(user.id, issuedAt);
+		const user = await this.usersService.registerUser(createUser);
 
-		const { refreshToken, accessToken } = await this.tokensService.generateJwt(
-			user.id,
-			session.id,
-			session.tokenId,
-			issuedAt,
-			true
-		);
-
-		return {
-			user,
-			refreshToken,
-			accessToken
-		};
+		return await this.createSession(user, ipAddress, userAgent);
 	}
 
-	public async registerWithEmail(payload: SignUpWithEmailDto): Promise<AuthResponseDto> {
-		const { ...userPayload } = payload;
+	public async registerWithEmail(payload: SignUpWithEmailDto, ipAddress: string, userAgent: string): Promise<AuthResponseDto> {
+		const { ...createUser } = payload;
 
-		const user = await this.usersService.registerUser(userPayload);
-		const issuedAt = new Date();
+		await this.usersService.verifyIsEmailUnique(createUser.email);
 
-		const session = await this.sessionService.createSession(user.id, issuedAt);
+		const user = await this.usersService.registerUser(createUser);
 
-		const { refreshToken, accessToken } = await this.tokensService.generateJwt(
-			user.id,
-			session.id,
-			session.tokenId,
-			issuedAt,
-			true
-		);
-
-		return {
-			user,
-			refreshToken,
-			accessToken
-		};
+		return await this.createSession(user, ipAddress, userAgent);
 	}
 
-	public async authenticateUserWithPhone(credentials: SignInWithPhoneDto): Promise<AuthResponseDto> {
+	public async authenticateUserWithPhone(credentials: SignInWithPhoneDto, ipAddress: string, userAgent: string): Promise<AuthResponseDto> {
 		const { phoneNumber, code, rememberMe } = credentials;
 
 		const user = await this.verifyUserPhoneCredentials(phoneNumber, code);
-		const issuedAt = new Date();
 
-		const session = await this.sessionService.createSession(user.id, issuedAt, rememberMe);
-
-		const { refreshToken, accessToken } = await this.tokensService.generateJwt(
-			user.id,
-			session.id,
-			session.tokenId,
-			issuedAt,
-			rememberMe
-		);
-
-		return {
-			refreshToken,
-			accessToken,
-			user,
-		};
+		return await this.createSession(user, ipAddress, userAgent, rememberMe);
 	}
 
-	public async authenticateUserWithEmail(credentials: SignInWithEmailDto): Promise<AuthResponseDto> {
+	public async authenticateUserWithEmail(credentials: SignInWithEmailDto, ipAddress: string, userAgent: string): Promise<AuthResponseDto> {
 		const { email, password, rememberMe } = credentials;
 
 		const user = await this.verifyUserEmailCredentials(email, password);
-		const issuedAt = new Date();
 
-		const session = await this.sessionService.createSession(user.id, issuedAt, rememberMe);
-
-		const { refreshToken, accessToken } = await this.tokensService.generateJwt(
-			user.id,
-			session.id,
-			session.tokenId,
-			issuedAt,
-			rememberMe
-		);
-
-		return {
-			refreshToken,
-			accessToken,
-			user,
-		};
+		return await this.createSession(user, ipAddress, userAgent, rememberMe);
 	}
 
 	public async verifyUserEmailCredentials(email: string, password: string): Promise<UserDto> {
-		const user = await this.usersService.findByEmail(email);
+		const user = await this.usersService.findOne({ email });
 
 		if (!user?.password) {
 			throw new UnauthorizedException('This user does not exist');
@@ -168,21 +111,21 @@ export class AuthService {
 		await this.phoneVerificationService
 			.approveVerification(phoneNumber, code);
 
-		const user = await this.usersService.findUserByPhone(phoneNumber);
+		const user = await this.usersService.findOne({ phoneNumber });
 
 		if (!user) {
 			throw new UnauthorizedException('This user does not exist');
 		}
 
-		return this.mapper.map(user, User, UserDto);
+		return user;
 	}
 
-	public async refreshToken(sessionId: string, tokenId: string): Promise<AuthResponseDto> {
+	public async refreshToken(sessionId: string, tokenId: string, ipAddress: string, userAgent: string): Promise<AuthResponseDto> {
 		const issuedAt = new Date();
 
-		const session = await this.sessionService.updateSessionToken(sessionId, tokenId, issuedAt);
+		const session = await this.sessionService.updateSessionToken(sessionId, tokenId, issuedAt, ipAddress, userAgent);
 
-		const user = await this.usersService.getUserById(session.userId);
+		const user = await this.usersService.getOne({ id: session.userId });
 
 		const { refreshToken, accessToken } = this.tokensService.generateJwt(
 			session.userId,
@@ -196,6 +139,56 @@ export class AuthService {
 			user,
 			refreshToken,
 			accessToken,
+		};
+	}
+
+	public async signInWithGoogleToken(idToken: string, ipAddress: string, userAgent: string): Promise<AuthResponseDto> {
+		if (!idToken) throw new ForbiddenException('Access Denied');
+
+		const googleUser = await this.googleAuthService.getUserFromTokenId(idToken);
+
+		if (!googleUser?.googleEmail) throw new ForbiddenException('Access Denied');
+
+		const user = await this.usersService.findOne({ googleEmail: googleUser.googleEmail });
+
+		if (user) {
+			return this.signInWithGoogleEmail(user, ipAddress, userAgent);
+		}
+
+		return this.signUpWithGoogleEmail(googleUser, ipAddress, userAgent);
+	}
+
+	public async signInWithGoogleEmail(user: UserDto, ipAddress: string, userAgent: string): Promise<AuthResponseDto> {
+		if (!user) throw new ForbiddenException('Access Denied');
+
+		return await this.createSession(user, ipAddress, userAgent);
+	}
+
+	public async signUpWithGoogleEmail(createUser: CreateUserDto, ipAddress: string, userAgent: string): Promise<AuthResponseDto> {
+		await this.usersService.verifyIsGoogleEmailUnique(createUser.googleEmail as string);
+
+		const user = await this.usersService.registerUser(createUser);
+
+		return await this.createSession(user, ipAddress, userAgent);
+	}
+
+	private async createSession(user: UserDto, ipAddress: string, userAgent: string, rememberMe?: boolean): Promise<AuthResponseDto> {
+		const issuedAt = new Date();
+
+		const session = await this.sessionService.createSession(user.id, issuedAt, ipAddress, userAgent, rememberMe);
+
+		const { refreshToken, accessToken } = await this.tokensService.generateJwt(
+			user.id,
+			session.id,
+			session.tokenId,
+			issuedAt,
+			session.rememberMe
+		);
+
+		return {
+			refreshToken,
+			accessToken,
+			user,
 		};
 	}
 }

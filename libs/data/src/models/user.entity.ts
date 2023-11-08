@@ -18,8 +18,11 @@ export class User {
 	@Column()
 	password?: string;
 
+	@Column()
+	googleEmail?: string;
+
 	@OneToMany(() => Session, session => session.user)
-	sessions: Session[];
+	sessions?: Session[];
 
 	@CreateDateColumn({ type: 'timestamptz' })
 	createdAt: Date;

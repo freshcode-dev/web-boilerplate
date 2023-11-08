@@ -43,6 +43,12 @@ export class CreateUsersTable20220114133300 implements RunnableMigration<Migrati
 					isNullable: true
 				},
 				{
+					name: 'googleEmail',
+					type: 'text',
+					isUnique: true,
+					isNullable: true
+				},
+				{
 					name: 'createdAt',
 					type: 'timestamptz',
 					default: 'now()',

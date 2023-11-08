@@ -21,8 +21,8 @@ export const ProfileCard: FC<ProfileCardProps> = (props) => {
 				<Typography gutterBottom>
 					{t('profile.name')}: {profile.name}
 				</Typography>
-				{profile.email && <Typography gutterBottom>
-					{t('profile.email')}: {profile.email}
+				{(profile.email ?? profile.googleEmail) && <Typography gutterBottom>
+					{t('profile.email')}: {profile.email ?? profile.googleEmail}
 				</Typography>}
 				{profile.phoneNumber && <Typography gutterBottom>
 					{t('profile.phone')}: {profile.phoneNumber}
