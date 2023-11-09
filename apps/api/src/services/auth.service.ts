@@ -1,5 +1,5 @@
 import {
-	ConflictException,
+	BadRequestException,
 	ForbiddenException,
 	Injectable,
 	NotFoundException,
@@ -15,63 +15,64 @@ import {
 	SignInWithEmailDto,
 	SignInWithPhoneDto,
 	SignUpWithEmailDto,
-	SignUpWithPhoneDto,
 	UserDto,
+	VERIFICATION_CODE_LENGTH,
 } from '@boilerplate/shared';
 import { verify } from 'argon2';
 import { argon2DefaultConfig } from '../constants';
 import { SessionsService } from './sessions.service';
 import { TokensService } from './tokens.service';
-import { PhoneVerificationService } from './phone-verification.service';
+import { TwilioService } from './twillio.service';
 import { GoogleAuthService } from './google-auth.service';
+import { MailerService } from './mailer.service';
+import { OTPService } from './otp.service';
+import { TLatestSavedCode } from '../interfaces/otp';
+import { emailCodeSubject, renderEmailCodeTemplate } from '../utils/templates/email-code.template';
 @Injectable()
 export class AuthService {
 	constructor(
 		private readonly usersService: UsersService,
 		private readonly sessionService: SessionsService,
 		private readonly tokensService: TokensService,
-		private readonly phoneVerificationService: PhoneVerificationService,
-		private readonly googleAuthService: GoogleAuthService
+		private readonly googleAuthService: GoogleAuthService,
+		private readonly mailerService: MailerService,
+		private readonly twilioService: TwilioService,
+		private readonly otpService: OTPService
 	) {}
 
+	// eslint-disable-next-line complexity
 	public async sendOtp(payload: AuthVerifyDto): Promise<IdDto> {
 		const { phoneNumber, email, reason } = payload;
 
+		// check if user exists on sign up
 		if (reason === AuthReasonEnum.SignUp && email) {
 			await this.usersService.verifyIsEmailUnique(email);
+		} else if (reason === AuthReasonEnum.SignUp && phoneNumber) {
+			await this.usersService.verifyIsPhoneUnique(phoneNumber);
 		}
 
-		const user = await this.usersService.findOne({ phoneNumber });
+		const user = await this.usersService.findOne([{ phoneNumber }, { email }, { googleEmail: email }]);
 
 		if (reason === AuthReasonEnum.SignIn && !user) {
 			throw new NotFoundException('User not found, please try to register');
 		}
 
-		if (reason === AuthReasonEnum.SignUp && user) {
-			throw new ConflictException({ field: 'phoneNumber' }, 'Phone number is already in use');
+		let id = '';
+		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+		const userEmail = email || user?.email || user?.googleEmail;
+
+		// send otp
+		if (reason === AuthReasonEnum.SignUp && userEmail) {
+			id = userEmail;
+			await this.sendOtpToEmail(userEmail as string);
+		} else if (reason === AuthReasonEnum.SignIn && phoneNumber) {
+			id = phoneNumber;
+			await this.sendOtpToPhone(phoneNumber);
 		}
 
-		await this.phoneVerificationService.createVerification(phoneNumber);
-
 		return {
-			id: phoneNumber,
+			id,
 		};
-	}
-
-	public async registerWithPhone(
-		payload: SignUpWithPhoneDto,
-		ipAddress: string,
-		userAgent: string
-	): Promise<AuthResponseDto> {
-		const { code, ...createUser } = payload;
-
-		await this.phoneVerificationService.approveVerification(createUser.phoneNumber, code);
-
-		await this.usersService.verifyIsPhoneUnique(createUser.phoneNumber);
-
-		const user = await this.usersService.registerUser(createUser);
-
-		return await this.createSession(user, ipAddress, userAgent);
 	}
 
 	public async registerWithEmail(
@@ -79,7 +80,9 @@ export class AuthService {
 		ipAddress: string,
 		userAgent: string
 	): Promise<AuthResponseDto> {
-		const { ...createUser } = payload;
+		const { code, ...createUser } = payload;
+
+		await this.verifyOtpEmail(code, createUser.email);
 
 		await this.usersService.verifyIsEmailUnique(createUser.email);
 
@@ -129,7 +132,7 @@ export class AuthService {
 	}
 
 	public async verifyUserPhoneCredentials(phoneNumber: string, code: string): Promise<UserDto> {
-		await this.phoneVerificationService.approveVerification(phoneNumber, code);
+		await this.twilioService.approveVerification(phoneNumber, code);
 
 		const user = await this.usersService.findOne({ phoneNumber });
 
@@ -199,6 +202,45 @@ export class AuthService {
 		const user = await this.usersService.registerUser(createUser);
 
 		return await this.createSession(user, ipAddress, userAgent);
+	}
+
+	private async sendOtpToPhone(phoneNumber: string): Promise<void> {
+		await this.twilioService.createVerification(phoneNumber);
+	}
+
+	private async sendOtpToEmail(toEmail: string): Promise<void> {
+		await this.otpService.sendOtpCode(
+			{
+				codeLength: VERIFICATION_CODE_LENGTH,
+				assignee: toEmail,
+			},
+			async (code: TLatestSavedCode) => this.otpService.storeOtpCodeInDB(code),
+			async (code: string) => {
+				const subject = emailCodeSubject()
+				const body = await renderEmailCodeTemplate({ code });
+
+				const isEmailSent = await this.mailerService.sendMail({
+					to: toEmail,
+					subject,
+					body,
+				});
+
+				if (isEmailSent === false) throw new BadRequestException('Cannot send email');
+			}
+		);
+	}
+
+	private async verifyOtpEmail(code: string, email: string): Promise<void> {
+		await this.otpService.verifyOtpCode(
+			{
+				code,
+				assignee: email,
+			},
+			async (assignee) => await this.otpService.getOtpsByAssigneeFromDB(assignee),
+			async (code) => {
+				await this.otpService.markOTPAsUsedInDB(code);
+			}
+		);
 	}
 
 	private async createSession(

@@ -1,16 +1,19 @@
 import React, { FC, useCallback, useEffect, useState } from 'react';
 import { Box, Container } from '@mui/material';
-import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
-import { SerializedError } from '@reduxjs/toolkit';
 import { LoginWithPhoneForm } from '../../components/login-form';
-import { PhoneConfirmationForm } from '../../components/phone-confirmation-form';
+import { CodeConfirmationForm } from '../../components/code-confirmation-form';
 import { DocumentTitle } from '../../../_core/components/_ui/document-title';
-import { useSendOtpMutation, useSignInWithPhoneMutation } from '../../../../store/api/auth.api';
+import {
+	useSendOtpMutation,
+	useSignInWithPhoneMutation,
+} from '../../../../store/api/auth.api';
 import { SIGN_IN_CACHE_KEY, VERIFY_CACHE_KEY } from '../../constants/auth-cache.constants';
 import { containerStyles, wrapperStyles } from './login-with-phone.styles';
 import { useLangParam } from '../../hooks/use-lang-param.hook';
 import { getErrorStatusCode } from '../../../_core/utils/error.utils';
 import { AuthReasonEnum, ConfirmationCodeDto, PhoneDto, RememberMeDto } from '@boilerplate/shared';
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
+import { SerializedError } from '@reduxjs/toolkit';
 import { GoogleAuthButton } from '../../components/_ui/google-auth-button';
 import { googleAuthRowStyles } from '../login-with-email/login-with-email.styles';
 
@@ -113,7 +116,7 @@ const LoginWithPhonePage: FC = () => {
 					/>
 				)}
 				{activeForm === 'code' && (
-					<PhoneConfirmationForm
+					<CodeConfirmationForm
 						phoneNumber={phoneNumber}
 						error={signInError}
 						onSubmit={handleCodeSubmit}

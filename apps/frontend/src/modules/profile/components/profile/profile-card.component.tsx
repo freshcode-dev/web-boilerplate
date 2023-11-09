@@ -36,5 +36,3 @@ export const ProfileCard: FC<ProfileCardProps> = (props) => {
 		</Card>
 	);
 };
-
-export default ProfileCard;

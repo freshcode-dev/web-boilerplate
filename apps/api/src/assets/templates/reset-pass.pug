@@ -1,0 +1,15 @@
+doctype html
+html(lang="en")
+	head
+		meta(charset="UTF-8")
+		meta(name="viewport", content="width=device-width, initial-scale=1.0")
+		title Reset password
+	body
+		div
+			p Hi #{profile.name},
+			br
+			p You received this email because you requested a password reset.
+			p To reset your password, click the link below.
+			p a(href="#{resetLink}") Reset password
+			br
+			p If you did not request a password reset, no further action is required.

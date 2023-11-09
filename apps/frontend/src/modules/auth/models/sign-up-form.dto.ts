@@ -1,4 +1,4 @@
-import { MatchField, SignUpWithEmailDto, SignUpWithPhoneDto } from '@boilerplate/shared';
+import { MatchField, SignUpWithEmailDto } from '@boilerplate/shared';
 import { ValidateIf } from 'class-validator';
 
 export class SignUpWithEmailFormData extends SignUpWithEmailDto {
@@ -6,5 +6,3 @@ export class SignUpWithEmailFormData extends SignUpWithEmailDto {
 	@MatchField('password', { message: 'Passwords must match' })
 	confirmPassword: string;
 }
-
-export class SignUpWithPhoneFormData extends SignUpWithPhoneDto {}

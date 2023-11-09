@@ -1,9 +1,9 @@
 import React, { forwardRef, Ref } from "react";
 import { InputAdornment } from "@mui/material";
 import CountryAdornment from "./country-adornment.component";
-import { CoreTextField } from "../core-textfield/core-textfield.component";
+import { CoreTextField } from "../core-textfield";
 import { Country } from "react-phone-number-input";
-import { CoreFormControlProps } from "../core-form-control/core-form-control.component";
+import { CoreFormControlProps } from "../core-form-control";
 
 interface PhoneForwardedTextField extends CoreFormControlProps {
 	countryCode: Country;

@@ -3,7 +3,7 @@ import { CountryPhoneOption } from "../../../constants/country-phone.constants";
 import { useTranslation } from "react-i18next";
 import { Typography } from "@mui/material";
 import { FlagsList } from "./phone-input.component";
-import { CoreSelectMenuItem } from "../core-select/core-select-menu-item.component";
+import { CoreSelectMenuItem } from "../core-select";
 import { flagIconStyle } from "./country-option.styles";
 import { Country } from "react-phone-number-input";
 

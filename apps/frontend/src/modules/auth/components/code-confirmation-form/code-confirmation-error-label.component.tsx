@@ -1,9 +1,9 @@
-import { FC } from 'react';
-import { SerializedError } from '@reduxjs/toolkit';
-import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
-import { Typography } from '@mui/material';
-import { Trans } from 'react-i18next';
-import CoreLinkButton from '../../../_core/components/_ui/core-button/core-link-button.component';
+import { FC } from "react";
+import { SerializedError } from "@reduxjs/toolkit";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
+import { Typography } from "@mui/material";
+import { Trans } from "react-i18next";
+import { CoreLinkButton } from "../../../_core/components/_ui/core-button";
 
 interface ConfirmationErrorLabelProps {
 	error?: SerializedError | FetchBaseQueryError;

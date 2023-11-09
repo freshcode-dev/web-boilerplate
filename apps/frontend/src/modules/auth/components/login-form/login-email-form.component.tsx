@@ -1,12 +1,12 @@
 import React, { FC, useCallback } from 'react';
-import { classValidatorResolver } from '@hookform/resolvers/class-validator';
-import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
-import { SerializedError } from '@reduxjs/toolkit';
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
+import { SerializedError } from '@reduxjs/toolkit';
 import { useForm } from 'react-hook-form';
-import { FormControlsContainer } from '../_ui/form-controls';
 import { CoreButton } from '../../../_core/components/_ui/core-button';
+import { classValidatorResolver } from '@hookform/resolvers/class-validator';
+import { FormControlsContainer } from '../_ui/form-controls';
 import { errorMessage } from '../../../_core/utils/lang.utils';
 import { LoginErrorLabel } from './login-error-label.component';
 import { formElementStyles, titleStyles } from './login-form.styles';

@@ -7,23 +7,29 @@ import { TooManyRequestsException } from '../exceptions/too-many-requests.except
 import { LoggerService } from '../core/logging/logger.service';
 
 @Injectable()
-export class PhoneVerificationService implements OnModuleInit {
-	private readonly enabled: boolean;
+export class TwilioService implements OnModuleInit {
+	public readonly enabled: boolean;
+
 	private readonly verifySid: string;
 	private readonly phoneRateLimitName: string;
 	private readonly client?: TwilioSDK.Twilio;
 
-	constructor(configService: ConfigService<IApiConfigParams>,
-							private readonly logger: LoggerService) {
-		this.logger.setContext(PhoneVerificationService.name);
-		this.enabled = configService.get('NX_ENABLE_PHONE_VERIFICATION') === 'true';
+	constructor(configService: ConfigService<IApiConfigParams>, private readonly logger: LoggerService) {
+		this.logger.setContext(TwilioService.name);
+
+		this.enabled = configService.get('NX_ENABLE_TWILIO') === 'true';
 
 		if (!this.enabled) {
+			this.logger.warn({
+				message: 'Twilio is disabled',
+			});
+
 			return;
 		}
 
 		const accountSid: string = configService.getOrThrow('TWILIO_ACCOUNT_SID');
 		const authToken: string = configService.getOrThrow('TWILIO_AUTH_TOKEN');
+
 		this.verifySid = configService.getOrThrow('TWILIO_VERIFY_SID');
 		this.phoneRateLimitName = configService.getOrThrow('TWILIO_VERIFY_RATE_LIMIT');
 		this.client = TwilioSDK(accountSid, authToken);
@@ -32,19 +38,20 @@ export class PhoneVerificationService implements OnModuleInit {
 	public async createVerification(phone: string) {
 		try {
 			if (!this.client) {
+				this.logger.warn({
+					message: `Sending verification to ${phone}`,
+				});
+
 				return;
 			}
 
-			await this.client.verify.v2
-				.services(this.verifySid)
-				.verifications
-				.create({
-					to: phone,
-					channel: 'sms',
-					rateLimits: {
-						[this.phoneRateLimitName]: phone
-					}
-				});
+			await this.client.verify.v2.services(this.verifySid).verifications.create({
+				to: phone,
+				channel: 'sms',
+				rateLimits: {
+					[this.phoneRateLimitName]: phone,
+				},
+			});
 		} catch (exception) {
 			if (!(exception instanceof RestException)) {
 				throw exception;
@@ -76,18 +83,14 @@ export class PhoneVerificationService implements OnModuleInit {
 				return;
 			}
 
-			const rateLimit = await this.client.verify.v2
-				.services(this.verifySid)
-				.rateLimits
-				.create({
-					uniqueName: this.phoneRateLimitName
-				});
+			const rateLimit = await this.client.verify.v2.services(this.verifySid).rateLimits.create({
+				uniqueName: this.phoneRateLimitName,
+			});
 
 			await this.client.verify.v2
 				.services(this.verifySid)
 				.rateLimits(rateLimit.sid)
-				.buckets
-				.create({ max: 5, interval: 300 });
+				.buckets.create({ max: 5, interval: 300 });
 
 			this.logger.log({ message: `Rate-limits successfully initialized` });
 		} catch (exception) {
@@ -97,12 +100,10 @@ export class PhoneVerificationService implements OnModuleInit {
 
 	private async verifyCode(phone: string, code: string, client: TwilioSDK.Twilio) {
 		try {
-			return await client.verify.v2
-				.services(this.verifySid)
-				.verificationChecks
-				.create({
-					to: phone, code
-				});
+			return await client.verify.v2.services(this.verifySid).verificationChecks.create({
+				to: phone,
+				code,
+			});
 		} catch (exception) {
 			if (!(exception instanceof RestException)) {
 				throw exception;

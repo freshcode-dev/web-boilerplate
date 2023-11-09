@@ -9,7 +9,6 @@ import {
 	SignInWithEmailDto,
 	SignInWithPhoneDto,
 	SignUpWithEmailDto,
-	SignUpWithPhoneDto,
 	UserDto,
 } from '@boilerplate/shared';
 import { JwtRefreshGuard } from '../services/guard/jwt-refresh.guard';
@@ -47,15 +46,6 @@ export class AuthController {
 	@ApiExcludeEndpoint()
 	public async googleAuthWithToken(@Body() body: { idToken: string }, @RealIP() ipAddress: string, @UserAgent() userAgent: string): Promise<AuthResponseDto> {
 		return this.authService.signInWithGoogleToken(body.idToken, ipAddress, userAgent);
-	}
-
-	@Post('sign-up/phone')
-	async signUpWithPhone(
-		@Body() userPayload: SignUpWithPhoneDto,
-		@RealIP() ipAddress: string,
-		@UserAgent() userAgent: string
-	): Promise<AuthResponseDto> {
-		return await this.authService.registerWithPhone(userPayload, ipAddress, userAgent);
 	}
 
 	@Post('sign-up/email')

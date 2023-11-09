@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
 import { SerializedError } from '@reduxjs/toolkit';
 import { Trans, useTranslation } from 'react-i18next';
-import CoreLinkButton from '../../../_core/components/_ui/core-button/core-link-button.component';
+import { CoreLinkButton } from '../../../_core/components/_ui/core-button';
 import { Typography } from '@mui/material';
 import { AuthRoutes } from '../../constants';
 

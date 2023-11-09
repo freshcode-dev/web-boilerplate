@@ -73,7 +73,7 @@
 		"enter-code": "Enter the Verification Code",
 		"resend-code": "Didn't receive a verification code? Click <0>Resend</0>",
 		"check-and-resend-code": "Incorrect code. Please check if the entered code is correct or click <0>Resend</0>",
-		"confirmation-flow-description": "You should receive a text message (SMS) on your phone with a confirmation code",
+		"confirmation-flow-description": "You should receive a text message (SMS or Email) on your phone or email with a confirmation code",
 		"confirm-form": {
 			"back": "Back",
 			"confirm": "Next"

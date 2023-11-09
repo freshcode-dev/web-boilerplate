@@ -2,7 +2,6 @@ import {
 	AuthResponseDto,
 	RefreshDto,
 	SignInWithEmailDto,
-	SignUpWithPhoneDto,
 	IdDto,
 	AuthVerifyDto,
 	SignInWithPhoneDto,
@@ -77,23 +76,6 @@ const authApi = api.injectEndpoints({
 				skipAuth: true
 			}
 		}),
-		registerWithPhone: builder.mutation<AuthResponseDto, SignUpWithPhoneDto>({
-			query: data => ({
-				url: 'auth/sign-up/phone',
-				method: 'POST',
-				body: data
-			}),
-			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-				try {
-					const response = await queryFulfilled;
-					dispatch(updateSessionAction(response.data));
-				} catch { /* empty */ }
-			},
-			invalidatesTags: ['UserProfile'],
-			extraOptions: {
-				skipAuth: true
-			}
-		}),
 		signInWithPhone: builder.mutation<AuthResponseDto, SignInWithPhoneDto>({
 			query: data => ({
 				url: `auth/sign-in/phone`,
@@ -138,7 +120,6 @@ export const {
 	useSendOtpMutation,
 	useSignInWithPhoneMutation,
 	useSignInWithEmailMutation,
-	useRegisterWithPhoneMutation,
 	useRegisterWithEmailMutation,
 	useAuthWithGoogleTokenMutation
 } = authApi;

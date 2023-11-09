@@ -2,7 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { CreateUserDto, IdDto, UserDto } from '@boilerplate/shared';
 import { User } from '@boilerplate/data';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Not, QueryFailedError, Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, Not, QueryFailedError, Repository } from 'typeorm';
 import { hash } from 'argon2';
 import { argon2DefaultConfig, DbErrorCodes } from '../constants';
 import { DatabaseError } from 'pg';
@@ -20,8 +20,8 @@ export class UsersService {
 		@InjectMapper() private readonly mapper: Mapper
 	) {}
 
-	public async findOne(instance: Partial<UserDto>, { doMapping = true }: FindUserOptions = {}): Promise<User | null> {
-		const user = await this.usersRepository.findOne({ where: instance });
+	public async findOne(where: FindOptionsWhere<User>[] | FindOptionsWhere<User>, { doMapping = true }: FindUserOptions = {}): Promise<User | null> {
+		const user = await this.usersRepository.findOne({ where });
 
 		if (!user) {
 			return null;
@@ -34,8 +34,8 @@ export class UsersService {
 		return user;
 	}
 
-	public async getOne(instance: Partial<UserDto>, options?: FindUserOptions): Promise<UserDto> {
-		const user = await this.findOne(instance, options);
+	public async getOne(where: FindOptionsWhere<User>[] | FindOptionsWhere<User>, options?: FindUserOptions): Promise<UserDto> {
+		const user = await this.findOne(where, options);
 
 		if (!user) {
 			throw new NotFoundException('This user does not exist');
