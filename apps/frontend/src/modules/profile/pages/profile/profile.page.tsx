@@ -1,7 +1,7 @@
 import React, { FC, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Container } from '@mui/material';
-import ProfileCard from '../../components/profile/profile-card.component';
+import { ProfileCard } from '../../components/profile';
 import { useAppDispatch } from '../../../../store';
 import { signOutAction } from '../../../auth';
 import { useGetProfileQuery } from '../../../../store/api/auth.api';

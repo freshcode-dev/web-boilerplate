@@ -6,13 +6,15 @@ import {
 	AuthVerifyDto,
 	SignInWithPhoneDto,
 	SignUpWithEmailDto,
-	UserDto
+	UserDto,
+	EmailDto,
+	PasswordDto,
 } from '@boilerplate/shared';
 import api from '.';
 import { updateSessionAction } from '../../modules/auth';
 
 const authApi = api.injectEndpoints({
-	endpoints: builder => ({
+	endpoints: (builder) => ({
 		getProfile: builder.query<UserDto, void>({
 			query: () => ({
 				url: `auth/profile`,
@@ -20,14 +22,14 @@ const authApi = api.injectEndpoints({
 			providesTags: ['UserProfile'],
 		}),
 		sendOtp: builder.mutation<IdDto, AuthVerifyDto>({
-			query: data => ({
+			query: (data) => ({
 				url: 'auth/send-otp',
 				method: 'POST',
-				body: data
+				body: data,
 			}),
 			extraOptions: {
-				skipAuth: true
-			}
+				skipAuth: true,
+			},
 		}),
 		refresh: builder.mutation<AuthResponseDto, RefreshDto>({
 			query: (data) => ({
@@ -41,24 +43,26 @@ const authApi = api.injectEndpoints({
 			},
 		}),
 		authWithGoogleToken: builder.mutation<AuthResponseDto, string>({
-			query: idToken => ({
+			query: (idToken) => ({
 				url: 'auth/google',
 				method: 'POST',
-				body: { idToken }
+				body: { idToken },
 			}),
 			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
 				try {
 					const response = await queryFulfilled;
 					dispatch(updateSessionAction(response.data));
-				} catch { /* empty */ }
+				} catch {
+					/* empty */
+				}
 			},
 			invalidatesTags: ['UserProfile'],
 			extraOptions: {
-				skipAuth: true
-			}
+				skipAuth: true,
+			},
 		}),
 		registerWithEmail: builder.mutation<AuthResponseDto, SignUpWithEmailDto>({
-			query: data => ({
+			query: (data) => ({
 				url: 'auth/sign-up/email',
 				method: 'POST',
 				body: data,
@@ -73,39 +77,66 @@ const authApi = api.injectEndpoints({
 			},
 			invalidatesTags: ['UserProfile'],
 			extraOptions: {
-				skipAuth: true
-			}
+				skipAuth: true,
+			},
 		}),
 		signInWithPhone: builder.mutation<AuthResponseDto, SignInWithPhoneDto>({
-			query: data => ({
+			query: (data) => ({
 				url: `auth/sign-in/phone`,
 				method: 'POST',
-				body: data
+				body: data,
 			}),
 			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
 				try {
 					const response = await queryFulfilled;
 					dispatch(updateSessionAction(response.data));
-				} catch { /* empty */ }
+				} catch {
+					/* empty */
+				}
 			},
 			invalidatesTags: ['UserProfile'],
 			extraOptions: {
-				skipAuth: true
-			}
+				skipAuth: true,
+			},
 		}),
 		signInWithEmail: builder.mutation<AuthResponseDto, SignInWithEmailDto>({
-			query: data => ({
+			query: (data) => ({
 				url: `auth/sign-in/email`,
 				method: 'POST',
-				body: data
+				body: data,
 			}),
 			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
 				try {
 					const response = await queryFulfilled;
 					dispatch(updateSessionAction(response.data));
-				} catch { /* empty */ }
+				} catch {
+					/* empty */
+				}
 			},
 			invalidatesTags: ['UserProfile'],
+			extraOptions: {
+				skipAuth: true,
+			},
+		}),
+		restorePasswordRequest: builder.mutation<void, EmailDto>({
+			query: (data: EmailDto) => ({
+				url: `auth/restore-request`,
+				method: 'POST',
+				body: data,
+			}),
+			extraOptions: {
+				skipAuth: true,
+			},
+		}),
+		restorePassword: builder.mutation<void, PasswordDto & { token: string }>({
+			query: ({ token, ...data }: PasswordDto & { token: string}) => ({
+				url: `auth/restore-password`,
+				method: 'POST',
+				body: data,
+				headers: {
+					authorization: `Bearer ${token}`,
+				},
+			}),
 			extraOptions: {
 				skipAuth: true,
 			},
@@ -121,5 +152,7 @@ export const {
 	useSignInWithPhoneMutation,
 	useSignInWithEmailMutation,
 	useRegisterWithEmailMutation,
-	useAuthWithGoogleTokenMutation
+	useAuthWithGoogleTokenMutation,
+	useRestorePasswordRequestMutation,
+	useRestorePasswordMutation,
 } = authApi;

@@ -8,7 +8,7 @@ import { useLangParam } from '../../hooks/use-lang-param.hook';
 import { SignUpWithEmailFormData } from '../../models/sign-up-form.dto';
 import { SignUpWithEmailForm } from '../../components/signup-form';
 import { GoogleAuthButton } from '../../components/_ui/google-auth-button';
-import { AuthReasonEnum, EmailDto } from '@boilerplate/shared';
+import { AuthReasonEnum, ConfirmationCodeDto } from '@boilerplate/shared';
 import { getErrorStatusCode } from '../../../_core/utils/error.utils';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { SerializedError } from '@reduxjs/toolkit';
@@ -44,18 +44,21 @@ export const SignUpWithEmailPage: FC = () => {
 	});
 
 	const handleRegisterFormSubmit = useCallback(
-		async ({ email }: EmailDto, markError: () => void) => {
+		async (form: SignUpWithEmailFormData, markError: () => void) => {
 			try {
+				const { email, phoneNumber } = form;
+
 				await sendOtp({
-					email,
 					reason: AuthReasonEnum.SignUp,
+					phoneNumber,
+					email,
 				}).unwrap();
 
 				setFormsState((state) => ({
 					activeForm: 'code',
 					profile: {
 						...state.profile,
-						email,
+						...form,
 					},
 				}));
 			} catch (error) {
@@ -72,10 +75,11 @@ export const SignUpWithEmailPage: FC = () => {
 	);
 
 	const handleCodeSubmit = useCallback(
-		async (profile: SignUpWithEmailFormData, markError: (field?: string) => void) => {
+		async ({ code }: ConfirmationCodeDto, markError: (field?: string) => void) => {
 			try {
 				await register({
 					...(profile as SignUpWithEmailFormData),
+					code,
 				}).unwrap();
 			} catch (error) {
 				markError();
@@ -83,7 +87,7 @@ export const SignUpWithEmailPage: FC = () => {
 				setRegisterError(error as Error);
 			}
 		},
-		[register]
+		[register, profile]
 	);
 
 	const goToRegisterForm = useCallback(() => {

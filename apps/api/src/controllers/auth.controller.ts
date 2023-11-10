@@ -1,10 +1,12 @@
-import { Body, Controller, Post, UseGuards, Request, Get } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards, Request, Get, Req } from '@nestjs/common';
 import { RealIP } from 'nestjs-real-ip';
 import { AuthService } from '../services/auth.service';
 import {
 	AuthResponseDto,
 	AuthVerifyDto,
+	EmailDto,
 	IdDto,
+	PasswordDto,
 	SessionDto,
 	SignInWithEmailDto,
 	SignInWithPhoneDto,
@@ -93,5 +95,18 @@ export class AuthController {
 		const { sub: sessionId, jti: tokenId } = req.user;
 
 		return await this.sessionService.interruptSession(sessionId, tokenId);
+	}
+
+	@Post('restore-request')
+	public async restorePAsswordRequest(@Body() data: EmailDto): Promise<void> {
+		return await this.authService.restorePasswordRequest({ email: data.email });
+	}
+
+	@Post('restore-password')
+	@UseGuards(JwtAuthGuard)
+	public async restorePassword(@Req() req: AuthRequest, @Body() data: PasswordDto): Promise<void> {
+		const { sub: userId } = req.user;
+
+		return await this.authService.restorePassword(userId, data.password);
 	}
 }

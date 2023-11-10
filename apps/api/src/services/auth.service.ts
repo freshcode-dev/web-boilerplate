@@ -5,6 +5,8 @@ import {
 	NotFoundException,
 	UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { verify } from 'argon2';
 import { UsersService } from './users.service';
 import {
 	AuthReasonEnum,
@@ -18,7 +20,6 @@ import {
 	UserDto,
 	VERIFICATION_CODE_LENGTH,
 } from '@boilerplate/shared';
-import { verify } from 'argon2';
 import { argon2DefaultConfig } from '../constants';
 import { SessionsService } from './sessions.service';
 import { TokensService } from './tokens.service';
@@ -28,9 +29,11 @@ import { MailerService } from './mailer.service';
 import { OTPService } from './otp.service';
 import { TLatestSavedCode } from '../interfaces/otp';
 import { emailCodeSubject, renderEmailCodeTemplate } from '../utils/templates/email-code.template';
+import { renderResetPassTemplate, resetPassSubject } from '../utils/templates/reset-pass.template';
 @Injectable()
 export class AuthService {
 	constructor(
+		private readonly configService: ConfigService,
 		private readonly usersService: UsersService,
 		private readonly sessionService: SessionsService,
 		private readonly tokensService: TokensService,
@@ -86,7 +89,7 @@ export class AuthService {
 
 		await this.usersService.verifyIsEmailUnique(createUser.email);
 
-		const user = await this.usersService.registerUser(createUser);
+		const user = await this.usersService.createUser(createUser);
 
 		return await this.createSession(user, ipAddress, userAgent);
 	}
@@ -118,8 +121,12 @@ export class AuthService {
 	public async verifyUserEmailCredentials(email: string, password: string): Promise<UserDto> {
 		const user = await this.usersService.findOne({ email }, { doMapping: false });
 
-		if (!user?.password) {
+		if (!user) {
 			throw new UnauthorizedException('This user does not exist');
+		}
+
+		if (!user.password) {
+			throw new UnauthorizedException('This user does not have a password. Please sign in with Phone number or Google');
 		}
 
 		const isEqual = await verify(user.password, password, argon2DefaultConfig);
@@ -199,9 +206,25 @@ export class AuthService {
 	): Promise<AuthResponseDto> {
 		await this.usersService.verifyIsGoogleEmailUnique(createUser.googleEmail as string);
 
-		const user = await this.usersService.registerUser(createUser);
+		const user = await this.usersService.createUser(createUser);
 
 		return await this.createSession(user, ipAddress, userAgent);
+	}
+
+	public async restorePasswordRequest(request: { email?: string; phoneNumber?: string }): Promise<void> {
+		const { email, phoneNumber } = request;
+
+		const user = await this.usersService.findOne([{ email }, { phoneNumber }]);
+
+		if (!user) throw new NotFoundException('User not found');
+
+		if (user.email) {
+			await this.sendResetEmail(user.email, user);
+		}
+	}
+
+	public async restorePassword(userId: string, password: string): Promise<void> {
+		await this.usersService.updateUser(userId, { password });
 	}
 
 	private async sendOtpToPhone(phoneNumber: string): Promise<void> {
@@ -216,7 +239,7 @@ export class AuthService {
 			},
 			async (code: TLatestSavedCode) => this.otpService.storeOtpCodeInDB(code),
 			async (code: string) => {
-				const subject = emailCodeSubject()
+				const subject = emailCodeSubject();
 				const body = await renderEmailCodeTemplate({ code });
 
 				const isEmailSent = await this.mailerService.sendMail({
@@ -228,6 +251,23 @@ export class AuthService {
 				if (isEmailSent === false) throw new BadRequestException('Cannot send email');
 			}
 		);
+	}
+
+	private async sendResetEmail(toEmail: string, user: UserDto): Promise<void> {
+		const tempAccessToken = await this.tokensService.generateResetPassJwt(user.id);
+		const resetLink = `${this.configService.get('NX_FRONTED_URL')}/auth/restore-password/?token=${tempAccessToken}`;
+
+		const subject = resetPassSubject();
+		const body = await renderResetPassTemplate({
+			profile: user,
+			resetLink,
+		});
+
+		await this.mailerService.sendMail({
+			to: toEmail,
+			subject,
+			body,
+		});
 	}
 
 	private async verifyOtpEmail(code: string, email: string): Promise<void> {

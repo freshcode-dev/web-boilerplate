@@ -9,7 +9,8 @@
 		"sign-in-with-phone": "Login with phone",
 		"sign-up": "Register",
 		"profile": "Profile",
-		"security": "Security"
+		"security": "Security",
+		"restore-password": "Reset Password"
 	},
 	"profile": {
 		"title": "Profile",
@@ -78,6 +79,19 @@
 			"back": "Back",
 			"confirm": "Next"
 		}
+	},
+	"restore-password": {
+		"title": "Restore password",
+		"forgot-password-ph": "Forgot password?",
+		"forgot-password-link": "<0>Forgot password?</0>",
+		"enter-email-ph": "Enter your email address to reset your password",
+		"user-not-found": "User with this email is not found",
+		"invalid-token": "Invalid token",
+		"too-many-requests": "Too many attempts. Please try again in 5 minutes",
+		"check-email-or-register": "Please check if the entered email is correct, or <0>Register</0>",
+		"new-password": "Set up a new password",
+		"receive-email": "You should receive an email with a link to reset your password. If you don't receive it, please check your spam folder",
+		"restore-complete": "Your password has been successfully changed. <0>Log in</0>"
 	},
 	"defaults": {
 		"modals": {

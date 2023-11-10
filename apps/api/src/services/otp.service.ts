@@ -6,6 +6,7 @@ import { TLatestSavedCode, TSendOtpCodeAsyncFunc, TVerifyOtpCodeAsyncFunc } from
 import { OTPEntity } from '@boilerplate/data';
 import { IApiConfigParams } from '../interfaces/api-config-params';
 import { isBoolean, isNil } from 'lodash';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class OTPService {
@@ -83,7 +84,11 @@ export class OTPService {
 	}
 
 	private createCodeString(codeLength: number): string {
-		return '' + Math.floor(Math.random() * Math.pow(10, codeLength));
+		const uuid = randomUUID();
+
+		const symbs = uuid.replace(/-/g, '');
+
+		return symbs.slice(0, codeLength);
 	}
 
 	private verifyCodeEntry(codeEntry: TLatestSavedCode, code: string): boolean {

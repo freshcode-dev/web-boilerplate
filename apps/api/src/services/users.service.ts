@@ -44,7 +44,7 @@ export class UsersService {
 		return user;
 	}
 
-	public async registerUser(userDto: CreateUserDto): Promise<UserDto> {
+	public async createUser(userDto: CreateUserDto): Promise<UserDto> {
 		try {
 			const createUser = await this.prepareUserToCreate(userDto);
 
@@ -52,7 +52,7 @@ export class UsersService {
 				identifiers: [{ id }],
 			} = await this.usersRepository.insert(createUser);
 
-			return this.getOne({ id });
+			return this.getOne({ id: id as string });
 		} catch (exception) {
 			if (!(exception instanceof QueryFailedError)) {
 				throw exception;
@@ -75,6 +75,20 @@ export class UsersService {
 		}
 	}
 
+	public async updateUser(userId: string, userData: Partial<User>): Promise<UserDto> {
+		const user = await this.getOne({ id: userId }, { withPassword: true });
+
+		if (!user) {
+			throw new NotFoundException('User does not exist');
+		}
+
+		const userToUpdate = await this.prepareUserToUpdate(userData, user);
+
+		await this.usersRepository.update(userId, userToUpdate);
+
+		return this.getOne({ id: userId });
+	}
+
 	public async verifyIsPhoneUnique(phoneNumber: string, phoneBlacklistUserId?: string): Promise<IdDto> {
 		const user = await this.usersRepository.findOne({
 			where: {
@@ -92,10 +106,10 @@ export class UsersService {
 		};
 	}
 
-	public async verifyIsEmailUnique(email: string, phoneBlacklistUserId?: string): Promise<IdDto> {
+	public async verifyIsEmailUnique(email: string, emailBlacklistUserId?: string): Promise<IdDto> {
 		const user = await this.usersRepository.findOne({
 			where: {
-				id: phoneBlacklistUserId ? Not(phoneBlacklistUserId) : undefined,
+				id: emailBlacklistUserId ? Not(emailBlacklistUserId) : undefined,
 				email: ILike(email),
 			},
 		});
@@ -109,10 +123,10 @@ export class UsersService {
 		};
 	}
 
-	public async verifyIsGoogleEmailUnique(googleEmail: string, phoneBlacklistUserId?: string): Promise<IdDto> {
+	public async verifyIsGoogleEmailUnique(googleEmail: string, googleEmailBlacklistUserId?: string): Promise<IdDto> {
 		const user = await this.usersRepository.findOne({
 			where: {
-				id: phoneBlacklistUserId ? Not(phoneBlacklistUserId) : undefined,
+				id: googleEmailBlacklistUserId ? Not(googleEmailBlacklistUserId) : undefined,
 				googleEmail: ILike(googleEmail),
 			},
 		});
@@ -135,5 +149,18 @@ export class UsersService {
 		user.password = userDto.password ? await hash(userDto.password, argon2DefaultConfig) : undefined;
 
 		return user;
+	}
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	private async prepareUserToUpdate(user: Partial<User>, initialData: UserDto & User): Promise<Partial<User>> {
+		const userToUpdate: Partial<User> = {
+			...user,
+		};
+
+		if (userToUpdate.password) {
+			userToUpdate.password = await hash(userToUpdate.password, argon2DefaultConfig);
+		}
+
+		return userToUpdate;
 	}
 }

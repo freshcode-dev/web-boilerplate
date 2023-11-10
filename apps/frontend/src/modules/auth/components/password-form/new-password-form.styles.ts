@@ -13,15 +13,11 @@ export const titleStyles: SxProps<Theme> = [
 	}),
 ];
 
-export const formElementStyles: SxProps<Theme> = [
-	{
-		display: 'flex',
-		justifyContent: 'space-between',
-		mb: 1,
-	},
+export const textFieldWrapperStyles: SxProps<Theme> = [
+	{ mb: 4 },
 	({ breakpoints }) => ({
 		[breakpoints.down('sm')]: {
-			my: 1,
-		},
-	}),
+			mb: 2
+		}
+	})
 ];

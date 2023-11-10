@@ -6,6 +6,7 @@ export const jwtConstants = {
 	refreshTokenSecret: 'refreshTokenSecret',
 	refreshTokenExpiresIn: '72h',
 	shortRefreshTokenExpiresIn: '2h',
+	resetPassTokenExpiresIn: '5min',
 };
 
 /**

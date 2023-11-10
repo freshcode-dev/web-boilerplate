@@ -13,6 +13,7 @@ import { formElementStyles, titleStyles } from './login-form.styles';
 import { EmailDto, RememberMeDto } from '@boilerplate/shared';
 import { CoreTextField } from '../../../_core/components/_ui/core-textfield';
 import { CoreLabeledCheckbox } from '../../../_core/components/_ui/core-labeled-checkbox';
+import { ForgotPasswordLabel } from '../_ui/forgot-password-label';
 
 const resolver = classValidatorResolver(EmailDto);
 
@@ -73,6 +74,7 @@ export const LoginWithEmailForm: FC<LoginWithEmailFormProps> = (props) => {
 			/>
 			<Box sx={formElementStyles}>
 				<CoreLabeledCheckbox {...register('rememberMe')} checked={watchRememberMe} label={t('sign-in.sign-in-form.remember-me')} />
+				<ForgotPasswordLabel />
 			</Box>
 			<LoginErrorLabel error={error} />
 			<FormControlsContainer>

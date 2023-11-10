@@ -9,4 +9,4 @@ export interface IResetPassTemplate {
 }
 
 export const renderResetPassTemplate = async (locals: IResetPassTemplate) =>
-	(await compilePugTemplate(TemplateNamesEnum.RESET_PASS))(locals);
+	(await compilePugTemplate(TemplateNamesEnum.RESTORE_PASS))(locals);

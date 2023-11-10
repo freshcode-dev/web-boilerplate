@@ -2,8 +2,8 @@ import { Controller, Get, UseGuards, Request, Delete, Post, Body, BadRequestExce
 import { SessionsService } from '../services/sessions.service';
 import { JwtAuthGuard } from '../services/guard/jwt.guard';
 import { AuthRequest } from '../interfaces/auth-request';
-import { SessionDto } from '@boilerplate/shared';
 import { JwtRefreshGuard } from '../services/guard/jwt-refresh.guard';
+import { SessionDto, SessionFilter } from '@boilerplate/shared';
 
 @Controller('sessions')
 @UseGuards(JwtAuthGuard)
@@ -11,18 +11,18 @@ export class SessionsController {
 	constructor(private readonly sessionsService: SessionsService) {}
 
 	@Get('list')
-	async listSessions(@Request() req: AuthRequest, @Query('withIpDetails') withIpDetails: string): Promise<SessionDto[]> {
+	async listSessions(@Request() req: AuthRequest, @Query() filters: SessionFilter): Promise<SessionDto[]> {
 		const { sub: userId } = req.user;
 
-		return await this.sessionsService.listUserSessions(userId, { withIpDetails: withIpDetails === 'true' });
+		return await this.sessionsService.listUserSessions(userId, filters);
 	}
 
 	@Post('current')
 	@UseGuards(JwtRefreshGuard)
-	async currentSession(@Request() req: AuthRequest, @Query('withIpDetails') withIpDetails: string): Promise<SessionDto> {
+	async currentSession(@Request() req: AuthRequest, @Query() filters: SessionFilter): Promise<SessionDto> {
 		const { sub: sessionId } = req.user;
 
-		return await this.sessionsService.getSessionById(sessionId, { withIpDetails: withIpDetails === 'true' });
+		return await this.sessionsService.getSessionById(sessionId, filters);
 	}
 
 	@Post('session/interrupt')

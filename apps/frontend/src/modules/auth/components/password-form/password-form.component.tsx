@@ -8,9 +8,10 @@ import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { PasswordDto } from '@boilerplate/shared';
 import { SerializedError } from '@reduxjs/toolkit';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
-import { titleStyles } from '../login-form/login-form.styles';
+import { formElementStyles, titleStyles } from '../login-form/login-form.styles';
 import { LoginErrorLabel } from '../login-form';
 import { CorePasswordInput } from '../../../_core/components/_ui/core-password-input';
+import { ForgotPasswordLabel } from '../_ui/forgot-password-label';
 
 const resolver = classValidatorResolver(PasswordDto);
 
@@ -56,6 +57,10 @@ export const PasswordForm: FC<PasswordFormProps> = (props) => {
 				{...register('password')}
 				error={!!errors.password}
 			/>
+			<Box sx={formElementStyles}>
+				<Box />
+				<ForgotPasswordLabel />
+			</Box>
 			<LoginErrorLabel error={error} />
 			<FormControlsContainer>
 				<CoreButton variant="secondary" sx={{ mr: 1.5, width: 115 }} onClick={onBack} disabled={isSubmitting}>
