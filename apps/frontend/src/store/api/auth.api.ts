@@ -61,6 +61,13 @@ const authApi = api.injectEndpoints({
 				skipAuth: true,
 			},
 		}),
+		assignGoogleAccount: builder.mutation<void, string>({
+			query: (idToken) => ({
+				url: 'auth/google/assign',
+				method: 'POST',
+				body: { idToken },
+			}),
+		}),
 		registerWithEmail: builder.mutation<AuthResponseDto, SignUpWithEmailDto>({
 			query: (data) => ({
 				url: 'auth/sign-up/email',
@@ -153,6 +160,7 @@ export const {
 	useSignInWithEmailMutation,
 	useRegisterWithEmailMutation,
 	useAuthWithGoogleTokenMutation,
+	useAssignGoogleAccountMutation,
 	useRestorePasswordRequestMutation,
 	useRestorePasswordMutation,
 } = authApi;

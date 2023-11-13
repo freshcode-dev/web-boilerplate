@@ -61,7 +61,7 @@ export const PasswordForm: FC<PasswordFormProps> = (props) => {
 				<Box />
 				<ForgotPasswordLabel />
 			</Box>
-			<LoginErrorLabel error={error} />
+			<LoginErrorLabel error={error} errorI18nKey="sign-in.check-password-or-register" />
 			<FormControlsContainer>
 				<CoreButton variant="secondary" sx={{ mr: 1.5, width: 115 }} onClick={onBack} disabled={isSubmitting}>
 					{t('sign-in.sign-in-form.back')}

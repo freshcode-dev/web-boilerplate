@@ -3,6 +3,8 @@ import { Outlet } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { usePageTitle } from '../../hooks';
 import { AreaProviders } from '../area-providers.component';
+import { GSIClientContextProvider, assignGoogleAccount } from '../../../auth';
+import { googleApiClientId, isGoogleAuthEnabled } from '../../../../constants';
 
 const AuthorizedArea: FC = () => {
 	const pageTitle = usePageTitle();
@@ -16,9 +18,15 @@ const AuthorizedArea: FC = () => {
 				/>
 			</Helmet>
 
-			<AreaProviders>
-				<Outlet />
-			</AreaProviders>
+			<GSIClientContextProvider
+				isEnabled={isGoogleAuthEnabled}
+				clientId={googleApiClientId}
+				callback={assignGoogleAccount}
+			>
+				<AreaProviders>
+					<Outlet />
+				</AreaProviders>
+			</GSIClientContextProvider>
 		</>
 	);
 };

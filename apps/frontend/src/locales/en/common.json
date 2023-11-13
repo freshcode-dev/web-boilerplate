@@ -17,6 +17,10 @@
 		"name": "Name",
 		"email": "Email",
 		"phone": "Phone",
+		"googleAccount": "Google account",
+		"googleAccountNotConnected": "Not connected",
+		"googleAuth": "Auth with Google",
+		"logout": "Logout",
 		"sessions": {
 			"signOutAllSessions": "Sign out other sessions",
 			"table": {
@@ -57,6 +61,7 @@
 		"login-via-phone": "Login via phone",
 		"check-number-or-register": "Please check if the entered phone number is correct, or <0>Register</0>",
 		"check-email-or-register": "Please check if the entered email is correct, or <0>Register</0>",
+		"check-password-or-register": "Please check if the entered password is correct, or <0>Register</0>",
 		"register-link": "Don't have an account? <0>Register</0>",
 		"enter-password": "Enter your password",
 		"sign-in-form": {

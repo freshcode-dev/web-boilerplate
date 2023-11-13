@@ -60,7 +60,7 @@ export const ProfileSecurityPage: FC = () => {
 				<SessionCard session={currentSession} />
 			</Box>
 
-			<CoreButton loading={isInterruptOtherSessionsLoading} onClick={handleInterruptOtherSessions}>
+			<CoreButton loading={isInterruptOtherSessionsLoading} onClick={handleInterruptOtherSessions} disabled={!sessionsList?.length}>
 				{t('profile.sessions.signOutAllSessions')}
 			</CoreButton>
 

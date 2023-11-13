@@ -211,6 +211,22 @@ export class AuthService {
 		return await this.createSession(user, ipAddress, userAgent);
 	}
 
+	public async assignGoogleToUser(userId: string, idToken: string): Promise<void> {
+		if (!idToken) throw new ForbiddenException('Access Denied');
+
+		const googleUser = await this.googleAuthService.getUserFromTokenId(idToken);
+
+		if (!googleUser?.googleEmail) throw new ForbiddenException('Access Denied');
+
+		const userWithGoogleEmail = await this.usersService.findOne({ googleEmail: googleUser.googleEmail });
+
+		if (userWithGoogleEmail) throw new BadRequestException('This google account is already assigned to another user. Try logging in with google');
+
+		const user = await this.usersService.getOne({ id: userId });
+
+		await this.usersService.updateUser(user.id, { googleEmail: googleUser.googleEmail });
+	}
+
 	public async restorePasswordRequest(request: { email?: string; phoneNumber?: string }): Promise<void> {
 		const { email, phoneNumber } = request;
 

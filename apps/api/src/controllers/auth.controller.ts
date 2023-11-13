@@ -20,7 +20,6 @@ import { UserAgent } from '../services/decorators/params/user-agent.decorator';
 import { JwtAuthGuard } from '../services/guard/jwt.guard';
 import { UsersService } from '../services/users.service';
 import { LoggerSettings } from '../services/decorators/route/logging-settings.decorator';
-import { ApiExcludeEndpoint } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
@@ -45,12 +44,21 @@ export class AuthController {
 
 	@Post('/google')
 	@LoggerSettings({ logRequestBody: false, logResponseBody: false })
-	@ApiExcludeEndpoint()
 	public async googleAuthWithToken(@Body() body: { idToken: string }, @RealIP() ipAddress: string, @UserAgent() userAgent: string): Promise<AuthResponseDto> {
 		return this.authService.signInWithGoogleToken(body.idToken, ipAddress, userAgent);
 	}
 
+	@Post('/google/assign')
+	@LoggerSettings({ logRequestBody: false, logResponseBody: false })
+	@UseGuards(JwtAuthGuard)
+	public async assignGoogle(@Req() req: AuthRequest, @Body() body: { idToken: string }): Promise<void> {
+		const { sub: userId } = req.user;
+
+		await this.authService.assignGoogleToUser(userId, body.idToken);
+	}
+
 	@Post('sign-up/email')
+	@LoggerSettings({ logRequestBody: false, logResponseBody: false })
 	async signUpWithEmail(
 		@Body() userPayload: SignUpWithEmailDto,
 		@RealIP() ipAddress: string,
@@ -60,6 +68,7 @@ export class AuthController {
 	}
 
 	@Post('sign-in/phone')
+	@LoggerSettings({ logRequestBody: false, logResponseBody: false })
 	async signInWithPhone(
 		@Body() credentials: SignInWithPhoneDto,
 		@RealIP() ipAddress: string,
@@ -69,6 +78,7 @@ export class AuthController {
 	}
 
 	@Post('sign-in/email')
+	@LoggerSettings({ logRequestBody: false, logResponseBody: false })
 	async signInWithEmail(
 		@Body() credentials: SignInWithEmailDto,
 		@RealIP() ipAddress: string,
@@ -78,6 +88,7 @@ export class AuthController {
 	}
 
 	@Post('refresh')
+	@LoggerSettings({ logRequestBody: false, logResponseBody: false })
 	@UseGuards(JwtRefreshGuard)
 	async refreshTokens(
 		@Request() req: AuthRequest,

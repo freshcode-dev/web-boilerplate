@@ -76,7 +76,7 @@ export const LoginWithEmailForm: FC<LoginWithEmailFormProps> = (props) => {
 				<CoreLabeledCheckbox {...register('rememberMe')} checked={watchRememberMe} label={t('sign-in.sign-in-form.remember-me')} />
 				<ForgotPasswordLabel />
 			</Box>
-			<LoginErrorLabel error={error} />
+			<LoginErrorLabel error={error} errorI18nKey="sign-in.check-email-or-register" />
 			<FormControlsContainer>
 				<CoreButton type="submit" disabled={disableSubmit} loading={isSubmitting} sx={{ minWidth: 104 }}>
 					{t('sign-in.sign-in-form.confirm')}
