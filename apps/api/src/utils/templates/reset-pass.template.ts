@@ -1,5 +1,5 @@
 import { UserDto } from '@boilerplate/shared';
-import { TemplateNamesEnum, compilePugTemplate } from '.';
+import { TemplateNamesEnum, compileHbsTemplate } from '.';
 
 export const resetPassSubject = () => 'Reset password';
 
@@ -9,4 +9,4 @@ export interface IResetPassTemplate {
 }
 
 export const renderResetPassTemplate = async (locals: IResetPassTemplate) =>
-	(await compilePugTemplate(TemplateNamesEnum.RESTORE_PASS))(locals);
+	(await compileHbsTemplate(TemplateNamesEnum.RESTORE_PASS))(locals);
