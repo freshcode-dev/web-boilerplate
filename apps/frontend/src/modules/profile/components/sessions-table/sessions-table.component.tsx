@@ -33,6 +33,7 @@ export const SessionsTable: FC<SessionsTableProps> = (props) => {
 
 	return (
 		<CoreTable
+			px={0}
 			ref={scrollRef}
 			loading={loading}
 			hasMore={hasMore}

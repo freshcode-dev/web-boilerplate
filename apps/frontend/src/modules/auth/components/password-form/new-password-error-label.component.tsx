@@ -5,6 +5,7 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { SerializedError } from "@reduxjs/toolkit";
 import { CoreLinkButton } from "../../../_core/components/_ui/core-button";
 import { AuthRoutes } from "../../constants";
+import { errorLabelTextStyles } from "../login-form/login-form.styles";
 
 interface NewPassowrdErrorLabelProps {
 	error?: FetchBaseQueryError | SerializedError;
@@ -21,10 +22,6 @@ export const NewPasswordErrorLabel: FC<NewPassowrdErrorLabelProps> = (props) => 
 	const getErrorText = () => {
 		if (status === 429) {
 			return <>{t('restore-password.too-many-requests')}</>;
-		}
-
-		if (status === 401) {
-			return <>{t('restore-password.invalid-token')}</>;
 		}
 
 		if (status === 404) {
@@ -46,18 +43,7 @@ export const NewPasswordErrorLabel: FC<NewPassowrdErrorLabelProps> = (props) => 
 	return (
 		<Typography
 			variant="body2"
-			sx={[
-				{
-					textAlign: 'center',
-					mt: 4,
-					color: ({ colors }) => (status === 429 ? colors.red : colors.black),
-				},
-				({ breakpoints }) => ({
-					[breakpoints.down('sm')]: {
-						mt: 3,
-					},
-				}),
-			]}
+			sx={errorLabelTextStyles(status === 429)}
 		>
 			{getErrorText()}
 		</Typography>

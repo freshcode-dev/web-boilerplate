@@ -105,7 +105,7 @@ export const EditEmailModal: FC<EditEmailModalProps> = (props) => {
 	}, []);
 
 	return (
-		<CoreModal open={open} onClose={onClose} title={t('profile.change-email-ph')}>
+		<CoreModal open={open} onClose={onClose} modalTitle={t('profile.change-email-ph')}>
 			{activeForm === 'data' && (
 				<EmailForm
 					onSubmit={handleSubmitEmail}

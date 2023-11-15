@@ -1,5 +1,12 @@
 import { SxProps, Theme } from '@mui/material';
 
+export const textStyles: SxProps<Theme> = {
+	display: 'flex',
+	flexDirection: 'row',
+	alignItems: 'center',
+	color: (theme) => theme.colors.gray,
+};
+
 export const linkStyles: SxProps<Theme> = {
 	color: 'inherit',
 	textDecorationColor: 'inherit',

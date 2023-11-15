@@ -1,1 +1,1 @@
-export * from './email-from.component';
+export * from './email-form.component';

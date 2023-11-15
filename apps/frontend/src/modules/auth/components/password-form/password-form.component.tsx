@@ -19,7 +19,7 @@ export interface PasswordFormProps {
 	error?: SerializedError | FetchBaseQueryError;
 	showAdditionalActions?: boolean;
 	onSubmit(value: PasswordDto, markError: () => void): Promise<void> | void;
-	onBack(): void;
+	onBack?(): void;
 }
 
 export const PasswordForm: FC<PasswordFormProps> = (props) => {
@@ -51,7 +51,7 @@ export const PasswordForm: FC<PasswordFormProps> = (props) => {
 
 	return (
 		<Box component="form" noValidate onSubmit={handleSubmit(handleFormSubmit)}>
-			<Typography variant="h1" sx={titleStyles}>
+			<Typography variant="h3" sx={titleStyles}>
 				{t('sign-in.enter-password')}
 			</Typography>
 			<CorePasswordInput
@@ -71,9 +71,11 @@ export const PasswordForm: FC<PasswordFormProps> = (props) => {
 			)}
 			<LoginErrorLabel error={error} errorI18nKey="sign-in.check-password-or-register" />
 			<FormControlsContainer>
-				<CoreButton variant="secondary" sx={{ mr: 1.5, width: 115 }} onClick={onBack} disabled={isSubmitting}>
-					{t('sign-in.sign-in-form.back')}
-				</CoreButton>
+				{onBack && (
+					<CoreButton variant="secondary" sx={{ mr: 1.5, width: 115 }} onClick={onBack} disabled={isSubmitting}>
+						{t('sign-in.sign-in-form.back')}
+					</CoreButton>
+				)}
 				<CoreButton sx={{ ml: 1.5, width: 115 }} type="submit" loading={isSubmitting} disabled={disableSubmit}>
 					{t('sign-in.sign-in-form.confirm')}
 				</CoreButton>

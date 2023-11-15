@@ -15,12 +15,14 @@ import { RestorePasswordDto } from '@boilerplate/shared';
 const resolver = classValidatorResolver(RestorePasswordDto);
 
 export interface NewPasswordFormProps {
+	errorI18nKey?: string;
 	error?: FetchBaseQueryError | SerializedError;
+	onBack?(): void;
 	onSubmit(values: RestorePasswordDto, markError: () => void): void;
 }
 
 export const NewPasswordForm: FC<NewPasswordFormProps> = (props) => {
-	const { error, onSubmit } = props;
+	const { errorI18nKey, error, onSubmit, onBack } = props;
 
 	const [t] = useTranslation();
 
@@ -47,7 +49,7 @@ export const NewPasswordForm: FC<NewPasswordFormProps> = (props) => {
 
 	return (
 		<Box component="form" noValidate onSubmit={handleSubmit(handleFormSubmit)}>
-			<Typography variant="h1" sx={titleStyles}>
+			<Typography variant="h3" sx={titleStyles}>
 				{t('restore-password.new-password')}
 			</Typography>
 			<CorePasswordInput
@@ -56,7 +58,7 @@ export const NewPasswordForm: FC<NewPasswordFormProps> = (props) => {
 				id="password"
 				onlyShowOnMouseDown
 				requiredMark
-				label={t('sign-up.registration-form.password')}
+				label={t('sign-up.registration-form.new-password')}
 				{...register('password')}
 				error={!!errors.password}
 				autoComplete="off"
@@ -67,13 +69,18 @@ export const NewPasswordForm: FC<NewPasswordFormProps> = (props) => {
 				id="confirmPassword"
 				onlyShowOnMouseDown
 				requiredMark
-				label={t('sign-up.registration-form.confirmPassword')}
+				label={t('sign-up.registration-form.confirm-password')}
 				{...register('confirmPassword')}
 				error={!!errors.confirmPassword}
 				autoComplete="off"
 			/>
-			<NewPasswordErrorLabel error={error} />
+			<NewPasswordErrorLabel error={error} errorI18nKey={errorI18nKey} />
 			<FormControlsContainer>
+				{onBack && (
+					<CoreButton variant="secondary" sx={{ mr: 1.5, width: 115 }} onClick={onBack} disabled={isSubmitting}>
+						{t('sign-in.sign-in-form.back')}
+					</CoreButton>
+				)}
 				<CoreButton sx={{ ml: 1.5, width: 115 }} type="submit" loading={isSubmitting} disabled={disableSubmit}>
 					{t('sign-in.sign-in-form.confirm')}
 				</CoreButton>

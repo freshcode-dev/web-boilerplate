@@ -1,19 +1,33 @@
 import { FC } from 'react';
 import { SessionDto } from '@boilerplate/shared';
-import { Card, CardContent, Typography } from '@mui/material';
+import { Card, CardActions, CardContent, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { CoreButton } from '../../../_core/components/_ui/core-button';
+import { cardStyles } from '../profile/profile-card.styles';
 
 export interface SessionCardProps {
 	session?: SessionDto;
+	isInterruptOtherSessionsLoading: boolean;
+	disableInterruptOtherSessions: boolean;
+	interruptOtherSessions(): Promise<void>;
+	openChangePasswordModal(): void;
 }
 
-export const SessionCard: FC<SessionCardProps> = ({ session }) => {
+export const SessionCard: FC<SessionCardProps> = (props) => {
+	const {
+		session,
+		openChangePasswordModal,
+		interruptOtherSessions,
+		isInterruptOtherSessionsLoading,
+		disableInterruptOtherSessions,
+	} = props;
+
 	const [t] = useTranslation();
 
 	const { ipAddressText, userAgentText, createdAt, updatedAt } = session ?? {};
 
 	return (
-		<Card>
+		<Card sx={cardStyles}>
 			<CardContent>
 				<Typography variant="h5">{t('profile.sessions.current-session')}</Typography>
 
@@ -30,6 +44,17 @@ export const SessionCard: FC<SessionCardProps> = ({ session }) => {
 					{t('profile.sessions.table.columns.updatedAt')}: {updatedAt ? new Date(updatedAt).toLocaleString() : ''}
 				</Typography>
 			</CardContent>
+			<CardActions>
+				<CoreButton
+					loading={isInterruptOtherSessionsLoading}
+					onClick={interruptOtherSessions}
+					disabled={disableInterruptOtherSessions}
+				>
+					{t('profile.sessions.sign-out-all-sessions')}
+				</CoreButton>
+
+				<CoreButton onClick={openChangePasswordModal}>{t('profile.change-password-ph')}</CoreButton>
+			</CardActions>
 		</Card>
 	);
 };

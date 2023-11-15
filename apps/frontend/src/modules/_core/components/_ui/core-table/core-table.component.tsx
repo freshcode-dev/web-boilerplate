@@ -54,7 +54,7 @@ const CoreTableBase = <TData extends RowData>(
 				ref.current = instance;
 			}
 		}
-	}, [ref]);
+	}, [containerRef, ref]);
 
 	return (
 		<Box

@@ -9,6 +9,7 @@ import {
 	contactInfoRowStyles,
 	subtitleStyles,
 	profileDataCategoryStyles,
+	cardStyles,
 } from './profile-card.styles';
 import { useMuiModal } from '../../../_core/hooks';
 import { EditUserDataModal, EditUserDataModalProps } from './modals/edit-user-data-modal.component';
@@ -69,7 +70,7 @@ export const ProfileCard: FC<ProfileCardProps> = (props) => {
 	}, [openEditPhoneModal, profile.phoneNumber]);
 
 	return (
-		<Card>
+		<Card sx={cardStyles}>
 			<CardContent>
 				<Typography variant="h5" sx={{ mb: 1 }}>
 					{t('profile.title')}

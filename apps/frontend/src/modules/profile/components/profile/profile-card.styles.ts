@@ -1,5 +1,9 @@
 import { SxProps, Theme } from '@mui/material';
 
+export const cardStyles: SxProps<Theme> = {
+	mb: 2,
+};
+
 export const profileDataCategoryStyles: SxProps<Theme> = [
 	{
 		mt: 2,

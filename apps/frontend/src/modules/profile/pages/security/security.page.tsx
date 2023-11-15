@@ -1,4 +1,4 @@
-import React, { FC, useMemo } from 'react';
+import React, { FC, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Container } from '@mui/material';
 import { CoreNavTabs, NavTab } from '../../../_core/components/_ui/core-nav-tabs';
@@ -6,11 +6,15 @@ import { ProfileRoutes } from '../../constants';
 import { SessionsTable } from '../../components/sessions-table';
 import { useFetchSessionsData } from '../../hooks/fetch-sessions-data.hook';
 import { SessionCard } from '../../components/session-card/session-card.component';
-import { CoreButton } from '../../../_core/components/_ui/core-button';
 import { usePrepareSessionsData } from '../../hooks/prepare-session-data.hook';
+import { useMuiModal } from '../../../_core/hooks';
+import { ChangePasswordModal } from '../../components/change-password-modal';
+import { useGetProfileQuery } from '../../../../store/api/auth.api';
 
 export const ProfileSecurityPage: FC = () => {
 	const [t] = useTranslation();
+
+	const { data: profile } = useGetProfileQuery();
 
 	const tabs = useMemo<NavTab[]>(
 		() => [
@@ -29,6 +33,14 @@ export const ProfileSecurityPage: FC = () => {
 		],
 		[t]
 	);
+
+	const { openModal: openChangePasswordModal } = useMuiModal(ChangePasswordModal);
+
+	const handleOpenChangePasswordModal = useCallback(() => {
+		openChangePasswordModal({
+			email: profile?.email as string,
+		});
+	}, [openChangePasswordModal, profile?.email]);
 
 	const {
 		currentSession: currentSessionData,
@@ -54,15 +66,13 @@ export const ProfileSecurityPage: FC = () => {
 		<Container component="main" maxWidth="xl">
 			<CoreNavTabs tabs={tabs} />
 
-			<SessionCard session={currentSession} />
-
-			<CoreButton
-				loading={isInterruptOtherSessionsLoading}
-				onClick={handleInterruptOtherSessions}
-				disabled={!sessionsList?.length}
-			>
-				{t('profile.sessions.signOutAllSessions')}
-			</CoreButton>
+			<SessionCard
+				session={currentSession}
+				openChangePasswordModal={handleOpenChangePasswordModal}
+				disableInterruptOtherSessions={!sessionsList.length}
+				interruptOtherSessions={handleInterruptOtherSessions}
+				isInterruptOtherSessionsLoading={isInterruptOtherSessionsLoading}
+			/>
 
 			{sessionsList && <SessionsTable data={sessionsList} loading={loading} onDeleteSession={handleInterruptSession} />}
 		</Container>

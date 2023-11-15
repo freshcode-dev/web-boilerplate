@@ -5,6 +5,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { CoreLinkButton } from '../../../_core/components/_ui/core-button';
 import { Typography } from '@mui/material';
 import { AuthRoutes } from '../../constants';
+import { errorLabelTextStyles } from './login-form.styles';
 
 interface LoginErrorLabelProps {
 	error?: FetchBaseQueryError | SerializedError;
@@ -38,18 +39,7 @@ export const LoginErrorLabel: FC<LoginErrorLabelProps> = (props) => {
 	return (
 		<Typography
 			variant="body2"
-			sx={[
-				{
-					textAlign: 'center',
-					mt: 4,
-					color: ({ colors }) => (status === 429 ? colors.red : colors.black),
-				},
-				({ breakpoints }) => ({
-					[breakpoints.down('sm')]: {
-						mt: 3,
-					},
-				}),
-			]}
+			sx={errorLabelTextStyles(status === 429)}
 		>
 			{getErrorText()}
 		</Typography>

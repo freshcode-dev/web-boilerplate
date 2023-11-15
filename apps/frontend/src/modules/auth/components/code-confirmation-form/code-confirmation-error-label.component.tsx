@@ -1,9 +1,10 @@
-import { FC } from "react";
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
-import { Typography } from "@mui/material";
-import { Trans } from "react-i18next";
-import { CoreLinkButton } from "../../../_core/components/_ui/core-button";
+import { FC } from 'react';
+import { SerializedError } from '@reduxjs/toolkit';
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
+import { Typography } from '@mui/material';
+import { Trans } from 'react-i18next';
+import { CoreLinkButton } from '../../../_core/components/_ui/core-button';
+import { errorLabelTextStyles } from './code-confirmation-form.styles';
 
 interface ConfirmationErrorLabelProps {
 	error?: SerializedError | FetchBaseQueryError;
@@ -40,21 +41,7 @@ export const ConfirmationErrorLabel: FC<ConfirmationErrorLabelProps> = (props) =
 	const hasError = !!(error || otpError);
 
 	return (
-		<Typography
-			variant="body2"
-			sx={[
-				{
-					mt: 2,
-					textAlign: 'center',
-					color: ({ colors }) => (hasError ? colors.red : colors.black),
-				},
-				({ breakpoints }) => ({
-					[breakpoints.down('sm')]: {
-						mt: 3,
-					},
-				}),
-			]}
-		>
+		<Typography variant="body2" sx={errorLabelTextStyles(hasError)}>
 			<Trans
 				i18nKey={getErrorText()}
 				components={[

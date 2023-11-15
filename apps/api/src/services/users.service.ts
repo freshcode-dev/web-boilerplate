@@ -21,7 +21,7 @@ export class UsersService {
 		@InjectMapper() private readonly mapper: Mapper
 	) {}
 
-	public async findOne(
+	public async findOneUser(
 		where: FindOptionsWhere<User>[] | FindOptionsWhere<User>,
 		{ doMapping = true }: FindUserOptions = {}
 	): Promise<User | null> {
@@ -38,11 +38,24 @@ export class UsersService {
 		return user;
 	}
 
-	public async getOne(
+	public async getOneUser(
 		where: FindOptionsWhere<User>[] | FindOptionsWhere<User>,
 		options?: FindUserOptions
 	): Promise<UserDto> {
-		const user = await this.findOne(where, options);
+		const user = await this.findOneUser(where, options);
+
+		if (!user) {
+			throw new NotFoundException('This user does not exist');
+		}
+
+		return user;
+	}
+
+	public async getOneUserEntity(
+		where: FindOptionsWhere<User>[] | FindOptionsWhere<User>,
+		options?: FindUserOptions
+	): Promise<User> {
+		const user = await this.findOneUser(where, { ...options, doMapping: false });
 
 		if (!user) {
 			throw new NotFoundException('This user does not exist');
@@ -61,7 +74,7 @@ export class UsersService {
 				identifiers: [{ id }],
 			} = await this.usersRepository.insert(createUser);
 
-			return this.getOne({ id: id as string });
+			return this.getOneUser({ id: id as string });
 		} catch (exception) {
 			if (!(exception instanceof QueryFailedError)) {
 				throw exception;
@@ -89,11 +102,7 @@ export class UsersService {
 		userData: Partial<User>,
 		options: { isChangeSecure?: boolean } = {}
 	): Promise<UserDto> {
-		const user = await this.getOne({ id: userId }, { withPassword: true });
-
-		if (!user) {
-			throw new NotFoundException('User does not exist');
-		}
+		const user = await this.getOneUserEntity({ id: userId });
 
 		await this.verifyUserUniqueData(userData, userId);
 
@@ -101,7 +110,7 @@ export class UsersService {
 
 		await this.usersRepository.update(user.id, userToUpdate);
 
-		return this.getOne({ id: userId });
+		return this.getOneUser({ id: userId });
 	}
 
 	public async verifyIsPhoneUnique(phoneNumber: string, phoneBlacklistUserId?: string): Promise<IdDto> {
@@ -176,7 +185,7 @@ export class UsersService {
 			...pick(user, ['name']),
 			...(isChangeSecure
 				? {
-						...pick(user, ['password, email', 'phoneNumber', 'googleEmail']),
+						...pick(user, ['password', 'email', 'phoneNumber', 'googleEmail']),
 				  }
 				: {}),
 		};

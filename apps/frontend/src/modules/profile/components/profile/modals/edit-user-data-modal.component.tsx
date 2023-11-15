@@ -47,7 +47,7 @@ export const EditUserDataModal: FC<EditUserDataModalProps> = (props) => {
 	);
 
 	return (
-		<CoreModal open={open} onClose={onClose} title={t('profile.change-user-data-ph')}>
+		<CoreModal open={open} onClose={onClose} modalTitle={t('profile.change-user-data-ph')}>
 			<ChangeUserDataForm data={data} onSubmit={handleSubmitModal} />
 		</CoreModal>
 	);

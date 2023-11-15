@@ -7,6 +7,7 @@ import {
 	AuthWithGoogle,
 	ChangeUserLoginDto,
 	ChangeUserLoginRequest,
+	ChangeUserPasswordDto,
 	EmailDto,
 	IdDto,
 	RestorePasswordDto,
@@ -37,7 +38,7 @@ export class AuthController {
 	async currentUser(@Request() req: RequestWithAuth): Promise<UserDto> {
 		const { sub: userId } = req.user;
 
-		return await this.usersService.getOne({ id: userId });
+		return await this.usersService.getOneUser({ id: userId });
 	}
 
 	@Post('send-otp')
@@ -142,5 +143,13 @@ export class AuthController {
 		const { sub: userId } = req.user;
 
 		return await this.authService.changeUserLogin(userId, data);
+	}
+
+	@Put('change-password')
+	@UseGuards(JwtAuthGuard)
+	async changePassword(@Req() req: RequestWithAuth, @Body() data: ChangeUserPasswordDto): Promise<void> {
+		const { sub: userId } = req.user;
+
+		return await this.authService.changeUserPassword(userId, data);
 	}
 }

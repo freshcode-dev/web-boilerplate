@@ -51,7 +51,7 @@ export const EmailForm: FC<EmailFormProps> = (props) => {
 	const handleFormSubmit = useCallback(
 		(values: EmailDto & RememberMeDto) => {
 			onSubmit({ ...values }, () => {
-				setError('email', { type: 'isEmail' });
+				setError('email', { type: 'isUniqueEmail' });
 			});
 		},
 		[setError, onSubmit]

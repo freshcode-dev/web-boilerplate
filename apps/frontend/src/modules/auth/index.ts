@@ -4,6 +4,7 @@ export { RequireUnauthorized } from './components/require-unauthorized/require-u
 export * from './components/_ui/google-auth-button';
 export * from './components/email-form';
 export * from './components/phone-form';
+export * from './components/password-form';
 export * from './components/code-confirmation-form';
 
 // Store

@@ -18,3 +18,4 @@ export * from './update-user.dto';
 export * from './change-user-login.dto';
 export * from './auth-with-gooogle.dto';
 export * from './restore-password.dto';
+export * from './change-user-password.dto';

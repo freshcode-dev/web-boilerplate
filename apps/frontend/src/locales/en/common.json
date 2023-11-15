@@ -57,7 +57,7 @@
 			"full-name": "Full name",
 			"phone-number": "Phone number",
 			"password-ph": "Enter Password",
-			"new-password": "Password",
+			"new-password": "New password",
 			"confirm-password": "Confirm Password",
 			"email": "Email",
 			"confirm": "Next"
@@ -71,6 +71,7 @@
 		"check-phone-or-register": "Please check if the entered phone number is correct, or <0>Register</0>",
 		"check-email-or-register": "Please check if the entered email is correct, or <0>Register</0>",
 		"check-password-or-register": "Please check if the entered password is correct, or <0>Register</0>",
+		"check-password": "Entered password is incorrect",
 		"register-link": "Don't have an account? <0>Register</0>",
 		"enter-password": "Enter your password",
 		"sign-in-form": {

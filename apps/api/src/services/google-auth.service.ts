@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { UserDto } from '@boilerplate/shared';
+import { GoogleUserDto } from '@boilerplate/shared';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { IApiConfigParams } from '../interfaces/api-config-params';
 import { LoggerService } from '../core/logging/logger.service';
@@ -29,10 +29,14 @@ export class GoogleAuthService {
 		});
 	}
 
-	public async getUserFromTokenId(idToken: string): Promise<Pick<UserDto, 'googleEmail' | 'name'>> {
+	public async getUserFromTokenId(idToken: string): Promise<GoogleUserDto> {
 		const payload = await this.verifyIdToken(idToken);
 
-		const user = {
+		if (!payload?.email) {
+			throw new BadRequestException('Invalid id token');
+		}
+
+		const user: GoogleUserDto = {
 			googleEmail: payload.email,
 			name: `${payload.given_name} ${payload.family_name}`,
 		};

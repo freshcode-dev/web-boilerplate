@@ -5,6 +5,7 @@ import { CoreLinkButton } from "../../../_core/components/_ui/core-button";
 import { Trans, useTranslation } from "react-i18next";
 import { Typography } from "@mui/material";
 import { AuthRoutes } from "../../constants";
+import { errorLabelTextStyles } from "../login-form/login-form.styles";
 
 interface SignupErrorLabelProps {
 	error?: SerializedError | FetchBaseQueryError;
@@ -15,9 +16,9 @@ export const SignupErrorLabel: FC<SignupErrorLabelProps> = (props) => {
 
 	const [t] = useTranslation();
 
-	const getErrorText = () => {
-		const status = error && 'status' in error ? error.status : null;
+	const status = error && 'status' in error ? error.status : null;
 
+	const getErrorText = () => {
 		if (status === 429) {
 			return (
 				<>
@@ -53,11 +54,7 @@ export const SignupErrorLabel: FC<SignupErrorLabelProps> = (props) => {
 
 	return (
 		<Typography
-			sx={{
-				mt: 3,
-				textAlign: 'center',
-				color: theme => theme.colors.red,
-			}}
+			sx={errorLabelTextStyles(status === 429)}
 		>
 			{getErrorText()}
 		</Typography>

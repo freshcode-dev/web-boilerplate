@@ -17,7 +17,6 @@ import { CoreNavTabs, NavTab } from '../../components/_ui/core-nav-tabs';
 import { Box, Grid, Theme, useMediaQuery } from '@mui/material';
 import {
 	useRegisterWithEmailMutation,
-	useRegisterWithPhoneMutation,
 	useSendOtpMutation,
 	useSignInWithEmailMutation,
 	useSignInWithPhoneMutation,
@@ -47,9 +46,6 @@ const UnauthorizedArea: FC = () => {
 	const [, { isLoading: registeringWithEmail }] = useRegisterWithEmailMutation({
 		fixedCacheKey: REGISTER_CACHE_KEY,
 	});
-	const [, { isLoading: registeringWithPhone }] = useRegisterWithPhoneMutation({
-		fixedCacheKey: REGISTER_CACHE_KEY,
-	});
 
 	const [, { isLoading: signingInWithEmail }] = useSignInWithEmailMutation({
 		fixedCacheKey: SIGN_IN_CACHE_KEY,
@@ -63,7 +59,7 @@ const UnauthorizedArea: FC = () => {
 	});
 
 	const disableTabs =
-		registeringWithEmail || registeringWithPhone || signingInWithEmail || signingInWithPhone || verifying;
+		registeringWithEmail || signingInWithEmail || signingInWithPhone || verifying;
 
 	const tabs = useMemo<NavTab[]>(
 		() => [

@@ -105,7 +105,7 @@ export const EditPhoneModal: FC<EditPhoneModalProps> = (props) => {
 	}, []);
 
 	return (
-		<CoreModal open={open} onClose={onClose} title={t('profile.change-email-ph')}>
+		<CoreModal open={open} onClose={onClose} modalTitle={t('profile.change-email-ph')}>
 			{activeForm === 'data' && (
 				<PhoneForm
 					onSubmit={handleSubmitPhone}

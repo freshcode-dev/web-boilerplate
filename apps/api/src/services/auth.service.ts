@@ -15,6 +15,7 @@ import {
 	AuthVerifyDto,
 	ChangeUserLoginDto,
 	ChangeUserLoginRequest,
+	ChangeUserPasswordDto,
 	CreateUserDto,
 	EmailDto,
 	IdDto,
@@ -56,7 +57,7 @@ export class AuthService {
 	public async sendOtp(payload: AuthVerifyDto): Promise<IdDto> {
 		const { phoneNumber, email, reason } = payload;
 
-		const user = await this.usersService.findOne([{ phoneNumber }, { email }]);
+		const user = await this.usersService.findOneUser([{ phoneNumber }, { email }]);
 
 		if (reason === AuthReasonEnum.SignIn && !user) {
 			throw new NotFoundException('User not found, please try to register');
@@ -121,11 +122,7 @@ export class AuthService {
 	}
 
 	public async verifyUserEmailCredentials(email: string, password: string): Promise<UserDto> {
-		const user = await this.usersService.findOne({ email }, { doMapping: false });
-
-		if (!user) {
-			throw new UnauthorizedException('This user does not exist');
-		}
+		const user = await this.usersService.getOneUserEntity({ email });
 
 		if (!user.password) {
 			throw new UnauthorizedException('This user does not have a password. Please sign in with Phone number or Google');
@@ -143,13 +140,7 @@ export class AuthService {
 	public async verifyUserPhoneCredentials(phoneNumber: string, code: string): Promise<UserDto> {
 		await this.twilioService.approveVerification(phoneNumber, code);
 
-		const user = await this.usersService.findOne({ phoneNumber });
-
-		if (!user) {
-			throw new UnauthorizedException('This user does not exist');
-		}
-
-		return user;
+		return await this.usersService.getOneUser({ phoneNumber });
 	}
 
 	public async refreshToken(
@@ -162,7 +153,7 @@ export class AuthService {
 
 		const session = await this.sessionService.updateSessionToken(sessionId, tokenId, issuedAt, ipAddress, userAgent);
 
-		const user = await this.usersService.getOne({ id: session.userId });
+		const user = await this.usersService.getOneUser({ id: session.userId });
 
 		const { refreshToken, accessToken } = this.tokensService.generateJwt(
 			session.userId,
@@ -180,13 +171,9 @@ export class AuthService {
 	}
 
 	public async signInWithGoogleToken(idToken: string, ipAddress: string, userAgent: string): Promise<AuthResponseDto> {
-		if (!idToken) throw new ForbiddenException('Access Denied');
-
 		const googleUser = await this.googleAuthService.getUserFromTokenId(idToken);
 
-		if (!googleUser?.googleEmail) throw new ForbiddenException('Access Denied');
-
-		const user = await this.usersService.findOne({ googleEmail: googleUser.googleEmail });
+		const user = await this.usersService.findOneUser({ googleEmail: googleUser.googleEmail });
 
 		if (user) {
 			return this.signInWithGoogleEmail(user, ipAddress, userAgent);
@@ -212,20 +199,17 @@ export class AuthService {
 	}
 
 	public async assignGoogleToUser(userId: string, idToken: string): Promise<void> {
-		if (!idToken) throw new ForbiddenException('Access Denied');
-
 		const googleUser = await this.googleAuthService.getUserFromTokenId(idToken);
 
-		if (!googleUser?.googleEmail) throw new ForbiddenException('Access Denied');
-
-		const userWithGoogleEmail = await this.usersService.findOne({ googleEmail: googleUser.googleEmail });
-
-		if (userWithGoogleEmail)
-			throw new BadRequestException(
+		try {
+			await this.usersService.verifyIsGoogleEmailUnique(googleUser.googleEmail);
+		} catch (error) {
+			throw new ConflictException(
 				'This google account is already assigned to another user. Try logging in with google'
 			);
+		}
 
-		const user = await this.usersService.getOne({ id: userId });
+		const user = await this.usersService.getOneUser({ id: userId });
 
 		await this.usersService.updateUser(
 			user.id,
@@ -239,7 +223,7 @@ export class AuthService {
 	public async restorePasswordRequest(request: EmailDto): Promise<void> {
 		const { email } = request;
 
-		const user = await this.usersService.getOne({ email });
+		const user = await this.usersService.getOneUser({ email });
 
 		if (user.email) {
 			await this.sendPasswordRestoreEmail(user.email, user);
@@ -247,7 +231,7 @@ export class AuthService {
 	}
 
 	public async restorePassword(userId: string, newPassword: string, code: string): Promise<void> {
-		const user = await this.usersService.getOne({ id: userId });
+		const user = await this.usersService.getOneUser({ id: userId });
 
 		if (!user.email) throw new BadRequestException('User does not have an email');
 
@@ -265,7 +249,7 @@ export class AuthService {
 	public async changeUserLoginRequest(userId: string, data: ChangeUserLoginRequest): Promise<void> {
 		const { email, phoneNumber } = data;
 
-		const user = await this.usersService.getOne({ id: userId });
+		const user = await this.usersService.getOneUser({ id: userId });
 
 		if (email && user.phoneNumber) {
 			await this.usersService.verifyIsEmailUnique(email);
@@ -281,7 +265,7 @@ export class AuthService {
 	public async changeUserLogin(userId: string, data: ChangeUserLoginDto): Promise<void> {
 		const { email, phoneNumber, code } = data;
 
-		const user = await this.usersService.getOne({ id: userId });
+		const user = await this.usersService.getOneUser({ id: userId });
 
 		if (email && user.phoneNumber) {
 			await this.twilioService.approveVerification(user.phoneNumber, code);
@@ -308,6 +292,20 @@ export class AuthService {
 				}
 			);
 		}
+	}
+
+	public async changeUserPassword(userId: string, data: ChangeUserPasswordDto): Promise<void> {
+		const { email, oldPassword, password: newPassword } = data;
+
+		await this.verifyUserEmailCredentials(email, oldPassword);
+
+		await this.usersService.updateUser(
+			userId,
+			{ password: newPassword },
+			{
+				isChangeSecure: true,
+			}
+		);
 	}
 
 	private async sendOtpToPhone(phoneNumber: string): Promise<void> {

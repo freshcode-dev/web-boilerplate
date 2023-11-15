@@ -11,6 +11,7 @@ import {
 	ChangeUserLoginRequest,
 	ChangeUserLoginDto,
 	RestorePasswordDto,
+	ChangeUserPasswordDto,
 } from '@boilerplate/shared';
 import api from '.';
 import { updateSessionAction } from '../../modules/auth';
@@ -168,6 +169,13 @@ const authApi = api.injectEndpoints({
 				body: data,
 			}),
 		}),
+		changePassword: builder.mutation<void, ChangeUserPasswordDto>({
+			query: (data) => ({
+				url: `auth/change-password`,
+				method: 'PUT',
+				body: data,
+			}),
+		}),
 	}),
 });
 
@@ -185,4 +193,5 @@ export const {
 	useRestorePasswordMutation,
 	useChangeLoginRequestMutation,
 	useChangeLoginMutation,
+	useChangePasswordMutation,
 } = authApi;

@@ -20,7 +20,7 @@ interface CodeConfirmationFormProps {
 	email?: string | null;
 	error?: SerializedError | FetchBaseQueryError;
 	onSubmit(value: ConfirmationCodeDto, markError: () => void): Promise<void> | void;
-	onBack(): void;
+	onBack?(): void;
 }
 
 export const CodeConfirmationForm: FC<CodeConfirmationFormProps> = (props) => {
@@ -32,29 +32,23 @@ export const CodeConfirmationForm: FC<CodeConfirmationFormProps> = (props) => {
 		handleSubmit,
 		control,
 		setError,
-		formState: {
-			errors,
-			isSubmitting,
-			isDirty,
-			isSubmitted,
-			isValid
-		}
+		formState: { errors, isSubmitting, isDirty, isSubmitted, isValid },
 	} = useForm<ConfirmationCodeDto>({ resolver });
 
 	const [sendOtp, { error: otpError, isLoading: isOtpSending, reset }] = useSendOtpMutation();
 
 	const disableSubmit = !isValid && (isDirty || isSubmitted);
 
-	const handleFormSubmit = useCallback(async (values: ConfirmationCodeDto) => {
-		reset();
+	const handleFormSubmit = useCallback(
+		async (values: ConfirmationCodeDto) => {
+			reset();
 
-		return onSubmit(
-			{ ...values },
-			() => {
+			return onSubmit({ ...values }, () => {
 				setError('code', { type: 'invalidCodeError' });
-			},
-		);
-	}, [onSubmit, reset, setError]);
+			});
+		},
+		[onSubmit, reset, setError]
+	);
 
 	const handleResend = useCallback(async () => {
 		try {
@@ -73,33 +67,18 @@ export const CodeConfirmationForm: FC<CodeConfirmationFormProps> = (props) => {
 	}, [email, phoneNumber, sendOtp, setError]);
 
 	return (
-		<Box
-			component='form'
-			noValidate
-			onSubmit={handleSubmit(handleFormSubmit)}
-		>
-			<Typography
-				variant='h1'
-				sx={titleStyles}
-			>
+		<Box component="form" noValidate onSubmit={handleSubmit(handleFormSubmit)}>
+			<Typography variant="h3" sx={titleStyles}>
 				{t('auth-confirmation.enter-code')}
 			</Typography>
-			<Typography
-				variant="body2"
-				sx={labelStyles}
-			>
+			<Typography variant="body2" sx={labelStyles}>
 				{t('auth-confirmation.confirmation-flow-description')}
 			</Typography>
 			<Controller
 				control={control}
 				name="code"
 				render={({ field: { onChange, value } }) => (
-					<OtpInput
-						numInputs={VERIFICATION_CODE_LENGTH}
-						onChange={onChange}
-						value={value}
-						error={!!errors.code}
-					/>
+					<OtpInput numInputs={VERIFICATION_CODE_LENGTH} onChange={onChange} value={value} error={!!errors.code} />
 				)}
 			/>
 			<ConfirmationErrorLabel
@@ -109,20 +88,12 @@ export const CodeConfirmationForm: FC<CodeConfirmationFormProps> = (props) => {
 				submitting={isSubmitting || isOtpSending}
 			/>
 			<FormControlsContainer>
-				<CoreButton
-					variant="secondary"
-					sx={{ mr: 1.5, width: 115 }}
-					onClick={onBack}
-					disabled={isSubmitting}
-				>
-					{t('auth-confirmation.confirm-form.back')}
-				</CoreButton>
-				<CoreButton
-					sx={{ ml: 1.5, width: 115 }}
-					type="submit"
-					loading={isSubmitting}
-					disabled={disableSubmit}
-				>
+				{onBack && (
+					<CoreButton variant="secondary" sx={{ mr: 1.5, width: 115 }} onClick={onBack} disabled={isSubmitting}>
+						{t('auth-confirmation.confirm-form.back')}
+					</CoreButton>
+				)}
+				<CoreButton sx={{ ml: 1.5, width: 115 }} type="submit" loading={isSubmitting} disabled={disableSubmit}>
 					{t('auth-confirmation.confirm-form.confirm')}
 				</CoreButton>
 			</FormControlsContainer>
