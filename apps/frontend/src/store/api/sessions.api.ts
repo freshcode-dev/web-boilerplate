@@ -1,15 +1,15 @@
-import { SessionDto } from '@boilerplate/shared';
+import { SessionDto, SessionFilter } from '@boilerplate/shared';
 import api from '.';
 
 const sessionsApi = api.injectEndpoints({
 	endpoints: (builder) => ({
-		getSessionsList: builder.query<SessionDto[], { withIpDetails?: boolean } | undefined>({
+		getSessionsList: builder.query<SessionDto[], SessionFilter | undefined>({
 			query: (filters) => ({
 				url: `sessions/list`,
 				params: filters,
 			}),
 		}),
-		getCurrentSession: builder.query<SessionDto, { refreshToken: string; withIpDetails?: boolean }>({
+		getCurrentSession: builder.query<SessionDto, { refreshToken: string } & SessionFilter>({
 			query: ({ refreshToken, withIpDetails }) => ({
 				url: `sessions/current`,
 				method: 'POST',

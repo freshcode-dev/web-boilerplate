@@ -1,6 +1,6 @@
 import React, { FC, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Container, Typography } from '@mui/material';
+import { Container } from '@mui/material';
 import { CoreNavTabs, NavTab } from '../../../_core/components/_ui/core-nav-tabs';
 import { ProfileRoutes } from '../../constants';
 import { SessionsTable } from '../../components/sessions-table';
@@ -11,7 +11,6 @@ import { usePrepareSessionsData } from '../../hooks/prepare-session-data.hook';
 
 export const ProfileSecurityPage: FC = () => {
 	const [t] = useTranslation();
-
 
 	const tabs = useMemo<NavTab[]>(
 		() => [
@@ -55,12 +54,13 @@ export const ProfileSecurityPage: FC = () => {
 		<Container component="main" maxWidth="xl">
 			<CoreNavTabs tabs={tabs} />
 
-			<Box>
-				<Typography variant="h5">Current session</Typography>
-				<SessionCard session={currentSession} />
-			</Box>
+			<SessionCard session={currentSession} />
 
-			<CoreButton loading={isInterruptOtherSessionsLoading} onClick={handleInterruptOtherSessions} disabled={!sessionsList?.length}>
+			<CoreButton
+				loading={isInterruptOtherSessionsLoading}
+				onClick={handleInterruptOtherSessions}
+				disabled={!sessionsList?.length}
+			>
 				{t('profile.sessions.signOutAllSessions')}
 			</CoreButton>
 

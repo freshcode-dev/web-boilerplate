@@ -3,21 +3,19 @@ import { Box, Container } from '@mui/material';
 import { useRegisterWithEmailMutation, useSendOtpMutation } from '../../../../store/api/auth.api';
 import { REGISTER_CACHE_KEY, VERIFY_CACHE_KEY } from '../../constants/auth-cache.constants';
 import { DocumentTitle } from '../../../_core/components/_ui/document-title';
-import { containerStyles, wrapperStyles } from './signup-with-email.styles';
+import { containerStyles, googleAuthRowStyles, wrapperStyles } from './signup-with-email.styles';
 import { useLangParam } from '../../hooks/use-lang-param.hook';
-import { SignUpWithEmailFormData } from '../../models/sign-up-form.dto';
 import { SignUpWithEmailForm } from '../../components/signup-form';
 import { GoogleAuthButton } from '../../components/_ui/google-auth-button';
-import { AuthReasonEnum, ConfirmationCodeDto } from '@boilerplate/shared';
+import { AuthReasonEnum, ConfirmationCodeDto, SignUpWithEmailDto } from '@boilerplate/shared';
 import { getErrorStatusCode } from '../../../_core/utils/error.utils';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { SerializedError } from '@reduxjs/toolkit';
 import { CodeConfirmationForm } from '../../components/code-confirmation-form';
-import { googleAuthRowStyles } from '../login-with-email/login-with-email.styles';
 
 interface FormsState {
 	activeForm: 'data' | 'code';
-	profile: Partial<SignUpWithEmailFormData>;
+	profile: Partial<SignUpWithEmailDto>;
 }
 
 export const SignUpWithEmailPage: FC = () => {
@@ -44,7 +42,7 @@ export const SignUpWithEmailPage: FC = () => {
 	});
 
 	const handleRegisterFormSubmit = useCallback(
-		async (form: SignUpWithEmailFormData, markError: () => void) => {
+		async (form: SignUpWithEmailDto, markError: () => void) => {
 			try {
 				const { email, phoneNumber } = form;
 
@@ -78,7 +76,7 @@ export const SignUpWithEmailPage: FC = () => {
 		async ({ code }: ConfirmationCodeDto, markError: (field?: string) => void) => {
 			try {
 				await register({
-					...(profile as SignUpWithEmailFormData),
+					...(profile as SignUpWithEmailDto),
 					code,
 				}).unwrap();
 			} catch (error) {
@@ -115,7 +113,6 @@ export const SignUpWithEmailPage: FC = () => {
 				{activeForm === 'data' && (
 					<SignUpWithEmailForm profile={profile} onSubmit={handleRegisterFormSubmit} error={otpError} />
 				)}
-
 				{activeForm === 'code' && (
 					<CodeConfirmationForm
 						email={profile.email}

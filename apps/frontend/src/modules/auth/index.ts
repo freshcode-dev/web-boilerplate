@@ -2,6 +2,9 @@
 export { RequireAuth } from './components/require-auth/require-auth.component';
 export { RequireUnauthorized } from './components/require-unauthorized/require-unauthorized.component';
 export * from './components/_ui/google-auth-button';
+export * from './components/email-form';
+export * from './components/phone-form';
+export * from './components/code-confirmation-form';
 
 // Store
 export { updateSessionAction } from './store/actions/update-session.action';

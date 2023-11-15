@@ -18,3 +18,9 @@ export const containerStyles: SxProps<Theme> = [
 ];
 
 export const wrapperStyles: SxProps<Theme> = { flex: 1 };
+
+export const googleAuthRowStyles: SxProps<Theme> = {
+	display: 'flex',
+	alignItems: 'center',
+	justifyContent: 'center',
+};

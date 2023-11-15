@@ -8,7 +8,9 @@ import {
 	SignUpWithEmailDto,
 	UserDto,
 	EmailDto,
-	PasswordDto,
+	ChangeUserLoginRequest,
+	ChangeUserLoginDto,
+	RestorePasswordDto,
 } from '@boilerplate/shared';
 import api from '.';
 import { updateSessionAction } from '../../modules/auth';
@@ -127,7 +129,7 @@ const authApi = api.injectEndpoints({
 		}),
 		restorePasswordRequest: builder.mutation<void, EmailDto>({
 			query: (data: EmailDto) => ({
-				url: `auth/restore-request`,
+				url: `auth/restore-password-request`,
 				method: 'POST',
 				body: data,
 			}),
@@ -135,18 +137,36 @@ const authApi = api.injectEndpoints({
 				skipAuth: true,
 			},
 		}),
-		restorePassword: builder.mutation<void, PasswordDto & { token: string }>({
-			query: ({ token, ...data }: PasswordDto & { token: string}) => ({
+		restorePassword: builder.mutation<void, RestorePasswordDto & { token?: string }>({
+			query: ({ token, ...data }: RestorePasswordDto & { token?: string }) => ({
 				url: `auth/restore-password`,
 				method: 'POST',
 				body: data,
-				headers: {
-					authorization: `Bearer ${token}`,
-				},
+				...(token
+					? {
+							headers: {
+								authorization: `Bearer ${token}`,
+							},
+						}
+					: {}),
 			}),
 			extraOptions: {
 				skipAuth: true,
 			},
+		}),
+		changeLoginRequest: builder.mutation<void, ChangeUserLoginRequest>({
+			query: (data) => ({
+				url: `auth/change-login-request`,
+				method: 'POST',
+				body: data,
+			}),
+		}),
+		changeLogin: builder.mutation<void, ChangeUserLoginDto>({
+			query: (data) => ({
+				url: `auth/change-login`,
+				method: 'PUT',
+				body: data,
+			}),
 		}),
 	}),
 });
@@ -163,4 +183,6 @@ export const {
 	useAssignGoogleAccountMutation,
 	useRestorePasswordRequestMutation,
 	useRestorePasswordMutation,
+	useChangeLoginRequestMutation,
+	useChangeLoginMutation,
 } = authApi;

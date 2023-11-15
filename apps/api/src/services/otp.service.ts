@@ -15,6 +15,14 @@ export class OTPService {
 		private readonly configService: ConfigService<IApiConfigParams>
 	) {}
 
+	public async createOtpCode(codeLength: number, assignee: string): Promise<string> {
+		const codeEntry = this.createCodeEntry(codeLength, assignee);
+
+		await this.storeOtpCodeInDB(codeEntry);
+
+		return codeEntry.code;
+	}
+
 	public sendOtpCode: TSendOtpCodeAsyncFunc = async ({ codeLength, assignee }, storeCodeEntry, sendCode) => {
 		const codeEntry = this.createCodeEntry(codeLength, assignee);
 

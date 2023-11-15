@@ -11,7 +11,6 @@ export const linkStyles: SxProps<Theme> = {
 
 export const containerStyles: SxProps<Theme> = [
 	{
-		py: 5,
 		textAlign: 'center',
 	},
 	({ breakpoints }) => ({

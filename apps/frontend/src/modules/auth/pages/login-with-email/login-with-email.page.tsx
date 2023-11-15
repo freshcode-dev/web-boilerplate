@@ -36,23 +36,26 @@ const LoginWithEmailPage: FC = () => {
 		rememberMe: true,
 	});
 
-	const handleLoginFormSubmit = useCallback(async ({ email, rememberMe }: EmailDto & RememberMeDto, markError: () => void) => {
-		try {
-			setFormsState({
-				activeForm: 'password',
-				email,
-				rememberMe,
-			});
-		} catch (error) {
-			const status = getErrorStatusCode(error as Error);
+	const handleLoginFormSubmit = useCallback(
+		async ({ email, rememberMe }: EmailDto & RememberMeDto, markError: () => void) => {
+			try {
+				setFormsState({
+					activeForm: 'password',
+					email,
+					rememberMe,
+				});
+			} catch (error) {
+				const status = getErrorStatusCode(error as Error);
 
-			if (status === 404) {
-				markError();
+				if (status === 404) {
+					markError();
+				}
+
+				setSignInError(error as Error);
 			}
-
-			setSignInError(error as Error);
-		}
-	}, []);
+		},
+		[]
+	);
 
 	const goToLoginForm = useCallback(() => {
 		setFormsState((state) => ({
@@ -92,7 +95,13 @@ const LoginWithEmailPage: FC = () => {
 			<DocumentTitle />
 
 			<Box sx={wrapperStyles}>
-				{activeForm === 'email' && <LoginWithEmailForm onSubmit={handleLoginFormSubmit} email={email ?? undefined} rememberMe={rememberMe} />}
+				{activeForm === 'email' && (
+					<LoginWithEmailForm
+						email={email ?? undefined}
+						rememberMe={rememberMe}
+						onSubmit={handleLoginFormSubmit}
+					/>
+				)}
 				{activeForm === 'password' && (
 					<PasswordForm error={signInError} onSubmit={handlePasswordSubmit} onBack={goToLoginForm} />
 				)}

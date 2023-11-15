@@ -8,17 +8,16 @@ import {
 	useSignInWithPhoneMutation,
 } from '../../../../store/api/auth.api';
 import { SIGN_IN_CACHE_KEY, VERIFY_CACHE_KEY } from '../../constants/auth-cache.constants';
-import { containerStyles, wrapperStyles } from './login-with-phone.styles';
+import { containerStyles, googleAuthRowStyles, wrapperStyles } from './login-with-phone.styles';
 import { useLangParam } from '../../hooks/use-lang-param.hook';
 import { getErrorStatusCode } from '../../../_core/utils/error.utils';
 import { AuthReasonEnum, ConfirmationCodeDto, PhoneDto, RememberMeDto } from '@boilerplate/shared';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { SerializedError } from '@reduxjs/toolkit';
 import { GoogleAuthButton } from '../../components/_ui/google-auth-button';
-import { googleAuthRowStyles } from '../login-with-email/login-with-email.styles';
 
 interface FormsState {
-	activeForm: 'phone' | 'code';
+	activeForm: 'data' | 'code';
 	phoneNumber: string | null;
 	rememberMe: boolean;
 }
@@ -38,7 +37,7 @@ const LoginWithPhonePage: FC = () => {
 	const [signInError, setSignInError] = useState<FetchBaseQueryError | SerializedError | undefined>();
 
 	const [{ activeForm, phoneNumber, rememberMe }, setFormsState] = useState<FormsState>({
-		activeForm: 'phone',
+		activeForm: 'data',
 		phoneNumber: null,
 		rememberMe: true,
 	});
@@ -72,7 +71,7 @@ const LoginWithPhonePage: FC = () => {
 	const goToLoginForm = useCallback(() => {
 		setFormsState((state) => ({
 			...state,
-			activeForm: 'phone',
+			activeForm: 'data',
 		}));
 		setOtpError(undefined);
 		setSignInError(undefined);
@@ -107,12 +106,12 @@ const LoginWithPhonePage: FC = () => {
 			<DocumentTitle />
 
 			<Box sx={wrapperStyles}>
-				{activeForm === 'phone' && (
+				{activeForm === 'data' && (
 					<LoginWithPhoneForm
-						error={otpError}
-						onSubmit={handleLoginFormSubmit}
 						phoneNumber={phoneNumber ?? undefined}
 						rememberMe={rememberMe}
+						onSubmit={handleLoginFormSubmit}
+						error={otpError}
 					/>
 				)}
 				{activeForm === 'code' && (

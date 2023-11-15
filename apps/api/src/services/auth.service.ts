@@ -1,5 +1,6 @@
 import {
 	BadRequestException,
+	ConflictException,
 	ForbiddenException,
 	Injectable,
 	NotFoundException,
@@ -12,7 +13,10 @@ import {
 	AuthReasonEnum,
 	AuthResponseDto,
 	AuthVerifyDto,
+	ChangeUserLoginDto,
+	ChangeUserLoginRequest,
 	CreateUserDto,
+	EmailDto,
 	IdDto,
 	SignInWithEmailDto,
 	SignInWithPhoneDto,
@@ -28,8 +32,13 @@ import { GoogleAuthService } from './google-auth.service';
 import { MailerService } from './mailer.service';
 import { OTPService } from './otp.service';
 import { TLatestSavedCode } from '../interfaces/otp';
-import { emailCodeSubject, renderEmailCodeTemplate } from '../utils/templates/email-code.template';
+import {
+	EmailCodeReasonsEnum,
+	emailCodeSubject,
+	renderEmailCodeTemplate,
+} from '../utils/templates/email-code.template';
 import { renderResetPassTemplate, resetPassSubject } from '../utils/templates/reset-pass.template';
+
 @Injectable()
 export class AuthService {
 	constructor(
@@ -47,27 +56,22 @@ export class AuthService {
 	public async sendOtp(payload: AuthVerifyDto): Promise<IdDto> {
 		const { phoneNumber, email, reason } = payload;
 
-		// check if user exists on sign up
-		if (reason === AuthReasonEnum.SignUp && email) {
-			await this.usersService.verifyIsEmailUnique(email);
-		} else if (reason === AuthReasonEnum.SignUp && phoneNumber) {
-			await this.usersService.verifyIsPhoneUnique(phoneNumber);
-		}
-
-		const user = await this.usersService.findOne([{ phoneNumber }, { email }, { googleEmail: email }]);
+		const user = await this.usersService.findOne([{ phoneNumber }, { email }]);
 
 		if (reason === AuthReasonEnum.SignIn && !user) {
 			throw new NotFoundException('User not found, please try to register');
+		} else if (reason === AuthReasonEnum.SignUp && user) {
+			throw new ConflictException('User with this data already exists');
 		}
 
 		let id = '';
 		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-		const userEmail = email || user?.email || user?.googleEmail;
+		const userEmail = email || user?.email;
 
 		// send otp
 		if (reason === AuthReasonEnum.SignUp && userEmail) {
 			id = userEmail;
-			await this.sendOtpToEmail(userEmail as string);
+			await this.sendOtpToEmail(userEmail as string, EmailCodeReasonsEnum.SignUp);
 		} else if (reason === AuthReasonEnum.SignIn && phoneNumber) {
 			id = phoneNumber;
 			await this.sendOtpToPhone(phoneNumber);
@@ -85,9 +89,7 @@ export class AuthService {
 	): Promise<AuthResponseDto> {
 		const { code, ...createUser } = payload;
 
-		await this.verifyOtpEmail(code, createUser.email);
-
-		await this.usersService.verifyIsEmailUnique(createUser.email);
+		await this.verifyOtpEmail(createUser.email, code);
 
 		const user = await this.usersService.createUser(createUser);
 
@@ -204,8 +206,6 @@ export class AuthService {
 		ipAddress: string,
 		userAgent: string
 	): Promise<AuthResponseDto> {
-		await this.usersService.verifyIsGoogleEmailUnique(createUser.googleEmail as string);
-
 		const user = await this.usersService.createUser(createUser);
 
 		return await this.createSession(user, ipAddress, userAgent);
@@ -220,34 +220,101 @@ export class AuthService {
 
 		const userWithGoogleEmail = await this.usersService.findOne({ googleEmail: googleUser.googleEmail });
 
-		if (userWithGoogleEmail) throw new BadRequestException('This google account is already assigned to another user. Try logging in with google');
+		if (userWithGoogleEmail)
+			throw new BadRequestException(
+				'This google account is already assigned to another user. Try logging in with google'
+			);
 
 		const user = await this.usersService.getOne({ id: userId });
 
-		await this.usersService.updateUser(user.id, { googleEmail: googleUser.googleEmail });
+		await this.usersService.updateUser(
+			user.id,
+			{ googleEmail: googleUser.googleEmail },
+			{
+				isChangeSecure: true,
+			}
+		);
 	}
 
-	public async restorePasswordRequest(request: { email?: string; phoneNumber?: string }): Promise<void> {
-		const { email, phoneNumber } = request;
+	public async restorePasswordRequest(request: EmailDto): Promise<void> {
+		const { email } = request;
 
-		const user = await this.usersService.findOne([{ email }, { phoneNumber }]);
-
-		if (!user) throw new NotFoundException('User not found');
+		const user = await this.usersService.getOne({ email });
 
 		if (user.email) {
-			await this.sendResetEmail(user.email, user);
+			await this.sendPasswordRestoreEmail(user.email, user);
 		}
 	}
 
-	public async restorePassword(userId: string, password: string): Promise<void> {
-		await this.usersService.updateUser(userId, { password });
+	public async restorePassword(userId: string, newPassword: string, code: string): Promise<void> {
+		const user = await this.usersService.getOne({ id: userId });
+
+		if (!user.email) throw new BadRequestException('User does not have an email');
+
+		await this.verifyOtpEmail(user.email, code);
+
+		await this.usersService.updateUser(
+			userId,
+			{ password: newPassword },
+			{
+				isChangeSecure: true,
+			}
+		);
+	}
+
+	public async changeUserLoginRequest(userId: string, data: ChangeUserLoginRequest): Promise<void> {
+		const { email, phoneNumber } = data;
+
+		const user = await this.usersService.getOne({ id: userId });
+
+		if (email && user.phoneNumber) {
+			await this.usersService.verifyIsEmailUnique(email);
+
+			await this.sendOtpToPhone(user.phoneNumber as string);
+		} else if (phoneNumber && user.email) {
+			await this.usersService.verifyIsPhoneUnique(phoneNumber);
+
+			await this.sendOtpToEmail(user.email as string, EmailCodeReasonsEnum.ChangePhoneNumber);
+		}
+	}
+
+	public async changeUserLogin(userId: string, data: ChangeUserLoginDto): Promise<void> {
+		const { email, phoneNumber, code } = data;
+
+		const user = await this.usersService.getOne({ id: userId });
+
+		if (email && user.phoneNumber) {
+			await this.twilioService.approveVerification(user.phoneNumber, code);
+
+			await this.usersService.updateUser(
+				userId,
+				{
+					email,
+				},
+				{
+					isChangeSecure: true,
+				}
+			);
+		} else if (phoneNumber && user.email) {
+			await this.verifyOtpEmail(user.email, code);
+
+			await this.usersService.updateUser(
+				userId,
+				{
+					phoneNumber,
+				},
+				{
+					isChangeSecure: true,
+				}
+			);
+		}
 	}
 
 	private async sendOtpToPhone(phoneNumber: string): Promise<void> {
 		await this.twilioService.createVerification(phoneNumber);
 	}
 
-	private async sendOtpToEmail(toEmail: string): Promise<void> {
+	private async sendOtpToEmail(toEmail: string, reason: EmailCodeReasonsEnum): Promise<void> {
 		await this.otpService.sendOtpCode(
 			{
 				codeLength: VERIFICATION_CODE_LENGTH,
@@ -256,7 +323,7 @@ export class AuthService {
 			async (code: TLatestSavedCode) => this.otpService.storeOtpCodeInDB(code),
 			async (code: string) => {
 				const subject = emailCodeSubject();
-				const body = await renderEmailCodeTemplate({ code });
+				const body = await renderEmailCodeTemplate({ code, reason });
 
 				const isEmailSent = await this.mailerService.sendMail({
 					to: toEmail,
@@ -269,9 +336,12 @@ export class AuthService {
 		);
 	}
 
-	private async sendResetEmail(toEmail: string, user: UserDto): Promise<void> {
+	private async sendPasswordRestoreEmail(toEmail: string, user: UserDto): Promise<void> {
 		const tempAccessToken = await this.tokensService.generateResetPassJwt(user.id);
-		const resetLink = `${this.configService.get('NX_FRONTED_URL')}/auth/restore-password/?token=${tempAccessToken}`;
+		const otpCode = await this.otpService.createOtpCode(VERIFICATION_CODE_LENGTH, toEmail);
+		const resetLink = `${this.configService.get(
+			'NX_FRONTED_URL'
+		)}/auth/restore-password/?token=${tempAccessToken}&code=${otpCode}`;
 
 		const subject = resetPassSubject();
 		const body = await renderResetPassTemplate({
@@ -286,11 +356,11 @@ export class AuthService {
 		});
 	}
 
-	private async verifyOtpEmail(code: string, email: string): Promise<void> {
+	private async verifyOtpEmail(email: string, code: string): Promise<void> {
 		await this.otpService.verifyOtpCode(
 			{
-				code,
 				assignee: email,
+				code,
 			},
 			async (assignee) => await this.otpService.getOtpsByAssigneeFromDB(assignee),
 			async (code) => {

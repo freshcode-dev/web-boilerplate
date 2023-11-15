@@ -1,10 +1,22 @@
-import React, { FC } from 'react';
+import React, { FC, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CardContent, Typography, CardActions, Card, Box } from '@mui/material';
 import { UserDto } from '@boilerplate/shared';
 import { CoreButton } from '../../../_core/components/_ui/core-button';
 import { useCustomGoogleAuthButton, GoogleAuthButton } from '../../../auth';
-import { googleAuthButtonStyles, googleAuthRowStyles } from './profile-card.styles';
+import {
+	contactInfoButtonStyles,
+	contactInfoRowStyles,
+	subtitleStyles,
+	profileDataCategoryStyles,
+} from './profile-card.styles';
+import { useMuiModal } from '../../../_core/hooks';
+import { EditUserDataModal, EditUserDataModalProps } from './modals/edit-user-data-modal.component';
+import { EditPhoneModal, EditPhoneModalProps } from './modals/edit-phone-modal.component';
+import { EditEmailModal, EditEmailModalProps } from './modals/edit-email-modal.component';
+import { ConfirmationModal, ConfirmationModalProps } from '../../../_core/components/confirmation-modal';
+import { isGoogleAuthEnabled } from '../../../../constants';
+import LockIcon from '@mui/icons-material/Lock';
 
 interface ProfileCardProps {
 	profile: UserDto;
@@ -18,41 +30,103 @@ export const ProfileCard: FC<ProfileCardProps> = (props) => {
 
 	const { handleGoogleButtonClick, setGoogleButtonRef } = useCustomGoogleAuthButton();
 
+	const { openModal: openConfirmLogoutModal } = useMuiModal<ConfirmationModalProps>(ConfirmationModal);
+	const { openModal: openEditUserDataModal } = useMuiModal<EditUserDataModalProps>(EditUserDataModal);
+	const { openModal: openEditEmailModal } = useMuiModal<EditEmailModalProps>(EditEmailModal);
+	const { openModal: openEditPhoneModal } = useMuiModal<EditPhoneModalProps>(EditPhoneModal);
+
+	const handleOpenLogoutConfirmModal = useCallback(() => {
+		openConfirmLogoutModal({
+			title: 'Are you sure you want to logout?',
+			onSubmit: onLogout,
+			icon: <LockIcon />,
+			leftButtonProps: {
+				children: 'Cancel',
+			},
+			rightButtonProps: {
+				children: 'Logout',
+				variant: 'danger',
+			},
+		});
+	}, [onLogout, openConfirmLogoutModal]);
+
+	const handleOpenEditUserDataModal = useCallback(() => {
+		openEditUserDataModal({
+			data: profile,
+		});
+	}, [openEditUserDataModal, profile]);
+
+	const handleOpenEditEmailModal = useCallback(() => {
+		openEditEmailModal({
+			email: profile.email,
+		});
+	}, [openEditEmailModal, profile.email]);
+
+	const handleOpenEditPhoneModal = useCallback(() => {
+		openEditPhoneModal({
+			phoneNumber: profile.phoneNumber,
+		});
+	}, [openEditPhoneModal, profile.phoneNumber]);
+
 	return (
 		<Card>
 			<CardContent>
 				<Typography variant="h5" sx={{ mb: 1 }}>
 					{t('profile.title')}
 				</Typography>
-				<Typography gutterBottom>
-					{t('profile.name')}: {profile.name}
-				</Typography>
-				{profile.email && (
+
+				<Box sx={profileDataCategoryStyles}>
+					<Typography variant="h6" sx={subtitleStyles}>
+						{t('profile.user-data')}:
+					</Typography>
+
 					<Typography gutterBottom>
-						{t('profile.email')}: {profile.email}
+						{t('profile.name')}: {profile.name}
 					</Typography>
-				)}
-				{profile.phoneNumber && (
-					<Typography gutterBottom>
-						{t('profile.phone')}: {profile.phoneNumber}
+
+					<CoreButton sx={contactInfoButtonStyles} onClick={handleOpenEditUserDataModal}>
+						{t('profile.edit')}
+					</CoreButton>
+				</Box>
+
+				<Box sx={profileDataCategoryStyles}>
+					<Typography variant="h6" sx={subtitleStyles}>
+						{t('profile.contact-info')}:
 					</Typography>
-				)}
-				<Box sx={googleAuthRowStyles}>
-					<Typography>
-						{t('profile.googleAccount')}: {profile.googleEmail ?? t('profile.googleAccountNotConnected')}
-					</Typography>
-					{!profile.googleEmail && (
-						<>
-							<CoreButton sx={googleAuthButtonStyles} onClick={handleGoogleButtonClick}>
-								{t('profile.googleAuth')}
-							</CoreButton>
-							<GoogleAuthButton show={false} setButtonRef={setGoogleButtonRef} />
-						</>
-					)}
+
+					<Box sx={contactInfoRowStyles}>
+						<Typography>
+							{t('profile.email')}: {profile.email}
+						</Typography>
+						<CoreButton sx={contactInfoButtonStyles} onClick={handleOpenEditEmailModal}>
+							{t('profile.edit')}
+						</CoreButton>
+					</Box>
+					<Box sx={contactInfoRowStyles}>
+						<Typography>
+							{t('profile.phone')}: {profile.phoneNumber}
+						</Typography>
+						<CoreButton sx={contactInfoButtonStyles} onClick={handleOpenEditPhoneModal}>
+							{t('profile.edit')}
+						</CoreButton>
+					</Box>
+					<Box sx={contactInfoRowStyles}>
+						<Typography>
+							{t('profile.google-account')}: {profile.googleEmail ?? t('profile.google-account-not-connected')}
+						</Typography>
+						{!profile.googleEmail && isGoogleAuthEnabled && (
+							<>
+								<CoreButton sx={contactInfoButtonStyles} onClick={handleGoogleButtonClick}>
+									{t('profile.google-auth')}
+								</CoreButton>
+								<GoogleAuthButton show={false} setButtonRef={setGoogleButtonRef} />
+							</>
+						)}
+					</Box>
 				</Box>
 			</CardContent>
 			<CardActions>
-				<CoreButton onClick={onLogout}>{t('profile.logout')}</CoreButton>
+				<CoreButton onClick={handleOpenLogoutConfirmModal}>{t('profile.logout')}</CoreButton>
 			</CardActions>
 		</Card>
 	);

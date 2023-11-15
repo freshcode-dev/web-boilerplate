@@ -12,15 +12,15 @@ import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
 import { SignupErrorLabel } from './signup-error-label.component';
 import { titleStyles } from '../login-form/login-form.styles';
 import { textFieldWrapperStyles } from './signup-form.styles';
-import { SignUpWithEmailFormData } from '../../models/sign-up-form.dto';
 import { CorePasswordInput } from '../../../_core/components/_ui/core-password-input';
+import { SignUpWithEmailDto } from '@boilerplate/shared';
 
-const resolver = classValidatorResolver(SignUpWithEmailFormData);
+const resolver = classValidatorResolver(SignUpWithEmailDto);
 
 export interface SignUpWithEmailFormProps {
 	error?: FetchBaseQueryError | SerializedError;
-	profile: Partial<SignUpWithEmailFormData>;
-	onSubmit(values: SignUpWithEmailFormData, markError: () => void): void;
+	profile: Partial<SignUpWithEmailDto>;
+	onSubmit(values: SignUpWithEmailDto, markError: () => void): void;
 }
 
 export const SignUpWithEmailForm: FC<SignUpWithEmailFormProps> = (props) => {
@@ -34,7 +34,7 @@ export const SignUpWithEmailForm: FC<SignUpWithEmailFormProps> = (props) => {
 		setError,
 		register,
 		formState: { isSubmitting, isSubmitted, isDirty, isValid, errors },
-	} = useForm<SignUpWithEmailFormData>({
+	} = useForm<SignUpWithEmailDto>({
 		resolver,
 		defaultValues: profile,
 	});
@@ -42,8 +42,8 @@ export const SignUpWithEmailForm: FC<SignUpWithEmailFormProps> = (props) => {
 	const disableSubmit = !isValid && (isDirty || isSubmitted);
 
 	const handleFormSubmit = useCallback(
-		(values: SignUpWithEmailFormData) => {
-			onSubmit(values, (field?: string) => {
+		(values: SignUpWithEmailDto) => {
+			onSubmit({ ...values }, (field?: string) => {
 				if (field === 'phoneNumber') {
 					setError('phoneNumber', { type: 'isUniqueNumber' });
 				} else if (field === 'email') {
@@ -90,7 +90,7 @@ export const SignUpWithEmailForm: FC<SignUpWithEmailFormProps> = (props) => {
 				fullWidth
 				id="password"
 				placeholder={t('sign-up.registration-form.password-ph') ?? ''}
-				label={t('sign-up.registration-form.password')}
+				label={t('sign-up.registration-form.new-password')}
 				controlSx={textFieldWrapperStyles}
 				{...register('password')}
 				error={!!errors.password}
@@ -99,8 +99,8 @@ export const SignUpWithEmailForm: FC<SignUpWithEmailFormProps> = (props) => {
 			<CorePasswordInput
 				fullWidth
 				id="confirm-password"
-				placeholder={t('sign-up.registration-form.confirmPassword') ?? ''}
-				label={t('sign-up.registration-form.confirmPassword')}
+				placeholder={t('sign-up.registration-form.confirm-password') ?? ''}
+				label={t('sign-up.registration-form.confirm-password')}
 				{...register('confirmPassword')}
 				error={!!errors.confirmPassword}
 				autoComplete='off'

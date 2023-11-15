@@ -8,6 +8,7 @@ import { argon2DefaultConfig, DbErrorCodes } from '../constants';
 import { DatabaseError } from 'pg';
 import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
+import { pick } from 'lodash';
 
 interface FindUserOptions {
 	doMapping?: boolean;
@@ -20,7 +21,10 @@ export class UsersService {
 		@InjectMapper() private readonly mapper: Mapper
 	) {}
 
-	public async findOne(where: FindOptionsWhere<User>[] | FindOptionsWhere<User>, { doMapping = true }: FindUserOptions = {}): Promise<User | null> {
+	public async findOne(
+		where: FindOptionsWhere<User>[] | FindOptionsWhere<User>,
+		{ doMapping = true }: FindUserOptions = {}
+	): Promise<User | null> {
 		const user = await this.usersRepository.findOne({ where });
 
 		if (!user) {
@@ -34,7 +38,10 @@ export class UsersService {
 		return user;
 	}
 
-	public async getOne(where: FindOptionsWhere<User>[] | FindOptionsWhere<User>, options?: FindUserOptions): Promise<UserDto> {
+	public async getOne(
+		where: FindOptionsWhere<User>[] | FindOptionsWhere<User>,
+		options?: FindUserOptions
+	): Promise<UserDto> {
 		const user = await this.findOne(where, options);
 
 		if (!user) {
@@ -44,9 +51,11 @@ export class UsersService {
 		return user;
 	}
 
-	public async createUser(userDto: CreateUserDto): Promise<UserDto> {
+	public async createUser(userData: CreateUserDto): Promise<UserDto> {
 		try {
-			const createUser = await this.prepareUserToCreate(userDto);
+			await this.verifyUserUniqueData(userData);
+
+			const createUser = await this.prepareUserToCreate(userData);
 
 			const {
 				identifiers: [{ id }],
@@ -75,16 +84,22 @@ export class UsersService {
 		}
 	}
 
-	public async updateUser(userId: string, userData: Partial<User>): Promise<UserDto> {
+	public async updateUser(
+		userId: string,
+		userData: Partial<User>,
+		options: { isChangeSecure?: boolean } = {}
+	): Promise<UserDto> {
 		const user = await this.getOne({ id: userId }, { withPassword: true });
 
 		if (!user) {
 			throw new NotFoundException('User does not exist');
 		}
 
-		const userToUpdate = await this.prepareUserToUpdate(userData, user);
+		await this.verifyUserUniqueData(userData, userId);
 
-		await this.usersRepository.update(userId, userToUpdate);
+		const userToUpdate = await this.prepareUserToUpdate(userData, user, options.isChangeSecure);
+
+		await this.usersRepository.update(user.id, userToUpdate);
 
 		return this.getOne({ id: userId });
 	}
@@ -140,21 +155,30 @@ export class UsersService {
 		};
 	}
 
-	private async prepareUserToCreate(userDto: CreateUserDto): Promise<User> {
+	private async prepareUserToCreate(createUser: CreateUserDto): Promise<User> {
 		const user = new User();
-		user.name = userDto.name;
-		user.phoneNumber = userDto.phoneNumber;
-		user.email = userDto.email;
-		user.googleEmail = userDto.googleEmail;
-		user.password = userDto.password ? await hash(userDto.password, argon2DefaultConfig) : undefined;
+		Object.assign(user, createUser);
+
+		if (user.password) {
+			user.password = await hash(user.password, argon2DefaultConfig);
+		}
 
 		return user;
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	private async prepareUserToUpdate(user: Partial<User>, initialData: UserDto & User): Promise<Partial<User>> {
+	private async prepareUserToUpdate(
+		user: Partial<User>,
+		initialData: User,
+		isChangeSecure = false
+	): Promise<Partial<User>> {
 		const userToUpdate: Partial<User> = {
-			...user,
+			...pick(initialData, ['id']),
+			...pick(user, ['name']),
+			...(isChangeSecure
+				? {
+						...pick(user, ['password, email', 'phoneNumber', 'googleEmail']),
+				  }
+				: {}),
 		};
 
 		if (userToUpdate.password) {
@@ -162,5 +186,19 @@ export class UsersService {
 		}
 
 		return userToUpdate;
+	}
+
+	private async verifyUserUniqueData(newData: Partial<User>, userId?: string): Promise<void> {
+		if (newData.email) {
+			await this.verifyIsEmailUnique(newData.email, userId);
+		}
+
+		if (newData.phoneNumber) {
+			await this.verifyIsPhoneUnique(newData.phoneNumber, userId);
+		}
+
+		if (newData.googleEmail) {
+			await this.verifyIsGoogleEmailUnique(newData.googleEmail, userId);
+		}
 	}
 }

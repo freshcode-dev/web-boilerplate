@@ -1,4 +1,4 @@
-import { UserDto } from '@boilerplate/shared';
+import { UpdateUserDataDto, UserDto } from '@boilerplate/shared';
 import api from '.';
 
 const usersApi = api.injectEndpoints({
@@ -8,9 +8,17 @@ const usersApi = api.injectEndpoints({
 				url: `users/user/${id}`,
 			}),
 		}),
+		updateUser: builder.mutation<UserDto, { id: string; data: UpdateUserDataDto }>({
+			query: ({ id, data }) => ({
+				url: `users/user/${id}`,
+				method: 'PUT',
+				body: data,
+			}),
+			invalidatesTags: ['UserProfile'],
+		}),
 	}),
 });
 
 export default usersApi;
 
-export const { useGetUserByIdQuery } = usersApi;
+export const { useGetUserByIdQuery, useUpdateUserMutation } = usersApi;

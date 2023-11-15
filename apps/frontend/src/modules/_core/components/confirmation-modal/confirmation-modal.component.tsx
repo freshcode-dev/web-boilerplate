@@ -4,7 +4,7 @@ import { CoreConfirmationModal, CoreConfirmationModalProps } from '../_ui/core-c
 
 type ButtonProps = Pick<CoreButtonProps, 'variant' | 'children' | 'sx' | 'type' | 'form'>;
 
-type ConfirmationModalProps = CoreConfirmationModalProps & {
+export type ConfirmationModalProps = CoreConfirmationModalProps & {
 	leftButtonProps?: ButtonProps;
 	rightButtonProps?: ButtonProps;
 	onSubmit?(): Promise<void> | void;

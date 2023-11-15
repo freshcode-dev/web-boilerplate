@@ -42,7 +42,7 @@ export const RestorePasswordForm: FC<RestorePasswordFormProps> = (props) => {
 
 	const handleFormSubmit = useCallback(
 		(values: EmailDto) => {
-			onSubmit(values, () => {
+			onSubmit({ ...values }, () => {
 				setError('email', { type: 'isEmail' });
 			});
 		},

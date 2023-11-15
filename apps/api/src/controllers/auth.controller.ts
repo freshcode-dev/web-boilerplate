@@ -1,12 +1,15 @@
-import { Body, Controller, Post, UseGuards, Request, Get, Req } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards, Request, Get, Req, Put } from '@nestjs/common';
 import { RealIP } from 'nestjs-real-ip';
 import { AuthService } from '../services/auth.service';
 import {
 	AuthResponseDto,
 	AuthVerifyDto,
+	AuthWithGoogle,
+	ChangeUserLoginDto,
+	ChangeUserLoginRequest,
 	EmailDto,
 	IdDto,
-	PasswordDto,
+	RestorePasswordDto,
 	SessionDto,
 	SignInWithEmailDto,
 	SignInWithPhoneDto,
@@ -14,7 +17,7 @@ import {
 	UserDto,
 } from '@boilerplate/shared';
 import { JwtRefreshGuard } from '../services/guard/jwt-refresh.guard';
-import { AuthRequest } from '../interfaces/auth-request';
+import { RequestWithAuth } from '../interfaces/auth-request';
 import { SessionsService } from '../services/sessions.service';
 import { UserAgent } from '../services/decorators/params/user-agent.decorator';
 import { JwtAuthGuard } from '../services/guard/jwt.guard';
@@ -31,7 +34,7 @@ export class AuthController {
 
 	@Get('profile')
 	@UseGuards(JwtAuthGuard)
-	async currentUser(@Request() req: AuthRequest): Promise<UserDto> {
+	async currentUser(@Request() req: RequestWithAuth): Promise<UserDto> {
 		const { sub: userId } = req.user;
 
 		return await this.usersService.getOne({ id: userId });
@@ -44,14 +47,18 @@ export class AuthController {
 
 	@Post('/google')
 	@LoggerSettings({ logRequestBody: false, logResponseBody: false })
-	public async googleAuthWithToken(@Body() body: { idToken: string }, @RealIP() ipAddress: string, @UserAgent() userAgent: string): Promise<AuthResponseDto> {
+	public async googleAuthWithToken(
+		@Body() body: AuthWithGoogle,
+		@RealIP() ipAddress: string,
+		@UserAgent() userAgent: string
+	): Promise<AuthResponseDto> {
 		return this.authService.signInWithGoogleToken(body.idToken, ipAddress, userAgent);
 	}
 
 	@Post('/google/assign')
 	@LoggerSettings({ logRequestBody: false, logResponseBody: false })
 	@UseGuards(JwtAuthGuard)
-	public async assignGoogle(@Req() req: AuthRequest, @Body() body: { idToken: string }): Promise<void> {
+	public async assignGoogle(@Req() req: RequestWithAuth, @Body() body: AuthWithGoogle): Promise<void> {
 		const { sub: userId } = req.user;
 
 		await this.authService.assignGoogleToUser(userId, body.idToken);
@@ -91,7 +98,7 @@ export class AuthController {
 	@LoggerSettings({ logRequestBody: false, logResponseBody: false })
 	@UseGuards(JwtRefreshGuard)
 	async refreshTokens(
-		@Request() req: AuthRequest,
+		@Request() req: RequestWithAuth,
 		@RealIP() ipAddress: string,
 		@UserAgent() userAgent: string
 	): Promise<AuthResponseDto> {
@@ -102,22 +109,38 @@ export class AuthController {
 
 	@Post('sign-out')
 	@UseGuards(JwtRefreshGuard)
-	async signOut(@Request() req: AuthRequest): Promise<SessionDto> {
+	async signOut(@Request() req: RequestWithAuth): Promise<SessionDto> {
 		const { sub: sessionId, jti: tokenId } = req.user;
 
 		return await this.sessionService.interruptSession(sessionId, tokenId);
 	}
 
-	@Post('restore-request')
-	public async restorePAsswordRequest(@Body() data: EmailDto): Promise<void> {
-		return await this.authService.restorePasswordRequest({ email: data.email });
+	@Post('restore-password-request')
+	public async restorePasswordRequest(@Body() data: EmailDto): Promise<void> {
+		return await this.authService.restorePasswordRequest(data);
 	}
 
 	@Post('restore-password')
 	@UseGuards(JwtAuthGuard)
-	public async restorePassword(@Req() req: AuthRequest, @Body() data: PasswordDto): Promise<void> {
+	public async restorePassword(@Req() req: RequestWithAuth, @Body() data: RestorePasswordDto): Promise<void> {
 		const { sub: userId } = req.user;
 
-		return await this.authService.restorePassword(userId, data.password);
+		return await this.authService.restorePassword(userId, data.password, data.code);
+	}
+
+	@Post('change-login-request')
+	@UseGuards(JwtAuthGuard)
+	async changeLoginRequest(@Req() req: RequestWithAuth, @Body() data: ChangeUserLoginRequest): Promise<void> {
+		const { sub: userId } = req.user;
+
+		return await this.authService.changeUserLoginRequest(userId, data);
+	}
+
+	@Put('change-login')
+	@UseGuards(JwtAuthGuard)
+	async changeLogin(@Req() req: RequestWithAuth, @Body() data: ChangeUserLoginDto): Promise<void> {
+		const { sub: userId } = req.user;
+
+		return await this.authService.changeUserLogin(userId, data);
 	}
 }

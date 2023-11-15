@@ -13,16 +13,25 @@
 		"restore-password": "Reset Password"
 	},
 	"profile": {
+		"edit": "Edit",
+		"confirm": "Confirm",
+		"user-data": "User Data",
+		"contact-info": "Contact Info",
 		"title": "Profile",
 		"name": "Name",
 		"email": "Email",
 		"phone": "Phone",
-		"googleAccount": "Google account",
-		"googleAccountNotConnected": "Not connected",
-		"googleAuth": "Auth with Google",
+		"google-account": "Google account",
+		"google-account-not-connected": "Not connected",
+		"google-auth": "Auth with Google",
 		"logout": "Logout",
+		"change-user-data-ph": "Change user data",
+		"change-email-ph": "Change login email",
+		"change-phone-ph": "Change login phone",
+		"change-password-ph": "Change password",
 		"sessions": {
-			"signOutAllSessions": "Sign out other sessions",
+			"current-session": "Current session",
+			"sign-out-all-sessions": "Sign out other sessions",
 			"table": {
 				"empty-title": "",
 				"empty-description": "No sessions",
@@ -48,8 +57,8 @@
 			"full-name": "Full name",
 			"phone-number": "Phone number",
 			"password-ph": "Enter Password",
-			"password": "Password",
-			"confirmPassword": "Confirm Password",
+			"new-password": "Password",
+			"confirm-password": "Confirm Password",
 			"email": "Email",
 			"confirm": "Next"
 		}
@@ -59,7 +68,7 @@
 		"account-sign-in": "Login to Personal Account",
 		"login-via-email": "Login via email",
 		"login-via-phone": "Login via phone",
-		"check-number-or-register": "Please check if the entered phone number is correct, or <0>Register</0>",
+		"check-phone-or-register": "Please check if the entered phone number is correct, or <0>Register</0>",
 		"check-email-or-register": "Please check if the entered email is correct, or <0>Register</0>",
 		"check-password-or-register": "Please check if the entered password is correct, or <0>Register</0>",
 		"register-link": "Don't have an account? <0>Register</0>",
@@ -97,6 +106,14 @@
 		"new-password": "Set up a new password",
 		"receive-email": "You should receive an email with a link to reset your password. If you don't receive it, please check your spam folder",
 		"restore-complete": "Your password has been successfully changed. <0>Log in</0>"
+	},
+	"errors": {
+		"phone-error": "Phone is required",
+		"email-error": "Email is required",
+		"password-error": "Password is required",
+		"name-error": "Name is required",
+		"phone-unique-error": "Phone number is already in use",
+		"email-unique-error": "Email is already in use"
 	},
 	"defaults": {
 		"modals": {

@@ -2,23 +2,27 @@
 	<head>
 		<meta charset='UTF-8' />
 		<meta name='viewport' content='width=device-width, initial-scale=1.0' />
-		<title>Email Verification</title>
+		<title>Email verification code</title>
 	</head>
 	<body>
 		<div>
 			<p>
-				You received this email because you created an account.
+				Two-factor verification code.
+				<br />
+				Reason:
+				{{reasonText}}
 			</p>
 
 			<p>
-				Authorization code is:
+				Your code:
 				{{code}}
 			</p>
 
 			<br />
 
 			<p>
-				If you did not create an account, please contact us.
+				This code will expire in 5 minutes.
+				{{footerReasonText}}
 			</p>
 		</div>
 	</body>

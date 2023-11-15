@@ -49,7 +49,7 @@ export const CodeConfirmationForm: FC<CodeConfirmationFormProps> = (props) => {
 		reset();
 
 		return onSubmit(
-			values,
+			{ ...values },
 			() => {
 				setError('code', { type: 'invalidCodeError' });
 			},

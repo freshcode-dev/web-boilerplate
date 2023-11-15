@@ -25,7 +25,7 @@ export const LoginErrorLabel: FC<LoginErrorLabelProps> = (props) => {
 
 		return (
 			<Trans
-				i18nKey={errorI18nKey ?? 'sign-in.check-number-or-register'}
+				i18nKey={errorI18nKey ?? 'sign-in.check-phone-or-register'}
 				components={[<CoreLinkButton to={AuthRoutes.SignUp} />]}
 			/>
 		);
