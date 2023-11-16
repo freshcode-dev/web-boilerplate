@@ -9,6 +9,8 @@ export const jwtConstants = {
 	resetPassTokenExpiresIn: '5min',
 };
 
+export const otpExpiresIn = '5min';
+
 /**
  * See argon2
  * [recommended configuration]{@link https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id}

@@ -5,14 +5,14 @@ import { randomUUID } from 'crypto';
 import { SessionDto, SessionFilter } from '@boilerplate/shared';
 import { Session } from '@boilerplate/data';
 import { TokensService } from '../services/tokens.service';
-import { ExternalApisService } from './external.service';
+import { ExternalApiService } from './external-api.service';
 
 @Injectable()
 export class SessionsService {
 	constructor(
 		@InjectRepository(Session) private readonly sessionRepository: Repository<Session>,
 		private readonly tokensService: TokensService,
-		private readonly externalApiService: ExternalApisService
+		private readonly externalApiService: ExternalApiService
 	) {}
 
 	public async updateSessionToken(

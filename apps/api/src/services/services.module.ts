@@ -18,7 +18,7 @@ import { LoggingModule } from '../core/logging/logging.module';
 import { GoogleAuthService } from './google-auth.service';
 import { MailerService } from './mailer.service';
 import { OTPService } from './otp.service';
-import { ExternalApisService } from './external.service';
+import { ExternalApiService } from './external-api.service';
 
 @Module({
 	imports: [
@@ -43,8 +43,8 @@ import { ExternalApisService } from './external.service';
 		GoogleAuthService,
 		MailerService,
 		OTPService,
-		ExternalApisService,
+		ExternalApiService,
 	],
-	exports: [UsersService, AuthService, SessionsService, TwilioService, ExternalApisService],
+	exports: [UsersService, AuthService, SessionsService, TwilioService, ExternalApiService],
 })
 export class ServicesModule {}

@@ -4,6 +4,11 @@ import * as nodemailer from 'nodemailer';
 import { SendMailModel } from '../interfaces/send-mail';
 import { IApiConfigParams } from '../interfaces/api-config-params';
 import { LoggerService } from '../core/logging/logger.service';
+import { emailCodeSubject, renderEmailCodeTemplate } from '../utils/templates/email-code.template';
+import { AuthReasonEnum, UserDto, VERIFICATION_CODE_LENGTH } from '@boilerplate/shared';
+import { OTPService } from './otp.service';
+import { TokensService } from './tokens.service';
+import { renderResetPassTemplate, resetPassSubject } from '../utils/templates/reset-pass.template';
 
 @Injectable()
 export class MailerService {
@@ -15,7 +20,12 @@ export class MailerService {
 
 	private readonly mailerClient: nodemailer.Transporter;
 
-	constructor(private readonly logger: LoggerService, private readonly configService: ConfigService<IApiConfigParams>) {
+	constructor(
+		private readonly logger: LoggerService,
+		private readonly configService: ConfigService<IApiConfigParams>,
+		private readonly otpService: OTPService,
+		private readonly tokensService: TokensService
+	) {
 		this.logger.setContext(MailerService.name);
 
 		this.enabled = this.configService.get('NX_ENABLE_SES') === 'true';
@@ -71,5 +81,42 @@ export class MailerService {
 		}
 
 		return true;
+	}
+
+	public async sendEmailVerificationCode(
+		toEmail: string,
+		code: string,
+		reason: AuthReasonEnum
+	): Promise<boolean | null> {
+		const subject = emailCodeSubject();
+		const body = await renderEmailCodeTemplate({ code, reason });
+
+		const isEmailSent = await this.sendMail({
+			to: toEmail,
+			subject,
+			body,
+		});
+
+		return isEmailSent;
+	}
+
+	public async sendPasswordRestoreEmail(toEmail: string, user: UserDto): Promise<void> {
+		const tempAccessToken = await this.tokensService.generateResetPassJwt(user.id);
+		const otpCode = await this.otpService.createOtpCodeEntry(VERIFICATION_CODE_LENGTH, toEmail);
+		const resetLink = `${this.configService.get(
+			'NX_FRONTED_URL'
+		)}/auth/restore-password/?token=${tempAccessToken}&code=${otpCode}`;
+
+		const subject = resetPassSubject();
+		const body = await renderResetPassTemplate({
+			profile: user,
+			resetLink,
+		});
+
+		await this.sendMail({
+			to: toEmail,
+			subject,
+			body,
+		});
 	}
 }

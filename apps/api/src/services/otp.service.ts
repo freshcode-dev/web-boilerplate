@@ -1,114 +1,86 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { IsNull, MoreThan, Repository } from 'typeorm';
-import { TLatestSavedCode, TSendOtpCodeAsyncFunc, TVerifyOtpCodeAsyncFunc } from '../interfaces/otp';
+import { TLatestSavedCode } from '../interfaces/otp';
 import { OTPEntity } from '@boilerplate/data';
+import { AuthReasonEnum, VERIFICATION_CODE_LENGTH } from '@boilerplate/shared';
+import { MailerService } from './mailer.service';
+import { createCodeEntry, sendOtpCode, verifyOtpCode } from '../utils/send-otp.utils';
+import { TwilioService } from './twillio.service';
 import { IApiConfigParams } from '../interfaces/api-config-params';
-import { isBoolean, isNil } from 'lodash';
-import { randomUUID } from 'crypto';
 
 @Injectable()
 export class OTPService {
 	constructor(
 		@InjectRepository(OTPEntity) private readonly otpRepository: Repository<OTPEntity>,
-		private readonly configService: ConfigService<IApiConfigParams>
+		private readonly configService: ConfigService<IApiConfigParams>,
+		private readonly mailerService: MailerService,
+		private readonly twilioService: TwilioService
 	) {}
 
-	public async createOtpCode(codeLength: number, assignee: string): Promise<string> {
-		const codeEntry = this.createCodeEntry(codeLength, assignee);
-
-		await this.storeOtpCodeInDB(codeEntry);
+	public async createOtpCodeEntry(codeLength: number, assignee: string): Promise<string> {
+		const codeEntry = await createCodeEntry(codeLength, assignee, async (codeEntry) => {
+			await this.storeOtpCodeInDB(codeEntry);
+		});
 
 		return codeEntry.code;
 	}
 
-	public sendOtpCode: TSendOtpCodeAsyncFunc = async ({ codeLength, assignee }, storeCodeEntry, sendCode) => {
-		const codeEntry = this.createCodeEntry(codeLength, assignee);
+	public async sendOtpToPhone(toPhone: string): Promise<void> {
+		await this.twilioService.createVerification(toPhone);
+	}
 
-		await storeCodeEntry(codeEntry);
+	public async sendOtpToEmail(toEmail: string, reason: AuthReasonEnum): Promise<void> {
+		await sendOtpCode(
+			{
+				codeLength: VERIFICATION_CODE_LENGTH,
+				assignee: toEmail,
+			},
+			async (code: TLatestSavedCode) => {
+				await this.storeOtpCodeInDB(code);
+			},
+			async (code: string) => {
+				const isEmailSent = await this.mailerService.sendEmailVerificationCode(toEmail, code, reason);
 
-		await sendCode(codeEntry.code);
+				if (isEmailSent === false) throw new BadRequestException('Cannot send email');
+			}
+		);
+	}
 
-		return codeEntry.code;
-	};
+	public async verifyOtpFromPhone(fromPhone: string, code: string): Promise<void> {
+		if (!this.twilioService.enabled) return;
 
-	public verifyOtpCode: TVerifyOtpCodeAsyncFunc = async ({ code, assignee }, getCodeEntries, markCodeAsUsed) => {
-		const codeEntry = await this.getValidOTP(code, assignee, getCodeEntries);
+		await this.twilioService.approveVerification(fromPhone, code);
+	}
 
-		if (!isNil(codeEntry) && !isBoolean(codeEntry)) {
-			await markCodeAsUsed(codeEntry);
-		}
+	public async verifyOtpFromEmail(fromEmail: string, code: string): Promise<void> {
+		if (!this.mailerService.enabled) return;
 
-		if (!codeEntry) {
-			throw new ForbiddenException('Invalid verification code!');
-		}
+		await verifyOtpCode(
+			{
+				assignee: fromEmail,
+				code,
+			},
+			async (assignee) => await this.getOtpsByAssigneeFromDB(assignee),
+			async (code) => {
+				await this.markOTPAsUsedInDB(code);
+			}
+		);
+	}
 
-		return true;
-	};
-
-	public async storeOtpCodeInDB(code: TLatestSavedCode): Promise<void> {
+	private async storeOtpCodeInDB(code: TLatestSavedCode): Promise<void> {
 		await this.otpRepository.save(code);
 	}
 
-	public async getOtpsByAssigneeFromDB(assignee: string): Promise<TLatestSavedCode[]> {
+	private async getOtpsByAssigneeFromDB(assignee: string): Promise<TLatestSavedCode[]> {
 		return await this.otpRepository.find({
 			where: { assignee, usedAt: IsNull(), expiresAt: MoreThan(new Date()) },
 			take: 5,
 		});
 	}
 
-	public async markOTPAsUsedInDB(code: TLatestSavedCode): Promise<void> {
+	private async markOTPAsUsedInDB(code: TLatestSavedCode): Promise<void> {
 		await this.otpRepository.update(code.code, { usedAt: new Date() });
-	}
-
-	public async getValidOTP(
-		code: string,
-		assignee: string,
-		getCodeEntries: (assignee: string) => Promise<TLatestSavedCode[]>
-	): Promise<TLatestSavedCode | undefined | boolean> {
-		if (this.configService.get('NX_ENABLE_SES') !== 'true') {
-			return true;
-		}
-
-		const codeEntries = await getCodeEntries(assignee);
-
-		const validOtp = codeEntries.find((codeEntry) => this.verifyCodeEntry(codeEntry, code));
-
-		return validOtp;
-	}
-
-	private createCodeEntry(codeLength: number, assignee: string): TLatestSavedCode {
-		const code = this.createCodeString(codeLength);
-
-		const issuedAt = new Date();
-
-		return {
-			code,
-			createdAt: issuedAt,
-			expiresAt: this.getCodeExpireDate(issuedAt),
-			assignee,
-		};
-	}
-
-	private createCodeString(codeLength: number): string {
-		const uuid = randomUUID();
-
-		const symbs = uuid.replace(/-/g, '');
-
-		return symbs.slice(0, codeLength);
-	}
-
-	private verifyCodeEntry(codeEntry: TLatestSavedCode, code: string): boolean {
-		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-		if (!codeEntry || codeEntry?.usedAt || codeEntry?.code !== code || codeEntry?.expiresAt <= new Date()) {
-			return false;
-		}
-
-		return true;
-	}
-
-	private getCodeExpireDate(issuedAt: Date) {
-		return new Date(issuedAt.getTime() + 1000 * 60 * 5);
 	}
 }
