@@ -53,7 +53,7 @@ export class TokensService {
 		};
 	}
 
-	private getRefreshTokenExpiresIn(isRememberMe = false): string {
+	private getRefreshTokenExpiresIn(isRememberMe = true): string {
 		return isRememberMe
 			? jwtConstants.refreshTokenExpiresIn
 			: jwtConstants.shortRefreshTokenExpiresIn;

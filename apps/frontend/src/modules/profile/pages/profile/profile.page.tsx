@@ -9,7 +9,8 @@ import { CoreNavTabs, NavTab } from '../../../_core/components/_ui/core-nav-tabs
 import { ProfileRoutes } from '../../constants';
 
 export const ProfilePage: FC = () => {
-	const { data } = useGetProfileQuery();
+	const { data: profile } = useGetProfileQuery();
+
 	const dispatch = useAppDispatch();
 
 	const [t] = useTranslation();
@@ -40,7 +41,7 @@ export const ProfilePage: FC = () => {
 		<Container component="main" maxWidth="xl">
 			<CoreNavTabs tabs={tabs} />
 
-			{data && <ProfileCard profile={data} onLogout={handleLogout} />}
+			{profile && <ProfileCard profile={profile} onLogout={handleLogout} />}
 		</Container>
 	);
 };

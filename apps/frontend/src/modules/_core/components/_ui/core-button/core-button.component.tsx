@@ -39,5 +39,3 @@ export const CoreButton: FC<CoreButtonProps> = (props) => {
 		</Component>
 	);
 };
-
-export default CoreButton;

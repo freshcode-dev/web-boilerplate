@@ -6,14 +6,14 @@ import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
-import CoreButton from '../../../_core/components/_ui/core-button/core-button.component';
-import { FormControlsContainer } from '../_ui/form-controls/form-controls-container.component';
+import { CoreButton } from '../../../_core/components/_ui/core-button';
+import { FormControlsContainer } from '../_ui/form-controls';
 import { PhoneInput } from '../../../_core/components/_ui/phone-input';
 import { errorMessage } from '../../../_core/utils/lang.utils';
-import LoginErrorLabel from './login-error-label.component';
+import { LoginErrorLabel } from './login-error-label.component';
 import { formElementStyles, linkStyles, titleStyles } from './login-form.styles';
 import { PhoneDto, RememberMeDto } from '@boilerplate/shared';
-import { CoreLabeledCheckbox } from '../../../_core/components/_ui/core-labeled-checkbox/core-labeled-checkbox.component';
+import { CoreLabeledCheckbox } from '../../../_core/components/_ui/core-labeled-checkbox';
 import { AuthRoutes } from '../../constants';
 
 const resolver = classValidatorResolver(PhoneDto);
@@ -25,7 +25,7 @@ export interface LoginWithPhoneFormProps {
 	onSubmit(values: PhoneDto & RememberMeDto, markError: () => void): void;
 }
 
-const LoginWithPhoneForm: FC<LoginWithPhoneFormProps> = (props) => {
+export const LoginWithPhoneForm: FC<LoginWithPhoneFormProps> = (props) => {
 	const { error, onSubmit, phoneNumber, rememberMe } = props;
 
 	const [t] = useTranslation();
@@ -33,6 +33,7 @@ const LoginWithPhoneForm: FC<LoginWithPhoneFormProps> = (props) => {
 	const {
 		register,
 		control,
+		watch,
 		handleSubmit,
 		setError,
 		formState: { errors, isValid, isSubmitted, isDirty, isSubmitting },
@@ -43,6 +44,8 @@ const LoginWithPhoneForm: FC<LoginWithPhoneFormProps> = (props) => {
 			rememberMe,
 		},
 	});
+
+	const watchRememberMe = watch('rememberMe');
 
 	const disableSubmit = !isValid && (isDirty || isSubmitted);
 
@@ -75,7 +78,7 @@ const LoginWithPhoneForm: FC<LoginWithPhoneFormProps> = (props) => {
 				helperText={errorMessage(t, errors.phoneNumber?.type)}
 			/>
 			<Box sx={formElementStyles}>
-				<CoreLabeledCheckbox {...register('rememberMe')} label={t('sign-in.sign-in-form.remember-me')} />
+				<CoreLabeledCheckbox {...register('rememberMe')} checked={watchRememberMe} label={t('sign-in.sign-in-form.remember-me')} />
 			</Box>
 			<LoginErrorLabel error={error} />
 			<FormControlsContainer>
@@ -86,5 +89,3 @@ const LoginWithPhoneForm: FC<LoginWithPhoneFormProps> = (props) => {
 		</Box>
 	);
 };
-
-export default LoginWithPhoneForm;

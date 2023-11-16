@@ -1,15 +1,15 @@
 import React, { FC, useCallback } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { FormControlsContainer } from '../_ui/form-controls/form-controls-container.component';
-import CoreButton from '../../../_core/components/_ui/core-button/core-button.component';
+import { FormControlsContainer } from '../_ui/form-controls';
+import { CoreButton } from '../../../_core/components/_ui/core-button';
 import { useForm, Controller } from 'react-hook-form';
 import { OtpInput } from '../../../_core/components/_ui/otp-input';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { AuthReasonEnum, ConfirmationCodeDto, VERIFICATION_CODE_LENGTH } from '@boilerplate/shared';
 import { SerializedError } from '@reduxjs/toolkit';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
-import ConfirmationErrorLabel from './phone-confirmation-error-label.component';
+import { ConfirmationErrorLabel } from './phone-confirmation-error-label.component';
 import { titleStyles, labelStyles } from './phone-confirmation-form.styles';
 import { useSendOtpMutation } from '../../../../store/api/auth.api';
 
@@ -22,7 +22,7 @@ interface PhoneConfirmationFormProps {
 	onBack(): void;
 }
 
-const PhoneConfirmationForm: FC<PhoneConfirmationFormProps> = (props) => {
+export const PhoneConfirmationForm: FC<PhoneConfirmationFormProps> = (props) => {
 	const { phoneNumber, error, onBack, onSubmit } = props;
 
 	const [t] = useTranslation();
@@ -127,5 +127,3 @@ const PhoneConfirmationForm: FC<PhoneConfirmationFormProps> = (props) => {
 		</Box>
 	);
 };
-
-export default PhoneConfirmationForm;

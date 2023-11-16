@@ -10,7 +10,7 @@ interface SignupErrorLabelProps {
 	error?: SerializedError | FetchBaseQueryError;
 }
 
-const SignupErrorLabel: FC<SignupErrorLabelProps> = (props) => {
+export const SignupErrorLabel: FC<SignupErrorLabelProps> = (props) => {
 	const { error } = props;
 
 	const [t] = useTranslation();
@@ -63,5 +63,3 @@ const SignupErrorLabel: FC<SignupErrorLabelProps> = (props) => {
 		</Typography>
 	);
 };
-
-export default SignupErrorLabel;

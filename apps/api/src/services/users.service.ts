@@ -9,6 +9,10 @@ import { DatabaseError } from 'pg';
 import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
 
+interface FindUserOptions {
+	doMapping?: boolean;
+}
+
 @Injectable()
 export class UsersService {
 	constructor(
@@ -16,14 +20,22 @@ export class UsersService {
 		@InjectMapper() private readonly mapper: Mapper
 	) {}
 
-	public async findOne(instance: Partial<UserDto>): Promise<User | null> {
+	public async findOne(instance: Partial<UserDto>, { doMapping = true }: FindUserOptions = {}): Promise<User | null> {
 		const user = await this.usersRepository.findOne({ where: instance });
 
-		return this.mapper.map(user, User, UserDto);
+		if (!user) {
+			return null;
+		}
+
+		if (doMapping) {
+			return this.mapper.map(user, User, UserDto);
+		}
+
+		return user;
 	}
 
-	public async getOne(instance: Partial<UserDto>): Promise<UserDto> {
-		const user = await this.findOne(instance);
+	public async getOne(instance: Partial<UserDto>, options?: FindUserOptions): Promise<UserDto> {
+		const user = await this.findOne(instance, options);
 
 		if (!user) {
 			throw new NotFoundException('This user does not exist');

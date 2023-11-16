@@ -1,15 +1,15 @@
 import React, { FC, useCallback } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { FormControlsContainer } from '../_ui/form-controls/form-controls-container.component';
-import CoreButton from '../../../_core/components/_ui/core-button/core-button.component';
+import { FormControlsContainer } from '../_ui/form-controls';
+import { CoreButton } from '../../../_core/components/_ui/core-button';
 import { useForm } from 'react-hook-form';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { PasswordDto } from '@boilerplate/shared';
 import { SerializedError } from '@reduxjs/toolkit';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
 import { titleStyles } from '../login-form/login-form.styles';
-import LoginErrorLabel from '../login-form/login-error-label.component';
+import { LoginErrorLabel } from '../login-form';
 import { CorePasswordInput } from '../../../_core/components/_ui/core-password-input';
 
 const resolver = classValidatorResolver(PasswordDto);

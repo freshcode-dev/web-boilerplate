@@ -11,17 +11,19 @@ const GSIClientContext = createContext<GSIClientContextType>({
 export const useGSIClientContext = () => useContext(GSIClientContext);
 
 type GSIClientContextProviderProps = {
+	isEnabled?: boolean;
 	clientId: string;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	callback(response: any): void;
 };
 
 export const GSIClientContextProvider: FC<PropsWithChildren<GSIClientContextProviderProps>> = ({
+	isEnabled,
 	clientId,
 	callback,
 	children,
 }) => {
-	if (!clientId) {
+	if (!clientId && isEnabled) {
 		throw new Error('Google API client id is required');
 	}
 
@@ -35,7 +37,9 @@ export const GSIClientContextProvider: FC<PropsWithChildren<GSIClientContextProv
 	);
 
 	useEffect(() => {
-		if (typeof window === 'undefined') {
+		if (typeof window === 'undefined' || !isEnabled) {
+			setIsLoaded(true);
+
 			return;
 		}
 

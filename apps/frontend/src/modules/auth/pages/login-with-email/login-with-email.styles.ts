@@ -11,9 +11,15 @@ export const wrapperStyles: SxProps<Theme> = [
 	({ breakpoints, shape }) => ({
 		[breakpoints.down('sm')]: {
 			px: 2,
-			bgcolor: theme => theme.colors.white,
+			bgcolor: (theme) => theme.colors.white,
 			borderBottomLeftRadius: shape.borderRadius,
-			borderBottomRightRadius: shape.borderRadius
-		}
-	})
+			borderBottomRightRadius: shape.borderRadius,
+		},
+	}),
 ];
+
+export const googleAuthRowStyles: SxProps<Theme> = {
+	display: 'flex',
+	alignItems: 'center',
+	justifyContent: 'center',
+};

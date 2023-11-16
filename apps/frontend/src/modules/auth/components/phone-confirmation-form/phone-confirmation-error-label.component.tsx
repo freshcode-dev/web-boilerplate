@@ -1,9 +1,9 @@
-import { FC } from "react";
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
-import { Typography } from "@mui/material";
-import { Trans } from "react-i18next";
-import CoreLinkButton from "../../../_core/components/_ui/core-button/core-link-button.component";
+import { FC } from 'react';
+import { SerializedError } from '@reduxjs/toolkit';
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
+import { Typography } from '@mui/material';
+import { Trans } from 'react-i18next';
+import CoreLinkButton from '../../../_core/components/_ui/core-button/core-link-button.component';
 
 interface ConfirmationErrorLabelProps {
 	error?: SerializedError | FetchBaseQueryError;
@@ -12,7 +12,7 @@ interface ConfirmationErrorLabelProps {
 	onResend?(): void;
 }
 
-const ConfirmationErrorLabel: FC<ConfirmationErrorLabelProps> = (props) => {
+export const ConfirmationErrorLabel: FC<ConfirmationErrorLabelProps> = (props) => {
 	const { submitting, error, onResend, otpError } = props;
 
 	const getErrorText = () => {
@@ -46,13 +46,13 @@ const ConfirmationErrorLabel: FC<ConfirmationErrorLabelProps> = (props) => {
 				{
 					mt: 2,
 					textAlign: 'center',
-					color: ({ colors }) => (hasError ? colors.red : colors.black)
+					color: ({ colors }) => (hasError ? colors.red : colors.black),
 				},
 				({ breakpoints }) => ({
 					[breakpoints.down('sm')]: {
-						mt: 3
-					}
-				})
+						mt: 3,
+					},
+				}),
 			]}
 		>
 			<Trans
@@ -62,13 +62,11 @@ const ConfirmationErrorLabel: FC<ConfirmationErrorLabelProps> = (props) => {
 						disabled={submitting}
 						onClick={onResend}
 						sx={{
-							color: ({ colors }) => (hasError ? colors.red : colors.blue)
+							color: ({ colors }) => (hasError ? colors.red : colors.blue),
 						}}
-					/>
+					/>,
 				]}
 			/>
 		</Typography>
 	);
 };
-
-export default ConfirmationErrorLabel;

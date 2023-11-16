@@ -8,21 +8,16 @@ import Root from './root';
 import './i18n';
 import './index.scss';
 import { HelmetProvider } from 'react-helmet-async';
-import ModalProvider from 'mui-modal-provider';
 
-const root = ReactDOM.createRoot(
-	document.getElementById('root') as HTMLElement
-);
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 
 root.render(
 	<StrictMode>
 		<HelmetProvider>
 			<Provider store={store}>
 				<RootThemeProvider>
-					<ModalProvider>
-						<CssBaseline />
-						<Root />
-					</ModalProvider>
+					<CssBaseline />
+					<Root />
 				</RootThemeProvider>
 			</Provider>
 		</HelmetProvider>

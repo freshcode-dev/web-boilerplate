@@ -113,7 +113,7 @@ export class AuthService {
 	}
 
 	public async verifyUserEmailCredentials(email: string, password: string): Promise<UserDto> {
-		const user = await this.usersService.findOne({ email });
+		const user = await this.usersService.findOne({ email }, { doMapping: false });
 
 		if (!user?.password) {
 			throw new UnauthorizedException('This user does not exist');

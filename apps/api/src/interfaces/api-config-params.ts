@@ -11,6 +11,7 @@ export interface IApiConfigParams extends IDatabaseConfigParams {
 	TWILIO_VERIFY_SID: string;
 	TWILIO_VERIFY_RATE_LIMIT: string;
 
+	NX_ENABLE_GOOGLE_AUTH: string;
 	NX_GOOGLE_API_CLIENT_ID: string;
 	NX_GOOGLE_API_CLIENT_SECRET: string;
 	NX_GOOGLE_API_REDIRECT_URL: string;

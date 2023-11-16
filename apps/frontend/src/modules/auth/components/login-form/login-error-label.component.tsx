@@ -11,7 +11,7 @@ interface LoginErrorLabelProps {
 	errorI18nKey?: string;
 }
 
-const LoginErrorLabel: FC<LoginErrorLabelProps> = (props) => {
+export const LoginErrorLabel: FC<LoginErrorLabelProps> = (props) => {
 	const { error, errorI18nKey } = props;
 
 	const [t] = useTranslation();
@@ -55,5 +55,3 @@ const LoginErrorLabel: FC<LoginErrorLabelProps> = (props) => {
 		</Typography>
 	);
 };
-
-export default LoginErrorLabel;

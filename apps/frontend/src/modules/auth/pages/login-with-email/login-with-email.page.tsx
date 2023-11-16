@@ -1,14 +1,14 @@
 import React, { FC, useCallback, useEffect, useState } from 'react';
 import { Box, Container } from '@mui/material';
-import LoginFooter from '../../components/_ui/login-footer/login-footer.component';
-import DocumentTitle from '../../../_core/components/_ui/document-title/document-title.component';
-import { useAuthWithGoogleTokenMutation, useSignInWithEmailMutation } from '../../../../store/api/auth.api';
+import { LoginFooter } from '../../components/_ui/login-footer';
+import { DocumentTitle } from '../../../_core/components/_ui/document-title';
+import { useSignInWithEmailMutation } from '../../../../store/api/auth.api';
 import { SIGN_IN_CACHE_KEY } from '../../constants/auth-cache.constants';
-import { containerStyles, wrapperStyles } from './login-with-email.styles';
+import { containerStyles, googleAuthRowStyles, wrapperStyles } from './login-with-email.styles';
 import { useLangParam } from '../../hooks/use-lang-param.hook';
 import { getErrorStatusCode } from '../../../_core/utils/error.utils';
 import { EmailDto, PasswordDto, RememberMeDto } from '@boilerplate/shared';
-import LoginWithEmailForm from '../../components/login-form/login-email-form.component';
+import { LoginWithEmailForm } from '../../components/login-form';
 import PasswordForm from '../../components/password-form/password-form.component';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { SerializedError } from '@reduxjs/toolkit';
@@ -28,15 +28,13 @@ const LoginWithEmailPage: FC = () => {
 		fixedCacheKey: SIGN_IN_CACHE_KEY,
 	});
 
-	const [authWithGoogleToken, { reset: resetAuthWithGoogleToken }] = useAuthWithGoogleTokenMutation();
-
 	const [signInError, setSignInError] = useState<FetchBaseQueryError | SerializedError | undefined>();
 
 	const [{ activeForm, email, rememberMe }, setFormsState] = useState<FormsState>({
 		activeForm: 'email',
 		email: null,
 		password: null,
-		rememberMe: false,
+		rememberMe: true,
 	});
 
 	const handleLoginFormSubmit = useCallback(async ({ email, rememberMe }: EmailDto & RememberMeDto, markError: () => void) => {
@@ -83,31 +81,24 @@ const LoginWithEmailPage: FC = () => {
 		[signInEmail, email, rememberMe]
 	);
 
-	const handleLoginWithGoogle = useCallback(async (response: { credential: string }) => {
-		const idToken = response.credential;
-
-		await authWithGoogleToken(idToken);
-	}, [authWithGoogleToken]);
-
 	useEffect(
 		() => () => {
 			resetSignIn();
-			resetAuthWithGoogleToken();
 		},
-		[resetSignIn, resetAuthWithGoogleToken]
+		[resetSignIn]
 	);
 
 	return (
 		<Container sx={containerStyles}>
 			<DocumentTitle />
 			<Box sx={wrapperStyles}>
-				{activeForm === 'email' && <LoginWithEmailForm onSubmit={handleLoginFormSubmit} email={email ?? undefined} />}
+				{activeForm === 'email' && <LoginWithEmailForm onSubmit={handleLoginFormSubmit} email={email ?? undefined} rememberMe={rememberMe} />}
 				{activeForm === 'password' && (
 					<PasswordForm error={signInError} onSubmit={handlePasswordSubmit} onBack={goToLoginForm} />
 				)}
 			</Box>
-			<Box>
-				<GoogleAuthButton onSuccess={handleLoginWithGoogle} />
+			<Box sx={googleAuthRowStyles}>
+				<GoogleAuthButton />
 			</Box>
 			<LoginFooter />
 		</Container>

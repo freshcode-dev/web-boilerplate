@@ -1,6 +1,6 @@
 import { FC, useRef, useEffect } from 'react';
 import { GSIClientContextProvider } from '../../../contexts/gsi-client.context';
-import { configService } from '../../../../_core';
+import { googleApiClientId, isGoogleAuthEnabled } from '../../../../../constants';
 
 export interface GoogleAuthButtonProps {
 	type?: 'standard' | 'icon';
@@ -11,7 +11,7 @@ export interface GoogleAuthButtonProps {
 	logoAlignment?: 'left' | 'center';
 	show?: boolean;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	onSuccess(response: any): void;
+	onSuccess?(response: any): void;
 	setButtonRef?(ref: Element | null): void;
 }
 
@@ -48,17 +48,34 @@ const GoogleAuthButton: FC<GoogleAuthButtonProps> = ({
 		setButtonRef?.(divButton);
 	}, [type, theme, size, text, shape, logoAlignment, setButtonRef]);
 
+	if (!isGoogleAuthEnabled) {
+		return null;
+	}
+
+	if (onSuccess) {
+		return (
+			<GSIClientContextProvider isEnabled={isGoogleAuthEnabled} clientId={googleApiClientId} callback={onSuccess}>
+				<div
+					id="google-auth-button"
+					className="custom-google-button"
+					ref={buttonRef}
+					style={{
+						...(show ? {} : { display: 'none' }),
+					}}
+				></div>
+			</GSIClientContextProvider>
+		);
+	}
+
 	return (
-		<GSIClientContextProvider clientId={configService.get('NX_GOOGLE_API_CLIENT_ID') as string} callback={onSuccess}>
-			<div
-				id="google-auth-button"
-				className="custom-google-button"
-				ref={buttonRef}
-				style={{
-					...(show ? {} : { display: 'none' }),
-				}}
-			></div>
-		</GSIClientContextProvider>
+		<div
+			id="google-auth-button"
+			className="custom-google-button"
+			ref={buttonRef}
+			style={{
+				...(show ? {} : { display: 'none' }),
+			}}
+		/>
 	);
 };
 

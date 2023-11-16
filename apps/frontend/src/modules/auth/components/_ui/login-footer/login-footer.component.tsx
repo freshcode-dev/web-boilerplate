@@ -5,7 +5,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { containerStyles, linkStyles } from './login-footer.styles';
 import { AuthRoutes } from '../../../constants';
 
-const LoginFooter: FC = () => {
+export const LoginFooter: FC = () => {
 	useTranslation();
 
 	return (
@@ -26,5 +26,3 @@ const LoginFooter: FC = () => {
 		</Box>
 	);
 };
-
-export default LoginFooter;

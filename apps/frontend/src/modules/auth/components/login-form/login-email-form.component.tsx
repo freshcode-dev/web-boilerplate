@@ -6,40 +6,45 @@ import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
-import { FormControlsContainer } from '../_ui/form-controls/form-controls-container.component';
-import CoreButton from '../../../_core/components/_ui/core-button/core-button.component';
+import { FormControlsContainer } from '../_ui/form-controls';
+import { CoreButton } from '../../../_core/components/_ui/core-button';
 import { errorMessage } from '../../../_core/utils/lang.utils';
-import LoginErrorLabel from './login-error-label.component';
+import { LoginErrorLabel } from './login-error-label.component';
 import { formElementStyles, linkStyles, titleStyles } from './login-form.styles';
 import { EmailDto, RememberMeDto } from '@boilerplate/shared';
 import { CoreTextField } from '../../../_core/components/_ui/core-textfield';
-import { CoreLabeledCheckbox } from '../../../_core/components/_ui/core-labeled-checkbox/core-labeled-checkbox.component';
+import { CoreLabeledCheckbox } from '../../../_core/components/_ui/core-labeled-checkbox';
 import { AuthRoutes } from '../../constants';
 
 const resolver = classValidatorResolver(EmailDto);
 
-export interface LoginWithPhoneFormProps {
-	error?: FetchBaseQueryError | SerializedError;
+export interface LoginWithEmailFormProps {
 	email?: string;
+	rememberMe?: boolean;
+	error?: FetchBaseQueryError | SerializedError;
 	onSubmit(values: EmailDto & RememberMeDto, markError: () => void): void;
 }
 
-const LoginWithEmailForm: FC<LoginWithPhoneFormProps> = (props) => {
-	const { error, onSubmit, email } = props;
+export const LoginWithEmailForm: FC<LoginWithEmailFormProps> = (props) => {
+	const { error, onSubmit, email, rememberMe } = props;
 
 	const [t] = useTranslation();
 
 	const {
 		register,
 		handleSubmit,
+		watch,
 		setError,
 		formState: { errors, isValid, isSubmitted, isDirty, isSubmitting },
 	} = useForm<EmailDto & RememberMeDto>({
 		resolver,
 		defaultValues: {
 			email,
+			rememberMe,
 		},
 	});
+
+	const watchRememberMe = watch('rememberMe');
 
 	const disableSubmit = !isValid && (isDirty || isSubmitted);
 
@@ -73,7 +78,7 @@ const LoginWithEmailForm: FC<LoginWithPhoneFormProps> = (props) => {
 				autoComplete="email"
 			/>
 			<Box sx={formElementStyles}>
-				<CoreLabeledCheckbox {...register('rememberMe')} label={t('sign-in.sign-in-form.remember-me')} />
+				<CoreLabeledCheckbox {...register('rememberMe')} checked={watchRememberMe} label={t('sign-in.sign-in-form.remember-me')} />
 			</Box>
 			<LoginErrorLabel error={error} />
 			<FormControlsContainer>
@@ -84,5 +89,3 @@ const LoginWithEmailForm: FC<LoginWithPhoneFormProps> = (props) => {
 		</Box>
 	);
 };
-
-export default LoginWithEmailForm;
