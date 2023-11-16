@@ -10,6 +10,7 @@ export const jwtConstants = {
 };
 
 export const otpExpiresIn = '5min';
+export const otpResendTimeout = '30sec';
 
 /**
  * See argon2

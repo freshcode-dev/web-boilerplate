@@ -1,5 +1,7 @@
 import { Body, Controller, Post, UseGuards, Request, Get, Req, Put } from '@nestjs/common';
 import { RealIP } from 'nestjs-real-ip';
+import { Throttle } from '@nestjs/throttler';
+import ms from 'ms';
 import { AuthService } from '../services/auth.service';
 import {
 	AuthResponseDto,
@@ -24,6 +26,7 @@ import { UserAgent } from '../services/decorators/params/user-agent.decorator';
 import { JwtAuthGuard } from '../services/guard/jwt.guard';
 import { UsersService } from '../services/users.service';
 import { LoggerSettings } from '../services/decorators/route/logging-settings.decorator';
+import { otpResendTimeout } from '../constants';
 
 @Controller('auth')
 export class AuthController {
@@ -41,9 +44,10 @@ export class AuthController {
 		return await this.usersService.getOneUser({ id: userId });
 	}
 
+	@Throttle({ default: { limit: 1, ttl: ms(otpResendTimeout) } })
 	@Post('send-otp')
 	async sendOtp(@Body() verify: AuthVerifyDto): Promise<IdDto> {
-		return await this.authService.sendOtp(verify);
+		return await this.authService.sendOtpVerification(verify);
 	}
 
 	@Post('/google')

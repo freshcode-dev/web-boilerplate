@@ -70,6 +70,7 @@ const authApi = api.injectEndpoints({
 				method: 'POST',
 				body: { idToken },
 			}),
+			invalidatesTags: ['UserProfile'],
 		}),
 		registerWithEmail: builder.mutation<AuthResponseDto, SignUpWithEmailDto>({
 			query: (data) => ({
@@ -151,6 +152,7 @@ const authApi = api.injectEndpoints({
 						}
 					: {}),
 			}),
+			invalidatesTags: ['UserProfile'],
 			extraOptions: {
 				skipAuth: true,
 			},
@@ -168,6 +170,7 @@ const authApi = api.injectEndpoints({
 				method: 'PUT',
 				body: data,
 			}),
+			invalidatesTags: ['UserProfile'],
 		}),
 		changePassword: builder.mutation<void, ChangeUserPasswordDto>({
 			query: (data) => ({
@@ -175,6 +178,7 @@ const authApi = api.injectEndpoints({
 				method: 'PUT',
 				body: data,
 			}),
+			invalidatesTags: ['UserProfile'],
 		}),
 	}),
 });

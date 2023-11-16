@@ -16,8 +16,8 @@ import { UserProfile } from './profiles/user.profile';
 import { TwilioService } from './twillio.service';
 import { LoggingModule } from '../core/logging/logging.module';
 import { GoogleAuthService } from './google-auth.service';
-import { MailerService } from './mailer.service';
 import { OTPService } from './otp.service';
+import { MailerService } from './mailer.service';
 import { ExternalApiService } from './external-api.service';
 
 @Module({
@@ -41,8 +41,8 @@ import { ExternalApiService } from './external-api.service';
 		JwtRefreshStrategy,
 		TwilioService,
 		GoogleAuthService,
-		MailerService,
 		OTPService,
+		MailerService,
 		ExternalApiService,
 	],
 	exports: [UsersService, AuthService, SessionsService, TwilioService, ExternalApiService],

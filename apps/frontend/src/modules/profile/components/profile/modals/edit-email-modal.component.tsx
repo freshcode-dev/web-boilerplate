@@ -1,11 +1,10 @@
 import { FC, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CoreModal } from '../../../../_core/components/_ui/core-modal';
-import { ConfirmationCodeDto, EmailDto } from '@boilerplate/shared';
+import { AuthReasonEnum, ConfirmationCodeDto, EmailDto } from '@boilerplate/shared';
 import {
 	useChangeLoginMutation,
 	useChangeLoginRequestMutation,
-	useGetProfileQuery,
 } from '../../../../../store/api/auth.api';
 import { EmailForm, CodeConfirmationForm } from '../../../../auth';
 import { getErrorStatusCode, getFieldFromConflictError } from '../../../../_core/utils/error.utils';
@@ -27,7 +26,6 @@ export const EditEmailModal: FC<EditEmailModalProps> = (props) => {
 
 	const [t] = useTranslation();
 
-	const { refetch: refetchProfile } = useGetProfileQuery();
 	const [changeLoginRequest] = useChangeLoginRequestMutation();
 	const [changeLogin] = useChangeLoginMutation();
 
@@ -75,7 +73,6 @@ export const EditEmailModal: FC<EditEmailModalProps> = (props) => {
 				if (!newEmail) return;
 
 				await changeLogin({ email: newEmail, code });
-				await refetchProfile();
 
 				onClose?.();
 			} catch (error) {
@@ -94,7 +91,7 @@ export const EditEmailModal: FC<EditEmailModalProps> = (props) => {
 				setChangeEmailError(error as Error);
 			}
 		},
-		[changeLogin, newEmail, onClose, refetchProfile]
+		[changeLogin, newEmail, onClose]
 	);
 
 	const goBack = useCallback(() => {
@@ -117,6 +114,7 @@ export const EditEmailModal: FC<EditEmailModalProps> = (props) => {
 			)}
 			{activeForm === 'code' && (
 				<CodeConfirmationForm
+					reason={AuthReasonEnum.ChangeEmail}
 					email={newEmail as string}
 					onSubmit={handleSubmitModal}
 					error={changeEmailError ?? undefined}

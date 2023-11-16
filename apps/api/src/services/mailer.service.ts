@@ -5,8 +5,7 @@ import { SendMailModel } from '../interfaces/send-mail';
 import { IApiConfigParams } from '../interfaces/api-config-params';
 import { LoggerService } from '../core/logging/logger.service';
 import { emailCodeSubject, renderEmailCodeTemplate } from '../utils/templates/email-code.template';
-import { AuthReasonEnum, UserDto, VERIFICATION_CODE_LENGTH } from '@boilerplate/shared';
-import { OTPService } from './otp.service';
+import { AuthReasonEnum, UserDto } from '@boilerplate/shared';
 import { TokensService } from './tokens.service';
 import { renderResetPassTemplate, resetPassSubject } from '../utils/templates/reset-pass.template';
 
@@ -23,7 +22,6 @@ export class MailerService {
 	constructor(
 		private readonly logger: LoggerService,
 		private readonly configService: ConfigService<IApiConfigParams>,
-		private readonly otpService: OTPService,
 		private readonly tokensService: TokensService
 	) {
 		this.logger.setContext(MailerService.name);
@@ -100,9 +98,8 @@ export class MailerService {
 		return isEmailSent;
 	}
 
-	public async sendPasswordRestoreEmail(toEmail: string, user: UserDto): Promise<void> {
+	public async sendPasswordRestoreEmail(toEmail: string, user: UserDto, otpCode: string): Promise<void> {
 		const tempAccessToken = await this.tokensService.generateResetPassJwt(user.id);
-		const otpCode = await this.otpService.createOtpCodeEntry(VERIFICATION_CODE_LENGTH, toEmail);
 		const resetLink = `${this.configService.get(
 			'NX_FRONTED_URL'
 		)}/auth/restore-password/?token=${tempAccessToken}&code=${otpCode}`;

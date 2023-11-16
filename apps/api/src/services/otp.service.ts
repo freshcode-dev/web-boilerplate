@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ConfigService } from '@nestjs/config';
 import { IsNull, MoreThan, Repository } from 'typeorm';
 import { TLatestSavedCode } from '../interfaces/otp';
 import { OTPEntity } from '@boilerplate/data';
@@ -8,13 +7,11 @@ import { AuthReasonEnum, VERIFICATION_CODE_LENGTH } from '@boilerplate/shared';
 import { MailerService } from './mailer.service';
 import { createCodeEntry, sendOtpCode, verifyOtpCode } from '../utils/send-otp.utils';
 import { TwilioService } from './twillio.service';
-import { IApiConfigParams } from '../interfaces/api-config-params';
 
 @Injectable()
 export class OTPService {
 	constructor(
 		@InjectRepository(OTPEntity) private readonly otpRepository: Repository<OTPEntity>,
-		private readonly configService: ConfigService<IApiConfigParams>,
 		private readonly mailerService: MailerService,
 		private readonly twilioService: TwilioService
 	) {}

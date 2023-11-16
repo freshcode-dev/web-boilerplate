@@ -22,7 +22,7 @@ export const LoginWithEmailForm: FC<LoginWithEmailFormProps> = (props) => {
 
 	return (
 		<Box>
-			<Typography variant="h1" sx={titleStyles}>
+			<Typography variant="h3" sx={titleStyles}>
 				{t('sign-in.account-sign-in')}
 			</Typography>
 

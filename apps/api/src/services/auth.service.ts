@@ -6,7 +6,6 @@ import {
 	NotFoundException,
 	UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { verify } from 'argon2';
 import { UsersService } from './users.service';
 import {
@@ -28,33 +27,23 @@ import {
 import { argon2DefaultConfig } from '../constants';
 import { SessionsService } from './sessions.service';
 import { TokensService } from './tokens.service';
-import { TwilioService } from './twillio.service';
 import { GoogleAuthService } from './google-auth.service';
 import { MailerService } from './mailer.service';
 import { OTPService } from './otp.service';
-import { TLatestSavedCode } from '../interfaces/otp';
-import {
-	EmailCodeReasonsEnum,
-	emailCodeSubject,
-	renderEmailCodeTemplate,
-} from '../utils/templates/email-code.template';
-import { renderResetPassTemplate, resetPassSubject } from '../utils/templates/reset-pass.template';
 
 @Injectable()
 export class AuthService {
 	constructor(
-		private readonly configService: ConfigService,
 		private readonly usersService: UsersService,
 		private readonly sessionService: SessionsService,
-		private readonly tokensService: TokensService,
 		private readonly googleAuthService: GoogleAuthService,
+		private readonly tokensService: TokensService,
 		private readonly mailerService: MailerService,
-		private readonly twilioService: TwilioService,
 		private readonly otpService: OTPService
 	) {}
 
 	// eslint-disable-next-line complexity
-	public async sendOtp(payload: AuthVerifyDto): Promise<IdDto> {
+	public async sendOtpVerification(payload: AuthVerifyDto): Promise<IdDto> {
 		const { phoneNumber, email, reason } = payload;
 
 		const user = await this.usersService.findOneUser([{ phoneNumber }, { email }]);
@@ -66,21 +55,27 @@ export class AuthService {
 		}
 
 		let id = '';
+
 		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+		const userPhone = phoneNumber || user?.phoneNumber;
 		const userEmail = email || user?.email;
 
+		const canSendOtpToPhone = reason !== AuthReasonEnum.ChangePhoneNumber;
+		const canSendOtpToEmail = reason !== AuthReasonEnum.ChangeEmail;
+
 		// send otp
-		if (reason === AuthReasonEnum.SignUp && userEmail) {
+		// prefer phone over email
+		if (userPhone && canSendOtpToPhone) {
+			await this.sendOtpToAssignee('phone', userPhone);
+
+			id = userPhone;
+		} else if (userEmail && canSendOtpToEmail) {
+			await this.sendOtpToAssignee('email', userEmail, reason);
+
 			id = userEmail;
-			await this.sendOtpToEmail(userEmail as string, EmailCodeReasonsEnum.SignUp);
-		} else if (reason === AuthReasonEnum.SignIn && phoneNumber) {
-			id = phoneNumber;
-			await this.sendOtpToPhone(phoneNumber);
 		}
 
-		return {
-			id,
-		};
+		return { id };
 	}
 
 	public async registerWithEmail(
@@ -90,7 +85,7 @@ export class AuthService {
 	): Promise<AuthResponseDto> {
 		const { code, ...createUser } = payload;
 
-		await this.verifyOtpEmail(createUser.email, code);
+		await this.verifyOtp('email', createUser.email, code);
 
 		const user = await this.usersService.createUser(createUser);
 
@@ -138,7 +133,7 @@ export class AuthService {
 	}
 
 	public async verifyUserPhoneCredentials(phoneNumber: string, code: string): Promise<UserDto> {
-		await this.twilioService.approveVerification(phoneNumber, code);
+		await this.verifyOtp('phone', phoneNumber, code);
 
 		return await this.usersService.getOneUser({ phoneNumber });
 	}
@@ -226,7 +221,7 @@ export class AuthService {
 		const user = await this.usersService.getOneUser({ email });
 
 		if (user.email) {
-			await this.sendPasswordRestoreEmail(user.email, user);
+			await this.sendPasswordRestoreEmail(email, user);
 		}
 	}
 
@@ -235,7 +230,7 @@ export class AuthService {
 
 		if (!user.email) throw new BadRequestException('User does not have an email');
 
-		await this.verifyOtpEmail(user.email, code);
+		await this.verifyOtp('email', user.email, code);
 
 		await this.usersService.updateUser(
 			userId,
@@ -254,11 +249,11 @@ export class AuthService {
 		if (email && user.phoneNumber) {
 			await this.usersService.verifyIsEmailUnique(email);
 
-			await this.sendOtpToPhone(user.phoneNumber as string);
+			await this.sendOtpVerification({ phoneNumber: user.phoneNumber as string, reason: AuthReasonEnum.ChangeEmail });
 		} else if (phoneNumber && user.email) {
 			await this.usersService.verifyIsPhoneUnique(phoneNumber);
 
-			await this.sendOtpToEmail(user.email as string, EmailCodeReasonsEnum.ChangePhoneNumber);
+			await this.sendOtpVerification({ email: user.email as string, reason: AuthReasonEnum.ChangePhoneNumber });
 		}
 	}
 
@@ -268,7 +263,7 @@ export class AuthService {
 		const user = await this.usersService.getOneUser({ id: userId });
 
 		if (email && user.phoneNumber) {
-			await this.twilioService.approveVerification(user.phoneNumber, code);
+			await this.verifyOtp('phone', user.phoneNumber, code);
 
 			await this.usersService.updateUser(
 				userId,
@@ -280,7 +275,7 @@ export class AuthService {
 				}
 			);
 		} else if (phoneNumber && user.email) {
-			await this.verifyOtpEmail(user.email, code);
+			await this.verifyOtp('email', user.email, code);
 
 			await this.usersService.updateUser(
 				userId,
@@ -308,63 +303,27 @@ export class AuthService {
 		);
 	}
 
-	private async sendOtpToPhone(phoneNumber: string): Promise<void> {
-		await this.twilioService.createVerification(phoneNumber);
-	}
-
-	private async sendOtpToEmail(toEmail: string, reason: EmailCodeReasonsEnum): Promise<void> {
-		await this.otpService.sendOtpCode(
-			{
-				codeLength: VERIFICATION_CODE_LENGTH,
-				assignee: toEmail,
-			},
-			async (code: TLatestSavedCode) => this.otpService.storeOtpCodeInDB(code),
-			async (code: string) => {
-				const subject = emailCodeSubject();
-				const body = await renderEmailCodeTemplate({ code, reason });
-
-				const isEmailSent = await this.mailerService.sendMail({
-					to: toEmail,
-					subject,
-					body,
-				});
-
-				if (isEmailSent === false) throw new BadRequestException('Cannot send email');
-			}
-		);
-	}
-
 	private async sendPasswordRestoreEmail(toEmail: string, user: UserDto): Promise<void> {
-		const tempAccessToken = await this.tokensService.generateResetPassJwt(user.id);
-		const otpCode = await this.otpService.createOtpCode(VERIFICATION_CODE_LENGTH, toEmail);
-		const resetLink = `${this.configService.get(
-			'NX_FRONTED_URL'
-		)}/auth/restore-password/?token=${tempAccessToken}&code=${otpCode}`;
+		// INFO: create code outside from `sendPasswordRestoreEmail` method to resolve circular dependency MailerService <-> OTPService
+		const otpCode = await this.otpService.createOtpCodeEntry(VERIFICATION_CODE_LENGTH, toEmail);
 
-		const subject = resetPassSubject();
-		const body = await renderResetPassTemplate({
-			profile: user,
-			resetLink,
-		});
-
-		await this.mailerService.sendMail({
-			to: toEmail,
-			subject,
-			body,
-		});
+		await this.mailerService.sendPasswordRestoreEmail(toEmail, user, otpCode);
 	}
 
-	private async verifyOtpEmail(email: string, code: string): Promise<void> {
-		await this.otpService.verifyOtpCode(
-			{
-				assignee: email,
-				code,
-			},
-			async (assignee) => await this.otpService.getOtpsByAssigneeFromDB(assignee),
-			async (code) => {
-				await this.otpService.markOTPAsUsedInDB(code);
-			}
-		);
+	private async sendOtpToAssignee(type: 'email' | 'phone', assignee: string, reason?: AuthReasonEnum): Promise<void> {
+		if (type === 'email' && reason) {
+			await this.otpService.sendOtpToEmail(assignee, reason);
+		} else if (type === 'phone') {
+			await this.otpService.sendOtpToPhone(assignee);
+		}
+	}
+
+	private async verifyOtp(type: 'email' | 'phone', assignee: string, code: string): Promise<void> {
+		if (type === 'email') {
+			await this.otpService.verifyOtpFromEmail(assignee, code);
+		} else if (type === 'phone') {
+			await this.otpService.verifyOtpFromPhone(assignee, code);
+		}
 	}
 
 	private async createSession(

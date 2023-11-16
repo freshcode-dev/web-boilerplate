@@ -1,43 +1,36 @@
+import { AuthReasonEnum } from '@boilerplate/shared';
 import { TemplateNamesEnum, compileHbsTemplate } from '.';
 
 export const emailCodeSubject = () => 'Email verification code';
 
-export const emailReasonText = (reason: EmailCodeReasonsEnum) => {
+export const emailReasonText = (reason: AuthReasonEnum) => {
 	switch (reason) {
-		case EmailCodeReasonsEnum.SignIn:
+		case AuthReasonEnum.SignIn:
 			return 'Sign in';
-		case EmailCodeReasonsEnum.SignUp:
+		case AuthReasonEnum.SignUp:
 			return 'Sign up';
-		case EmailCodeReasonsEnum.ChangeEmail:
+		case AuthReasonEnum.ChangeEmail:
 			return 'Change login email';
 		default:
 			return 'Email verification';
 	}
 };
 
-export const emailFooterReasonText = (reason: EmailCodeReasonsEnum) => {
+export const emailFooterReasonText = (reason: AuthReasonEnum) => {
 	switch (reason) {
-		case EmailCodeReasonsEnum.SignIn:
+		case AuthReasonEnum.SignIn:
 			return "If you haven't logged in recently, someone else might be trying to access your account. In such case please change your password immediately or contact us.";
-		case EmailCodeReasonsEnum.SignUp:
+		case AuthReasonEnum.SignUp:
 			return "If you haven't registered an account recently, someone else might be trying to create account for your email. In such case please contact us.";
-		case EmailCodeReasonsEnum.ChangeEmail:
+		case AuthReasonEnum.ChangeEmail:
 			return "If you haven't requested a change of email recently, someone else might be trying to change your login email. In such case please contact us.";
 		default:
 			return '';
 	}
 };
-
-export enum EmailCodeReasonsEnum {
-	SignIn = 'signIn',
-	SignUp = 'signUp',
-	ChangeEmail = 'changeEmail',
-	ChangePhoneNumber = 'changePhoneNumber',
-}
-
 export interface IEmailCodeTemplate {
 	code: string;
-	reason: EmailCodeReasonsEnum;
+	reason: AuthReasonEnum;
 	reasonText?: string;
 	footerReasonText?: string;
 }

@@ -8,8 +8,7 @@ import { randomUUID } from 'crypto';
 
 @Injectable()
 export class TokensService {
-	constructor(private readonly jwtService: JwtService) {
-	}
+	constructor(private readonly jwtService: JwtService) {}
 
 	public getAccessExpirationDate(issuedAt: Date): Date {
 		return addSeconds(issuedAt, ms(jwtConstants.accessTokenExpiresIn) / 1000);
@@ -33,7 +32,7 @@ export class TokensService {
 
 		return {
 			accessToken,
-			refreshToken
+			refreshToken,
 		};
 	}
 
@@ -51,7 +50,7 @@ export class TokensService {
 			{
 				expiresIn: this.getAccessTokenExpiresIn(isResetPass),
 				secret: jwtConstants.accessTokenSecret,
-				jwtid: tokenId
+				jwtid: tokenId,
 			}
 		);
 	}
@@ -62,20 +61,16 @@ export class TokensService {
 			{
 				expiresIn: this.getRefreshTokenExpiresIn(rememberMe),
 				secret: jwtConstants.refreshTokenSecret,
-				jwtid: tokenId
+				jwtid: tokenId,
 			}
 		);
 	}
 
 	private getRefreshTokenExpiresIn(isRememberMe = true): string {
-		return isRememberMe
-			? jwtConstants.refreshTokenExpiresIn
-			: jwtConstants.shortRefreshTokenExpiresIn;
+		return isRememberMe ? jwtConstants.refreshTokenExpiresIn : jwtConstants.shortRefreshTokenExpiresIn;
 	}
 
 	private getAccessTokenExpiresIn(isResetPass = false): string {
-		return isResetPass
-			? jwtConstants.resetPassTokenExpiresIn
-			: jwtConstants.accessTokenExpiresIn;
+		return isResetPass ? jwtConstants.resetPassTokenExpiresIn : jwtConstants.accessTokenExpiresIn;
 	}
 }

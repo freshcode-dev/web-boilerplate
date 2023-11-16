@@ -1,11 +1,10 @@
 import { FC, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CoreModal } from '../../../../_core/components/_ui/core-modal';
-import { ConfirmationCodeDto, PhoneDto } from '@boilerplate/shared';
+import { AuthReasonEnum, ConfirmationCodeDto, PhoneDto } from '@boilerplate/shared';
 import {
 	useChangeLoginMutation,
 	useChangeLoginRequestMutation,
-	useGetProfileQuery,
 } from '../../../../../store/api/auth.api';
 import { CodeConfirmationForm, PhoneForm } from '../../../../auth';
 import { getErrorStatusCode, getFieldFromConflictError } from '../../../../_core/utils/error.utils';
@@ -27,7 +26,6 @@ export const EditPhoneModal: FC<EditPhoneModalProps> = (props) => {
 
 	const [t] = useTranslation();
 
-	const { refetch: refetchProfile } = useGetProfileQuery();
 	const [changeLoginRequest] = useChangeLoginRequestMutation();
 	const [changeLogin] = useChangeLoginMutation();
 
@@ -75,7 +73,6 @@ export const EditPhoneModal: FC<EditPhoneModalProps> = (props) => {
 				if (!newPhone) return;
 
 				await changeLogin({ phoneNumber: newPhone, code });
-				await refetchProfile();
 
 				onClose?.();
 			} catch (error) {
@@ -94,7 +91,7 @@ export const EditPhoneModal: FC<EditPhoneModalProps> = (props) => {
 				setChangePhoneError(error as Error);
 			}
 		},
-		[changeLogin, newPhone, onClose, refetchProfile]
+		[changeLogin, newPhone, onClose]
 	);
 
 	const goBack = useCallback(() => {
@@ -117,6 +114,7 @@ export const EditPhoneModal: FC<EditPhoneModalProps> = (props) => {
 			)}
 			{activeForm === 'code' && (
 				<CodeConfirmationForm
+					reason={AuthReasonEnum.ChangePhoneNumber}
 					email={newPhone as string}
 					onSubmit={handleSubmitModal}
 					error={changePhoneError ?? undefined}

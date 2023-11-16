@@ -5,7 +5,6 @@ import { CoreModal } from '../../../../_core/components/_ui/core-modal';
 import { ChangeUserDataForm } from '../../change-user-data-form';
 import { useUpdateUserMutation } from '../../../../../store/api/users.api';
 import { getErrorStatusCode, getFieldFromConflictError } from '../../../../_core/utils/error.utils';
-import { useGetProfileQuery } from '../../../../../store/api/auth.api';
 
 export interface EditUserDataModalProps {
 	data: UserDto;
@@ -18,15 +17,12 @@ export const EditUserDataModal: FC<EditUserDataModalProps> = (props) => {
 
 	const [t] = useTranslation();
 
-	const { refetch: refetchProfile } = useGetProfileQuery();
 	const [updateUser] = useUpdateUserMutation();
 
 	const handleSubmitModal = useCallback(
 		async (values: UpdateUserDataDto, markError: (field?: string) => void) => {
 			try {
 				await updateUser({ id: data.id, data: values });
-
-				await refetchProfile();
 
 				onClose?.();
 			} catch (error) {
@@ -43,7 +39,7 @@ export const EditUserDataModal: FC<EditUserDataModalProps> = (props) => {
 				}
 			}
 		},
-		[data.id, onClose, updateUser, refetchProfile]
+		[data.id, onClose, updateUser]
 	);
 
 	return (
