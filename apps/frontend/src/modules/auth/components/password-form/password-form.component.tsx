@@ -14,13 +14,13 @@ import { CorePasswordInput } from '../../../_core/components/_ui/core-password-i
 
 const resolver = classValidatorResolver(PasswordDto);
 
-interface PasswordFormProps {
+export interface PasswordFormProps {
 	error?: SerializedError | FetchBaseQueryError;
 	onSubmit(value: PasswordDto, markError: () => void): Promise<void> | void;
 	onBack(): void;
 }
 
-const PasswordForm: FC<PasswordFormProps> = (props) => {
+export const PasswordForm: FC<PasswordFormProps> = (props) => {
 	const { error, onBack, onSubmit } = props;
 
 	const [t] = useTranslation();
@@ -68,5 +68,3 @@ const PasswordForm: FC<PasswordFormProps> = (props) => {
 		</Box>
 	);
 };
-
-export default PasswordForm;

@@ -9,3 +9,4 @@ export { ReactComponent as SearchLarge } from '../../../assets/icons/SearchLarge
 export { ReactComponent as Sort } from '../../../assets/icons/Sort.svg';
 export { ReactComponent as SortDesc } from '../../../assets/icons/SortDesc.svg';
 export { ReactComponent as SortAsc } from '../../../assets/icons/SortAsc.svg';
+export { ReactComponent as AppLogo } from '../../../assets/icons/AppLogo.svg';

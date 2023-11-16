@@ -11,8 +11,8 @@ export const AuthModuleRouter: RouteObject[] = [
 		element: <Navigate to={AuthRoutes.LoginEmail} />,
 		handle: { title: 'nav.sign-in' },
 	},
-	{ path: AuthRoutes.LoginEmail, element: <LoginWithEmailPage />, handle: { title: 'nav.sign-in' } },
-	{ path: AuthRoutes.LoginPhone, element: <LoginWithPhonePage />, handle: { title: 'nav.sign-in' } },
+	{ path: AuthRoutes.LoginEmail, element: <LoginWithEmailPage />, handle: { title: 'nav.sign-in-with-email' } },
+	{ path: AuthRoutes.LoginPhone, element: <LoginWithPhonePage />, handle: { title: 'nav.sign-in-with-phone' } },
 	{ path: AuthRoutes.SignUp, element: <SignUpWithEmailPage />, handle: { title: 'nav.sign-up' } },
 ];
 

@@ -13,23 +13,6 @@ export const titleStyles: SxProps<Theme> = [
 	}),
 ];
 
-export const linkStyles: SxProps<Theme> = [
-	{
-		display: 'block',
-		color: (theme) => theme.colors.gray,
-		mb: 3,
-		textDecorationColor: 'inherit',
-		'&:hover': {
-			textDecoration: 'underline',
-		},
-	},
-	({ breakpoints }) => ({
-		[breakpoints.down('sm')]: {
-			mb: 1,
-		},
-	}),
-];
-
 export const formElementStyles: SxProps<Theme> = [
 	{
 		mb: 1,

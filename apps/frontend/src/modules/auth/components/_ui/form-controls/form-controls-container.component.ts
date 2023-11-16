@@ -5,7 +5,7 @@ import { HTMLAttributes } from 'react';
 export const FormControlsContainer: StyledComponent<HTMLAttributes<HTMLDivElement>> = styled('div')(({ theme }) => ({
 	display: 'flex',
 	justifyContent: 'center',
-	paddingTop: theme.spacing(6),
+	paddingTop: theme.spacing(4),
 	paddingBottom: theme.spacing(4),
 
 	[theme.breakpoints.down('sm')]: {

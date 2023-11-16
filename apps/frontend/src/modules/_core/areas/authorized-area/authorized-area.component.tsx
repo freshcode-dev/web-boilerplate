@@ -1,8 +1,8 @@
 import React, { FC } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { usePageTitle } from '../hooks';
-import { AreaProviders } from './area-providers.component';
+import { usePageTitle } from '../../hooks';
+import { AreaProviders } from '../area-providers.component';
 
 const AuthorizedArea: FC = () => {
 	const pageTitle = usePageTitle();

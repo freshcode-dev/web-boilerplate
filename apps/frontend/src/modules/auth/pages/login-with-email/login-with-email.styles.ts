@@ -1,13 +1,12 @@
 import { SxProps, Theme } from '@mui/material';
 
-export const containerStyles: SxProps<Theme> = {
-	display: 'flex',
-	flexDirection: 'column',
-	flexGrow: 1,
-};
-
-export const wrapperStyles: SxProps<Theme> = [
-	{ flex: 1 },
+export const containerStyles: SxProps<Theme> = [
+	{
+		display: 'flex',
+		flexDirection: 'column',
+		flexGrow: 1,
+		pb: 4,
+	},
 	({ breakpoints, shape }) => ({
 		[breakpoints.down('sm')]: {
 			px: 2,
@@ -17,6 +16,8 @@ export const wrapperStyles: SxProps<Theme> = [
 		},
 	}),
 ];
+
+export const wrapperStyles: SxProps<Theme> = { flex: 1 };
 
 export const googleAuthRowStyles: SxProps<Theme> = {
 	display: 'flex',

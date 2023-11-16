@@ -1,19 +1,20 @@
 import { SxProps, Theme } from '@mui/material';
 
-export const containerStyles: SxProps<Theme> = {
-	display: 'flex',
-	flexDirection: 'column',
-	flexGrow: 1,
-};
-
-export const wrapperStyles: SxProps<Theme> = [
-	{ flex: 1 },
+export const containerStyles: SxProps<Theme> = [
+	{
+		display: 'flex',
+		flexDirection: 'column',
+		flexGrow: 1,
+		pb: 4,
+	},
 	({ breakpoints, shape }) => ({
 		[breakpoints.down('sm')]: {
 			px: 2,
-			bgcolor: theme => theme.colors.white,
+			bgcolor: (theme) => theme.colors.white,
 			borderBottomLeftRadius: shape.borderRadius,
-			borderBottomRightRadius: shape.borderRadius
-		}
-	})
+			borderBottomRightRadius: shape.borderRadius,
+		},
+	}),
 ];
+
+export const wrapperStyles: SxProps<Theme> = { flex: 1 };

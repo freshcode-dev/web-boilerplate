@@ -5,16 +5,14 @@ import { SerializedError } from '@reduxjs/toolkit';
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
-import { Link } from 'react-router-dom';
 import { FormControlsContainer } from '../_ui/form-controls';
 import { CoreButton } from '../../../_core/components/_ui/core-button';
 import { errorMessage } from '../../../_core/utils/lang.utils';
 import { LoginErrorLabel } from './login-error-label.component';
-import { formElementStyles, linkStyles, titleStyles } from './login-form.styles';
+import { formElementStyles, titleStyles } from './login-form.styles';
 import { EmailDto, RememberMeDto } from '@boilerplate/shared';
 import { CoreTextField } from '../../../_core/components/_ui/core-textfield';
 import { CoreLabeledCheckbox } from '../../../_core/components/_ui/core-labeled-checkbox';
-import { AuthRoutes } from '../../constants';
 
 const resolver = classValidatorResolver(EmailDto);
 
@@ -59,13 +57,9 @@ export const LoginWithEmailForm: FC<LoginWithEmailFormProps> = (props) => {
 
 	return (
 		<Box component="form" noValidate onSubmit={handleSubmit(handleFormSubmit)}>
-			<Typography variant="h1" sx={titleStyles}>
+			<Typography variant="h3" sx={titleStyles}>
 				{t('sign-in.account-sign-in')}
 			</Typography>
-			<Box
-				sx={linkStyles}
-				component={(props) => <Link {...props} to={AuthRoutes.LoginPhone} children="Login using phone" />}
-			/>
 			<CoreTextField
 				sx={formElementStyles}
 				{...register('email')}

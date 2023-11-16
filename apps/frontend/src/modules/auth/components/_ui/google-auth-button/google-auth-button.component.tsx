@@ -15,7 +15,7 @@ export interface GoogleAuthButtonProps {
 	setButtonRef?(ref: Element | null): void;
 }
 
-const GoogleAuthButton: FC<GoogleAuthButtonProps> = ({
+export const GoogleAuthButton: FC<GoogleAuthButtonProps> = ({
 	show = true,
 	type,
 	theme = 'filled_blue',
@@ -78,5 +78,3 @@ const GoogleAuthButton: FC<GoogleAuthButtonProps> = ({
 		/>
 	);
 };
-
-export default GoogleAuthButton;

@@ -1,14 +1,13 @@
 import React, { FC, useCallback, useEffect, useState } from 'react';
+import { Box, Container } from '@mui/material';
 import { DocumentTitle } from '../../../_core/components/_ui/document-title';
 import { useRegisterWithEmailMutation } from '../../../../store/api/auth.api';
 import { REGISTER_CACHE_KEY } from '../../constants/auth-cache.constants';
-import { Box, Container } from '@mui/material';
 import { containerStyles } from './signup-with-email.styles';
 import { useLangParam } from '../../hooks/use-lang-param.hook';
 import { SignUpWithEmailFormData } from '../../models/sign-up-form.dto';
-import SignUpWithEmailForm from '../../components/signup-form/signup-email-form.component';
-import RegisterFooter from '../../components/_ui/register-footer/register-footer.component';
-import GoogleAuthButton from '../../components/_ui/google-auth-button/google-auth-button.component';
+import { SignUpWithEmailForm } from '../../components/signup-form';
+import { GoogleAuthButton } from '../../components/_ui/google-auth-button';
 import { googleAuthRowStyles } from '../login-with-email/login-with-email.styles';
 
 interface FormsState {
@@ -53,11 +52,12 @@ export const SignUpWithEmailPage: FC = () => {
 	return (
 		<Container sx={containerStyles}>
 			<DocumentTitle />
+
 			<SignUpWithEmailForm profile={profile} onSubmit={handleSignupSubmit} error={registerError} />
+
 			<Box sx={googleAuthRowStyles}>
 				<GoogleAuthButton />
 			</Box>
-			<RegisterFooter route="email" />
 		</Container>
 	);
 };

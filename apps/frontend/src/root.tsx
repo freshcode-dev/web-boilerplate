@@ -9,8 +9,8 @@ import { StyledExamplesRouter } from './modules/styles-examples';
 import { ProfileModuleRouter } from './modules/profile/profile.router';
 import { RootRoutes } from './constants';
 
-const AuthorizedArea = lazy(async () => import('./modules/_core/areas/authorized-area.component'));
-const UnauthorizedArea = lazy(async () => import('./modules/_core/areas/unauthorized-area.component'));
+const AuthorizedArea = lazy(async () => import('./modules/_core/areas/authorized-area/authorized-area.component'));
+const UnauthorizedArea = lazy(async () => import('./modules/_core/areas/unauthorized-area/unauthorized-area.component'));
 
 const Root: FC = () => {
 	useAuthSubscription();

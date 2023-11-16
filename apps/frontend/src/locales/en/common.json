@@ -5,7 +5,8 @@
 	"nav": {
 		"root-title": "Boilerplate",
 		"styled": "Styled Examples",
-		"sign-in": "Login",
+		"sign-in-with-email": "Login with email",
+		"sign-in-with-phone": "Login with phone",
 		"sign-up": "Register",
 		"profile": "Profile",
 		"security": "Security"

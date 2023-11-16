@@ -23,7 +23,7 @@ export interface SignUpWithEmailFormProps {
 	onSubmit(values: SignUpWithEmailFormData, markError: () => void): void;
 }
 
-const SignUpWithEmailForm: FC<SignUpWithEmailFormProps> = (props) => {
+export const SignUpWithEmailForm: FC<SignUpWithEmailFormProps> = (props) => {
 	const { error, onSubmit, profile } = props;
 
 	const [t] = useTranslation();
@@ -56,7 +56,7 @@ const SignUpWithEmailForm: FC<SignUpWithEmailFormProps> = (props) => {
 
 	return (
 		<Box component="form" noValidate onSubmit={handleSubmit(handleFormSubmit)}>
-			<Typography variant="h1" sx={titleStyles}>
+			<Typography variant="h3" sx={titleStyles}>
 				{t('sign-up.account-register')}
 			</Typography>
 			<CoreTextField
@@ -101,7 +101,6 @@ const SignUpWithEmailForm: FC<SignUpWithEmailFormProps> = (props) => {
 				id="confirm-password"
 				placeholder={t('sign-up.registration-form.confirmPassword') ?? ''}
 				label={t('sign-up.registration-form.confirmPassword')}
-				controlSx={textFieldWrapperStyles}
 				{...register('confirmPassword')}
 				error={!!errors.confirmPassword}
 				autoComplete='off'
@@ -115,5 +114,3 @@ const SignUpWithEmailForm: FC<SignUpWithEmailFormProps> = (props) => {
 		</Box>
 	);
 };
-
-export default SignUpWithEmailForm;

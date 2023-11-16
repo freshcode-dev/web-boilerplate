@@ -5,6 +5,7 @@ export const containerStyles: SxProps<Theme> = [
 		display: 'flex',
 		flexDirection: 'column',
 		flex: 1,
+		pb: 4,
 	},
 	({ breakpoints, shape }) => ({
 		[breakpoints.down('sm')]: {
