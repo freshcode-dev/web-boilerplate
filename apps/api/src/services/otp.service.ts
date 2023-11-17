@@ -5,7 +5,7 @@ import { TLatestSavedCode } from '../interfaces/otp';
 import { OTPEntity } from '@boilerplate/data';
 import { AuthReasonEnum, VERIFICATION_CODE_LENGTH } from '@boilerplate/shared';
 import { MailerService } from './mailer.service';
-import { createCodeEntry, sendOtpCode, verifyOtpCode } from '../utils/send-otp.utils';
+import { createCodeEntry, resendCodeEntry, sendNewOtpCode, verifyOtpCode } from '../utils/send-otp.utils';
 import { TwilioService } from './twillio.service';
 
 @Injectable()
@@ -16,20 +16,37 @@ export class OTPService {
 		private readonly twilioService: TwilioService
 	) {}
 
-	public async createOtpCodeEntry(codeLength: number, assignee: string): Promise<string> {
-		const codeEntry = await createCodeEntry(codeLength, assignee, async (codeEntry) => {
+	public async createOtpCodeEntry(assignee: string): Promise<string> {
+		const codeEntry = await createCodeEntry(VERIFICATION_CODE_LENGTH, assignee, async (codeEntry) => {
 			await this.storeOtpCodeInDB(codeEntry);
 		});
 
 		return codeEntry.code;
 	}
 
-	public async sendOtpToPhone(toPhone: string): Promise<void> {
+	public async sendNewOtpToPhone(toPhone: string): Promise<void> {
 		await this.twilioService.createVerification(toPhone);
 	}
 
-	public async sendOtpToEmail(toEmail: string, reason: AuthReasonEnum): Promise<void> {
-		await sendOtpCode(
+	public async resendLastOtpToEmail(toEmail: string, reason: AuthReasonEnum): Promise<void> {
+		await resendCodeEntry(
+			{ codeLength: VERIFICATION_CODE_LENGTH, assignee: toEmail },
+			async (assignee) => await this.getLastOtpCodeFromDB(assignee),
+			async (code) => {
+				await this.storeOtpCodeInDB(code);
+			},
+			async (code) => {
+				await this.sendOtpCodeToEmail(code, toEmail, reason);
+			}
+		);
+	}
+
+	public async resendLastOtpToPhone(toPhone: string): Promise<void> {
+		await this.sendNewOtpToPhone(toPhone);
+	}
+
+	public async sendNewOtpToEmail(toEmail: string, reason: AuthReasonEnum): Promise<void> {
+		await sendNewOtpCode(
 			{
 				codeLength: VERIFICATION_CODE_LENGTH,
 				assignee: toEmail,
@@ -38,9 +55,7 @@ export class OTPService {
 				await this.storeOtpCodeInDB(code);
 			},
 			async (code: string) => {
-				const isEmailSent = await this.mailerService.sendEmailVerificationCode(toEmail, code, reason);
-
-				if (isEmailSent === false) throw new BadRequestException('Cannot send email');
+				await this.sendOtpCodeToEmail(code, toEmail, reason);
 			}
 		);
 	}
@@ -66,6 +81,12 @@ export class OTPService {
 		);
 	}
 
+	private async sendOtpCodeToEmail(code: string, toEmail: string, reason: AuthReasonEnum): Promise<void> {
+		const isEmailSent = await this.mailerService.sendEmailVerificationCode(toEmail, code, reason);
+
+		if (isEmailSent === false) throw new BadRequestException('Cannot send email');
+	}
+
 	private async storeOtpCodeInDB(code: TLatestSavedCode): Promise<void> {
 		await this.otpRepository.save(code);
 	}
@@ -79,5 +100,12 @@ export class OTPService {
 
 	private async markOTPAsUsedInDB(code: TLatestSavedCode): Promise<void> {
 		await this.otpRepository.update(code.code, { usedAt: new Date() });
+	}
+
+	private async getLastOtpCodeFromDB(assignee: string): Promise<TLatestSavedCode | null> {
+		return await this.otpRepository.findOne({
+			where: { assignee, usedAt: IsNull(), expiresAt: MoreThan(new Date()) },
+			order: { createdAt: 'DESC' },
+		});
 	}
 }

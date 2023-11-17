@@ -18,6 +18,7 @@ import {
 	SignInWithPhoneDto,
 	SignUpWithEmailDto,
 	UserDto,
+	otpResendTimeout,
 } from '@boilerplate/shared';
 import { JwtRefreshGuard } from '../services/guard/jwt-refresh.guard';
 import { RequestWithAuth } from '../interfaces/auth-request';
@@ -26,7 +27,6 @@ import { UserAgent } from '../services/decorators/params/user-agent.decorator';
 import { JwtAuthGuard } from '../services/guard/jwt.guard';
 import { UsersService } from '../services/users.service';
 import { LoggerSettings } from '../services/decorators/route/logging-settings.decorator';
-import { otpResendTimeout } from '../constants';
 
 @Controller('auth')
 export class AuthController {
@@ -130,12 +130,12 @@ export class AuthController {
 	public async restorePassword(@Req() req: RequestWithAuth, @Body() data: RestorePasswordDto): Promise<void> {
 		const { sub: userId } = req.user;
 
-		return await this.authService.restorePassword(userId, data.password, data.code);
+		return await this.authService.restorePassword(userId, data);
 	}
 
 	@Post('change-login-request')
 	@UseGuards(JwtAuthGuard)
-	async changeLoginRequest(@Req() req: RequestWithAuth, @Body() data: ChangeUserLoginRequest): Promise<void> {
+	async changeLoginRequest(@Req() req: RequestWithAuth, @Body() data: ChangeUserLoginRequest): Promise<IdDto | undefined> {
 		const { sub: userId } = req.user;
 
 		return await this.authService.changeUserLoginRequest(userId, data);

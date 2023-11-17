@@ -87,7 +87,7 @@
 	"auth-confirmation": {
 		"too-many-requests": "Too many attempts. Please try again in 5 minutes",
 		"enter-code": "Enter the Verification Code",
-		"resend-code": "Didn't receive a verification code? Click <0>Resend</0>",
+		"resend-code": "Didn't receive a verification code? <0>Resend</0>",
 		"check-and-resend-code": "Incorrect code. Please check if the entered code is correct or click <0>Resend</0>",
 		"confirmation-flow-description": "You should receive a text message (SMS or Email) on your phone or email with a confirmation code",
 		"confirm-form": {
@@ -117,6 +117,8 @@
 		"email-unique-error": "Email is already in use"
 	},
 	"defaults": {
+		"seconds": "seconds",
+		"seconds_short": "s",
 		"modals": {
 			"confirmation-title": "Confirmation is required",
 			"confirmation-description": "Please confirm the action. This can't be undone!",

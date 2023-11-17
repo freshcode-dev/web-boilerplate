@@ -5,10 +5,12 @@ import ms from 'ms';
 import {
 	TCreateCodeEntryAsyncFunc,
 	TLatestSavedCode,
-	TSendOtpCodeAsyncFunc,
+	TResendLastOtpCodeAsyncFunc,
+	TSendNewOtpCodeAsyncFunc,
 	TVerifyOtpCodeAsyncFunc,
 } from '../interfaces/otp';
 import { otpExpiresIn } from '../constants';
+import { otpResendTimeout } from '@boilerplate/shared';
 
 /* private */
 
@@ -58,7 +60,7 @@ export const createCodeEntry: TCreateCodeEntryAsyncFunc = async (
 	return codeEntry;
 };
 
-export const sendOtpCode: TSendOtpCodeAsyncFunc = async (
+export const sendNewOtpCode: TSendNewOtpCodeAsyncFunc = async (
 	{ codeLength, assignee },
 	storeCodeEntry,
 	sendCode
@@ -68,6 +70,27 @@ export const sendOtpCode: TSendOtpCodeAsyncFunc = async (
 	await sendCode(codeEntry.code);
 
 	return codeEntry.code;
+};
+
+export const resendCodeEntry: TResendLastOtpCodeAsyncFunc = async (
+	{ codeLength, assignee },
+	getLastCodeEntry,
+	storeNewOtpCode,
+	sendCode
+): Promise<string> => {
+	const lastCodeEntry = await getLastCodeEntry(assignee);
+
+	if (
+		lastCodeEntry &&
+		!lastCodeEntry?.usedAt &&
+		lastCodeEntry?.expiresAt > new Date(new Date().getTime() + ms(otpResendTimeout))
+	) {
+		await sendCode(lastCodeEntry.code);
+
+		return lastCodeEntry.code;
+	}
+
+	return await sendNewOtpCode({ codeLength, assignee }, storeNewOtpCode, sendCode);
 };
 
 export const verifyOtpCode: TVerifyOtpCodeAsyncFunc = async (

@@ -157,7 +157,7 @@ const authApi = api.injectEndpoints({
 				skipAuth: true,
 			},
 		}),
-		changeLoginRequest: builder.mutation<void, ChangeUserLoginRequest>({
+		changeLoginRequest: builder.mutation<IdDto | undefined, ChangeUserLoginRequest>({
 			query: (data) => ({
 				url: `auth/change-login-request`,
 				method: 'POST',

@@ -12,7 +12,7 @@ import { getErrorStatusCode, getFieldFromConflictError } from '../../../../_core
 type FormState = {
 	activeForm: 'data' | 'code';
 	newEmail: string | null;
-	code: string | null;
+	verifyId?: string;
 };
 
 export interface EditEmailModalProps {
@@ -29,10 +29,10 @@ export const EditEmailModal: FC<EditEmailModalProps> = (props) => {
 	const [changeLoginRequest] = useChangeLoginRequestMutation();
 	const [changeLogin] = useChangeLoginMutation();
 
-	const [{ activeForm, newEmail }, setFormState] = useState<FormState>({
+	const [{ activeForm, newEmail, verifyId }, setFormState] = useState<FormState>({
 		activeForm: 'data',
 		newEmail: null,
-		code: null,
+		verifyId: undefined,
 	});
 
 	const [changeEmailRequestError, setChangeEmailRequestError] = useState<Error | null>(null);
@@ -41,12 +41,13 @@ export const EditEmailModal: FC<EditEmailModalProps> = (props) => {
 	const handleSubmitEmail = useCallback(
 		async (data: EmailDto, markError: (field?: string) => void) => {
 			try {
-				await changeLoginRequest(data).unwrap();
+				const response = await changeLoginRequest(data).unwrap();
 
 				setFormState((prevState) => ({
 					...prevState,
 					activeForm: 'code',
 					newEmail: data.email,
+					verifyId: response?.id,
 				}));
 			} catch (error) {
 				const status = getErrorStatusCode(error as Error);
@@ -70,9 +71,9 @@ export const EditEmailModal: FC<EditEmailModalProps> = (props) => {
 	const handleSubmitModal = useCallback(
 		async ({ code }: ConfirmationCodeDto, markError: (field?: string) => void) => {
 			try {
-				if (!newEmail) return;
+				if (!newEmail || !verifyId) return;
 
-				await changeLogin({ email: newEmail, code });
+				await changeLogin({ email: newEmail, code, verifyId });
 
 				onClose?.();
 			} catch (error) {
@@ -91,7 +92,7 @@ export const EditEmailModal: FC<EditEmailModalProps> = (props) => {
 				setChangeEmailError(error as Error);
 			}
 		},
-		[changeLogin, newEmail, onClose]
+		[changeLogin, newEmail, onClose, verifyId]
 	);
 
 	const goBack = useCallback(() => {

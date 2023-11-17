@@ -51,7 +51,7 @@ export const RestorePasswordForm: FC<RestorePasswordFormProps> = (props) => {
 
 	return (
 		<Box component="form" noValidate onSubmit={handleSubmit(handleFormSubmit)}>
-			<Typography variant="h1" sx={titleStyles}>
+			<Typography variant="h3" sx={titleStyles}>
 				{t('restore-password.title')}
 			</Typography>
 

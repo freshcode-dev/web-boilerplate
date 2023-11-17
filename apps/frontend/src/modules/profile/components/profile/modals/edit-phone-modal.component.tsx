@@ -12,7 +12,7 @@ import { getErrorStatusCode, getFieldFromConflictError } from '../../../../_core
 type FormState = {
 	activeForm: 'data' | 'code';
 	newPhone: string | null;
-	code: string | null;
+	verifyId?: string;
 };
 
 export interface EditPhoneModalProps {
@@ -29,10 +29,10 @@ export const EditPhoneModal: FC<EditPhoneModalProps> = (props) => {
 	const [changeLoginRequest] = useChangeLoginRequestMutation();
 	const [changeLogin] = useChangeLoginMutation();
 
-	const [{ activeForm, newPhone }, setFormState] = useState<FormState>({
+	const [{ activeForm, newPhone, verifyId }, setFormState] = useState<FormState>({
 		activeForm: 'data',
 		newPhone: null,
-		code: null,
+		verifyId: undefined,
 	});
 
 	const [changePhoneRequestError, setChangePhoneRequestError] = useState<Error | null>(null);
@@ -41,12 +41,13 @@ export const EditPhoneModal: FC<EditPhoneModalProps> = (props) => {
 	const handleSubmitPhone = useCallback(
 		async (data: PhoneDto, markError: (field?: string) => void) => {
 			try {
-				await changeLoginRequest(data).unwrap();
+				const response = await changeLoginRequest(data).unwrap();
 
 				setFormState((prevState) => ({
 					...prevState,
 					activeForm: 'code',
 					newPhone: data.phoneNumber,
+					verifyId: response?.id,
 				}));
 			} catch (error) {
 				const status = getErrorStatusCode(error as Error);
@@ -70,9 +71,9 @@ export const EditPhoneModal: FC<EditPhoneModalProps> = (props) => {
 	const handleSubmitModal = useCallback(
 		async ({ code }: ConfirmationCodeDto, markError: (field?: string) => void) => {
 			try {
-				if (!newPhone) return;
+				if (!newPhone || !verifyId) return;
 
-				await changeLogin({ phoneNumber: newPhone, code });
+				await changeLogin({ phoneNumber: newPhone, code, verifyId });
 
 				onClose?.();
 			} catch (error) {
@@ -91,7 +92,7 @@ export const EditPhoneModal: FC<EditPhoneModalProps> = (props) => {
 				setChangePhoneError(error as Error);
 			}
 		},
-		[changeLogin, newPhone, onClose]
+		[changeLogin, newPhone, onClose, verifyId]
 	);
 
 	const goBack = useCallback(() => {

@@ -30,9 +30,8 @@ export const RestorePasswordConfirmPage: FC = () => {
 
 		const query = window.location.search;
 		const params = new URLSearchParams(query);
-		const tokenParam = params.get('token');
 
-		return tokenParam;
+		return params.get('token');
 	}, []);
 
 	const code = useMemo<string | null>(() => {
@@ -42,15 +41,16 @@ export const RestorePasswordConfirmPage: FC = () => {
 
 		const query = window.location.search;
 		const params = new URLSearchParams(query);
-		const token = params.get('code');
 
-		return token;
+		return params.get('code');
 	}, []);
 
 	const [restorePassword, { error: restorePasswordError }] = useRestorePasswordMutation();
 
 	const handlePasswordSubmit = useCallback(
 		async ({ password, confirmPassword }: RestorePasswordDto) => {
+			if (!token || !code) return;
+
 			await restorePassword({ password, confirmPassword, token: token as string, code: code as string });
 
 			setFormState({
@@ -58,7 +58,7 @@ export const RestorePasswordConfirmPage: FC = () => {
 				password,
 			});
 		},
-		[restorePassword, token, code]
+		[token, code, restorePassword]
 	);
 
 	if (!token) {

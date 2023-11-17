@@ -18,11 +18,11 @@ import {
 	CreateUserDto,
 	EmailDto,
 	IdDto,
+	RestorePasswordDto,
 	SignInWithEmailDto,
 	SignInWithPhoneDto,
 	SignUpWithEmailDto,
 	UserDto,
-	VERIFICATION_CODE_LENGTH,
 } from '@boilerplate/shared';
 import { argon2DefaultConfig } from '../constants';
 import { SessionsService } from './sessions.service';
@@ -30,6 +30,7 @@ import { TokensService } from './tokens.service';
 import { GoogleAuthService } from './google-auth.service';
 import { MailerService } from './mailer.service';
 import { OTPService } from './otp.service';
+import { isEmail, isPhoneNumber } from 'class-validator';
 
 @Injectable()
 export class AuthService {
@@ -42,13 +43,12 @@ export class AuthService {
 		private readonly otpService: OTPService
 	) {}
 
-	// eslint-disable-next-line complexity
 	public async sendOtpVerification(payload: AuthVerifyDto): Promise<IdDto> {
-		const { phoneNumber, email, reason } = payload;
+		const { phoneNumber, email, reason, isResend } = payload;
 
 		const user = await this.usersService.findOneUser([{ phoneNumber }, { email }]);
 
-		if (reason === AuthReasonEnum.SignIn && !user) {
+		if (reason !== AuthReasonEnum.SignUp && !user) {
 			throw new NotFoundException('User not found, please try to register');
 		} else if (reason === AuthReasonEnum.SignUp && user) {
 			throw new ConflictException('User with this data already exists');
@@ -56,21 +56,22 @@ export class AuthService {
 
 		let id = '';
 
-		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 		const userPhone = phoneNumber || user?.phoneNumber;
 		const userEmail = email || user?.email;
 
-		const canSendOtpToPhone = reason !== AuthReasonEnum.ChangePhoneNumber;
-		const canSendOtpToEmail = reason !== AuthReasonEnum.ChangeEmail;
+		const canSendOtpToPhone = reason !== AuthReasonEnum.ChangePhoneNumber && userPhone;
+		const canSendOtpToEmail = reason !== AuthReasonEnum.ChangeEmail && userEmail;
 
 		// send otp
 		// prefer phone over email
-		if (userPhone && canSendOtpToPhone) {
-			await this.sendOtpToAssignee('phone', userPhone);
+		if (canSendOtpToPhone) {
+			if (isResend) await this.resendLastOtpToAssignee('phone', userPhone, reason);
+			else await this.sendNewOtpToAssignee('phone', userPhone, reason);
 
 			id = userPhone;
-		} else if (userEmail && canSendOtpToEmail) {
-			await this.sendOtpToAssignee('email', userEmail, reason);
+		} else if (canSendOtpToEmail) {
+			if (isResend) await this.resendLastOtpToAssignee('email', userEmail, reason);
+			else await this.sendNewOtpToAssignee('email', userEmail, reason);
 
 			id = userEmail;
 		}
@@ -83,9 +84,9 @@ export class AuthService {
 		ipAddress: string,
 		userAgent: string
 	): Promise<AuthResponseDto> {
-		const { code, ...createUser } = payload;
+		const { code, verifyId, ...createUser } = payload;
 
-		await this.verifyOtp('email', createUser.email, code);
+		await this.verifyOtp(verifyId, code);
 
 		const user = await this.usersService.createUser(createUser);
 
@@ -133,7 +134,7 @@ export class AuthService {
 	}
 
 	public async verifyUserPhoneCredentials(phoneNumber: string, code: string): Promise<UserDto> {
-		await this.verifyOtp('phone', phoneNumber, code);
+		await this.verifyOtp(phoneNumber, code);
 
 		return await this.usersService.getOneUser({ phoneNumber });
 	}
@@ -225,12 +226,14 @@ export class AuthService {
 		}
 	}
 
-	public async restorePassword(userId: string, newPassword: string, code: string): Promise<void> {
+	public async restorePassword(userId: string, data: RestorePasswordDto): Promise<void> {
+		const { code, password: newPassword } = data;
+
 		const user = await this.usersService.getOneUser({ id: userId });
 
 		if (!user.email) throw new BadRequestException('User does not have an email');
 
-		await this.verifyOtp('email', user.email, code);
+		await this.verifyOtp(user.email, code);
 
 		await this.usersService.updateUser(
 			userId,
@@ -241,30 +244,32 @@ export class AuthService {
 		);
 	}
 
-	public async changeUserLoginRequest(userId: string, data: ChangeUserLoginRequest): Promise<void> {
+	public async changeUserLoginRequest(userId: string, data: ChangeUserLoginRequest): Promise<IdDto | undefined> {
 		const { email, phoneNumber } = data;
 
 		const user = await this.usersService.getOneUser({ id: userId });
 
 		if (email && user.phoneNumber) {
-			await this.usersService.verifyIsEmailUnique(email);
+			await this.usersService.verifyIsEmailUnique(email, user.id);
 
-			await this.sendOtpVerification({ phoneNumber: user.phoneNumber as string, reason: AuthReasonEnum.ChangeEmail });
+			return await this.sendOtpVerification({ phoneNumber: user.phoneNumber as string, reason: AuthReasonEnum.ChangeEmail });
 		} else if (phoneNumber && user.email) {
-			await this.usersService.verifyIsPhoneUnique(phoneNumber);
+			await this.usersService.verifyIsPhoneUnique(phoneNumber, user.id);
 
-			await this.sendOtpVerification({ email: user.email as string, reason: AuthReasonEnum.ChangePhoneNumber });
+			return await this.sendOtpVerification({ email: user.email as string, reason: AuthReasonEnum.ChangePhoneNumber });
 		}
+
+		return undefined;
 	}
 
 	public async changeUserLogin(userId: string, data: ChangeUserLoginDto): Promise<void> {
-		const { email, phoneNumber, code } = data;
+		const { email, phoneNumber, code, verifyId } = data;
+
+		await this.verifyOtp(verifyId, code);
 
 		const user = await this.usersService.getOneUser({ id: userId });
 
 		if (email && user.phoneNumber) {
-			await this.verifyOtp('phone', user.phoneNumber, code);
-
 			await this.usersService.updateUser(
 				userId,
 				{
@@ -275,8 +280,6 @@ export class AuthService {
 				}
 			);
 		} else if (phoneNumber && user.email) {
-			await this.verifyOtp('email', user.email, code);
-
 			await this.usersService.updateUser(
 				userId,
 				{
@@ -305,23 +308,39 @@ export class AuthService {
 
 	private async sendPasswordRestoreEmail(toEmail: string, user: UserDto): Promise<void> {
 		// INFO: create code outside from `sendPasswordRestoreEmail` method to resolve circular dependency MailerService <-> OTPService
-		const otpCode = await this.otpService.createOtpCodeEntry(VERIFICATION_CODE_LENGTH, toEmail);
+		const otpCode = await this.otpService.createOtpCodeEntry(toEmail);
 
 		await this.mailerService.sendPasswordRestoreEmail(toEmail, user, otpCode);
 	}
 
-	private async sendOtpToAssignee(type: 'email' | 'phone', assignee: string, reason?: AuthReasonEnum): Promise<void> {
+	private async sendNewOtpToAssignee(
+		type: 'email' | 'phone',
+		assignee: string,
+		reason: AuthReasonEnum
+	): Promise<void> {
 		if (type === 'email' && reason) {
-			await this.otpService.sendOtpToEmail(assignee, reason);
+			await this.otpService.sendNewOtpToEmail(assignee, reason);
 		} else if (type === 'phone') {
-			await this.otpService.sendOtpToPhone(assignee);
+			await this.otpService.sendNewOtpToPhone(assignee);
 		}
 	}
 
-	private async verifyOtp(type: 'email' | 'phone', assignee: string, code: string): Promise<void> {
+	private async resendLastOtpToAssignee(
+		type: 'email' | 'phone',
+		assignee: string,
+		reason: AuthReasonEnum
+	): Promise<void> {
 		if (type === 'email') {
-			await this.otpService.verifyOtpFromEmail(assignee, code);
+			await this.otpService.resendLastOtpToEmail(assignee, reason);
 		} else if (type === 'phone') {
+			await this.otpService.resendLastOtpToPhone(assignee);
+		}
+	}
+
+	private async verifyOtp(assignee: string, code: string): Promise<void> {
+		if (isEmail(assignee)) {
+			await this.otpService.verifyOtpFromEmail(assignee, code);
+		} else if (isPhoneNumber(assignee)) {
 			await this.otpService.verifyOtpFromPhone(assignee, code);
 		}
 	}

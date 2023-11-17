@@ -1,5 +1,5 @@
 import { CreateUserDto } from './create-user.dto';
-import { IsEmail, IsPhoneNumber, Length, ValidateIf } from 'class-validator';
+import { IsEmail, IsOptional, IsPhoneNumber, IsString, Length, ValidateIf } from 'class-validator';
 import { VerificationCode } from '../../decorators/verification-code.decorator';
 import { PasswordDto } from './password.dto';
 import { EmailDto } from './email.dto';
@@ -18,7 +18,11 @@ export class SignUpWithEmailDto extends CreateUserDto implements ConfirmationCod
 	@Length(8, 36)
 	override password: string;
 
-	@ValidateIf((o: any) => !!o.code)
+	@IsOptional()
+	@IsString()
+	verifyId: string;
+
+	@IsOptional()
 	@VerificationCode()
 	code: string;
 

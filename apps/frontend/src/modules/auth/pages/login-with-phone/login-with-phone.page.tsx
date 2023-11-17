@@ -3,10 +3,7 @@ import { Box, Container } from '@mui/material';
 import { LoginWithPhoneForm } from '../../components/login-form';
 import { CodeConfirmationForm } from '../../components/code-confirmation-form';
 import { DocumentTitle } from '../../../_core/components/_ui/document-title';
-import {
-	useSendOtpMutation,
-	useSignInWithPhoneMutation,
-} from '../../../../store/api/auth.api';
+import { useSendOtpMutation, useSignInWithPhoneMutation } from '../../../../store/api/auth.api';
 import { SIGN_IN_CACHE_KEY, VERIFY_CACHE_KEY } from '../../constants/auth-cache.constants';
 import { containerStyles, googleAuthRowStyles, wrapperStyles } from './login-with-phone.styles';
 import { useLangParam } from '../../hooks/use-lang-param.hook';
@@ -80,9 +77,11 @@ const LoginWithPhonePage: FC = () => {
 	const handleCodeSubmit = useCallback(
 		async ({ code }: ConfirmationCodeDto, markError: () => void) => {
 			try {
+				if (!phoneNumber) return;
+
 				await signInPhone({
 					code,
-					phoneNumber: phoneNumber as string,
+					phoneNumber,
 					rememberMe,
 				}).unwrap();
 			} catch (error) {
@@ -116,6 +115,7 @@ const LoginWithPhonePage: FC = () => {
 				)}
 				{activeForm === 'code' && (
 					<CodeConfirmationForm
+						reason={AuthReasonEnum.SignIn}
 						phoneNumber={phoneNumber}
 						error={signInError}
 						onSubmit={handleCodeSubmit}

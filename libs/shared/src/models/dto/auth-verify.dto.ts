@@ -1,9 +1,13 @@
 import { PhoneDto } from './phone.dto';
 import { EmailDto } from './email.dto';
 import { AuthReasonArray, AuthReasonEnum } from '../../enums';
-import { IsEmail, IsIn, ValidateIf, IsPhoneNumber } from 'class-validator';
+import { IsEmail, IsIn, ValidateIf, IsPhoneNumber, IsBoolean, IsOptional } from 'class-validator';
 
 export class AuthVerifyDto implements Partial<PhoneDto>, Partial<EmailDto> {
+	@IsOptional()
+	@IsBoolean()
+	isResend?: boolean;
+
 	@IsIn(AuthReasonArray)
 	reason: AuthReasonEnum;
 

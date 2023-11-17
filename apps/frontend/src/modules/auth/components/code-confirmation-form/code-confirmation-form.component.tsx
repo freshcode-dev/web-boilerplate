@@ -16,6 +16,7 @@ import { useSendOtpMutation } from '../../../../store/api/auth.api';
 const resolver = classValidatorResolver(ConfirmationCodeDto);
 
 interface CodeConfirmationFormProps {
+	reason: AuthReasonEnum;
 	phoneNumber?: string | null;
 	email?: string | null;
 	error?: SerializedError | FetchBaseQueryError;
@@ -24,7 +25,7 @@ interface CodeConfirmationFormProps {
 }
 
 export const CodeConfirmationForm: FC<CodeConfirmationFormProps> = (props) => {
-	const { email, phoneNumber, error, onBack, onSubmit } = props;
+	const { reason, email, phoneNumber, error, onBack, onSubmit } = props;
 
 	const [t] = useTranslation();
 
@@ -57,7 +58,7 @@ export const CodeConfirmationForm: FC<CodeConfirmationFormProps> = (props) => {
 			}
 
 			await sendOtp({
-				reason: AuthReasonEnum.Resend,
+				reason,
 				email,
 				phoneNumber,
 			}).unwrap();

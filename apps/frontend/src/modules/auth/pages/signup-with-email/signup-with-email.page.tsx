@@ -115,6 +115,7 @@ export const SignUpWithEmailPage: FC = () => {
 				)}
 				{activeForm === 'code' && (
 					<CodeConfirmationForm
+						reason={AuthReasonEnum.SignUp}
 						email={profile.email}
 						error={registerError}
 						onSubmit={handleCodeSubmit}

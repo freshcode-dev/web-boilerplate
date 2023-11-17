@@ -24,7 +24,7 @@ export class UsersService {
 	public async findOneUser(
 		where: FindOptionsWhere<User>[] | FindOptionsWhere<User>,
 		{ doMapping = true }: FindUserOptions = {}
-	): Promise<User | null> {
+	): Promise<UserDto | null> {
 		const user = await this.usersRepository.findOne({ where });
 
 		if (!user) {

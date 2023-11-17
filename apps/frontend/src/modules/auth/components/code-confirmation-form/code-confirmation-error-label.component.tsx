@@ -1,10 +1,13 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { SerializedError } from '@reduxjs/toolkit';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
 import { Typography } from '@mui/material';
-import { Trans } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { CoreLinkButton } from '../../../_core/components/_ui/core-button';
 import { errorLabelTextStyles } from './code-confirmation-form.styles';
+import { useTimer } from '../../../_core/hooks/use-timer.hook';
+
+const resendTimerSeconds = 30;
 
 interface ConfirmationErrorLabelProps {
 	error?: SerializedError | FetchBaseQueryError;
@@ -15,6 +18,20 @@ interface ConfirmationErrorLabelProps {
 
 export const ConfirmationErrorLabel: FC<ConfirmationErrorLabelProps> = (props) => {
 	const { submitting, error, onResend, otpError } = props;
+
+	const [t] = useTranslation();
+
+	const [canResend, setCanResend] = useState(false);
+
+	const { seconds, resetTimer } = useTimer(() => {
+		setCanResend(true);
+	}, resendTimerSeconds);
+
+	const handleResend = () => {
+		setCanResend(false);
+		resetTimer();
+		onResend?.();
+	};
 
 	const getErrorText = () => {
 		if (otpError) {
@@ -46,14 +63,15 @@ export const ConfirmationErrorLabel: FC<ConfirmationErrorLabelProps> = (props) =
 				i18nKey={getErrorText()}
 				components={[
 					<CoreLinkButton
-						disabled={submitting}
-						onClick={onResend}
+						disabled={submitting || !canResend}
+						onClick={handleResend}
 						sx={{
 							color: ({ colors }) => (hasError ? colors.red : colors.blue),
 						}}
 					/>,
 				]}
 			/>
+			{canResend ? '' : ' (' + seconds + ` ${t('defaults.seconds_short')})`}
 		</Typography>
 	);
 };

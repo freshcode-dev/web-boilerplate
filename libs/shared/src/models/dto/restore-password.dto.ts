@@ -1,11 +1,11 @@
-import { ValidateIf } from "class-validator";
+import { IsOptional, IsString, ValidateIf } from "class-validator";
 import { MatchField, VerificationCode } from "../../decorators";
 import { ConfirmPasswordDto } from "./confirm-password.dto";
 import { ConfirmationCodeDto } from "./confirmation-code.dto";
 import { PasswordDto } from "./password.dto";
 
 export class RestorePasswordDto extends PasswordDto implements ConfirmationCodeDto, ConfirmPasswordDto {
-	@ValidateIf((o: any) => !!o.code)
+	@IsOptional()
 	@VerificationCode()
 	code: string;
 
