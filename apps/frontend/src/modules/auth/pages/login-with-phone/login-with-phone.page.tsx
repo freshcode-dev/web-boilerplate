@@ -4,7 +4,6 @@ import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { SerializedError } from '@reduxjs/toolkit';
 import { LoginWithPhoneForm } from '../../components/login-form';
 import { PhoneConfirmationForm } from '../../components/phone-confirmation-form';
-import { DocumentTitle } from '../../../_core/components/_ui/document-title';
 import { useSendOtpMutation, useSignInWithPhoneMutation } from '../../../../store/api/auth.api';
 import { SIGN_IN_CACHE_KEY, VERIFY_CACHE_KEY } from '../../constants/auth-cache.constants';
 import { containerStyles, wrapperStyles } from './login-with-phone.styles';
@@ -101,8 +100,6 @@ const LoginWithPhonePage: FC = () => {
 
 	return (
 		<Container sx={containerStyles}>
-			<DocumentTitle />
-
 			<Box sx={wrapperStyles}>
 				{activeForm === 'phone' && (
 					<LoginWithPhoneForm

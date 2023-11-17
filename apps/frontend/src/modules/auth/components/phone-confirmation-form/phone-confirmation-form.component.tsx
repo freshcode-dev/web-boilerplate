@@ -10,8 +10,9 @@ import { AuthReasonEnum, ConfirmationCodeDto, VERIFICATION_CODE_LENGTH } from '@
 import { SerializedError } from '@reduxjs/toolkit';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
 import { ConfirmationErrorLabel } from './phone-confirmation-error-label.component';
-import { titleStyles, labelStyles } from './phone-confirmation-form.styles';
+import { labelStyles } from './phone-confirmation-form.styles';
 import { useSendOtpMutation } from '../../../../store/api/auth.api';
+import { titleStyles } from '../login-form/login-form.styles';
 
 const resolver = classValidatorResolver(ConfirmationCodeDto);
 
@@ -77,7 +78,7 @@ export const PhoneConfirmationForm: FC<PhoneConfirmationFormProps> = (props) => 
 			onSubmit={handleSubmit(handleFormSubmit)}
 		>
 			<Typography
-				variant='h1'
+				variant='h3'
 				sx={titleStyles}
 			>
 				{t('auth-confirmation.enter-code')}
@@ -121,7 +122,7 @@ export const PhoneConfirmationForm: FC<PhoneConfirmationFormProps> = (props) => 
 					loading={isSubmitting}
 					disabled={disableSubmit}
 				>
-					{t('auth-confirmation.confirm-form.confirm')}
+					{t('auth-confirmation.confirm-form.next')}
 				</CoreButton>
 			</FormControlsContainer>
 		</Box>

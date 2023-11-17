@@ -10,17 +10,18 @@ import { CoreButton } from '../../../_core/components/_ui/core-button';
 import { errorMessage } from '../../../_core/utils/lang.utils';
 import { LoginErrorLabel } from './login-error-label.component';
 import { formElementStyles, titleStyles } from './login-form.styles';
-import { EmailDto, RememberMeDto } from '@boilerplate/shared';
+import { SignInWithEmailDto } from '@boilerplate/shared';
 import { CoreTextField } from '../../../_core/components/_ui/core-textfield';
 import { CoreLabeledCheckbox } from '../../../_core/components/_ui/core-labeled-checkbox';
+import { CorePasswordInput } from '../../../_core/components/_ui/core-password-input';
 
-const resolver = classValidatorResolver(EmailDto);
+const resolver = classValidatorResolver(SignInWithEmailDto);
 
 export interface LoginWithEmailFormProps {
 	email?: string;
 	rememberMe?: boolean;
 	error?: FetchBaseQueryError | SerializedError;
-	onSubmit(values: EmailDto & RememberMeDto, markError: () => void): void;
+	onSubmit(values: SignInWithEmailDto, markError: (field?: string) => void): void;
 }
 
 export const LoginWithEmailForm: FC<LoginWithEmailFormProps> = (props) => {
@@ -34,11 +35,12 @@ export const LoginWithEmailForm: FC<LoginWithEmailFormProps> = (props) => {
 		watch,
 		setError,
 		formState: { errors, isValid, isSubmitted, isDirty, isSubmitting },
-	} = useForm<EmailDto & RememberMeDto>({
+	} = useForm<SignInWithEmailDto>({
 		resolver,
 		defaultValues: {
 			email,
 			rememberMe,
+			password: '',
 		},
 	});
 
@@ -47,9 +49,10 @@ export const LoginWithEmailForm: FC<LoginWithEmailFormProps> = (props) => {
 	const disableSubmit = !isValid && (isDirty || isSubmitted);
 
 	const handleFormSubmit = useCallback(
-		(values: EmailDto & RememberMeDto) => {
-			onSubmit(values, () => {
-				setError('email', { type: 'isEmail' });
+		(values: SignInWithEmailDto) => {
+			onSubmit({ ...values }, () => {
+				setError('email', { type: 'invalidCredentials' });
+				setError('password', { type: 'invalidCredentials' });
 			});
 		},
 		[setError, onSubmit]
@@ -71,8 +74,23 @@ export const LoginWithEmailForm: FC<LoginWithEmailFormProps> = (props) => {
 				helperText={errorMessage(t, errors.email?.type)}
 				autoComplete="email"
 			/>
+			<CorePasswordInput
+				fullWidth
+				sx={formElementStyles}
+				id="password"
+				onlyShowOnMouseDown
+				requiredMark
+				label={t('sign-in.sign-in-form.password')}
+				{...register('password')}
+				error={!!errors.password}
+				helperText={errorMessage(t, errors.email?.type)}
+			/>
 			<Box sx={formElementStyles}>
-				<CoreLabeledCheckbox {...register('rememberMe')} checked={watchRememberMe} label={t('sign-in.sign-in-form.remember-me')} />
+				<CoreLabeledCheckbox
+					{...register('rememberMe')}
+					checked={watchRememberMe}
+					label={t('sign-in.sign-in-form.remember-me')}
+				/>
 			</Box>
 			<LoginErrorLabel error={error} />
 			<FormControlsContainer>

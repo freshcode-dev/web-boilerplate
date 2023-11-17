@@ -1,4 +1,10 @@
+export { ReactComponent as AppLogo } from '../../../assets/icons/AppLogo.svg';
+export { ReactComponent as ArrowLeft } from '../../../assets/icons/ArrowLeft.svg';
+export { ReactComponent as ArrowLeftSmall } from '../../../assets/icons/ArrowLeftSmall.svg';
+export { ReactComponent as ArrowRight } from '../../../assets/icons/ArrowRight.svg';
 export { ReactComponent as Close } from '../../../assets/icons/Close.svg';
+export { ReactComponent as PanelOpen } from '../../../assets/icons/PanelOpen.svg';
+export { ReactComponent as PanelClose } from '../../../assets/icons/PanelClose.svg';
 export { ReactComponent as Exclamation } from '../../../assets/icons/Exclamation.svg';
 export { ReactComponent as Info } from '../../../assets/icons/Info.svg';
 export { ReactComponent as User } from '../../../assets/icons/User.svg';
@@ -9,4 +15,4 @@ export { ReactComponent as SearchLarge } from '../../../assets/icons/SearchLarge
 export { ReactComponent as Sort } from '../../../assets/icons/Sort.svg';
 export { ReactComponent as SortDesc } from '../../../assets/icons/SortDesc.svg';
 export { ReactComponent as SortAsc } from '../../../assets/icons/SortAsc.svg';
-export { ReactComponent as AppLogo } from '../../../assets/icons/AppLogo.svg';
+export { ReactComponent as Logout } from '../../../assets/icons/Logout.svg';

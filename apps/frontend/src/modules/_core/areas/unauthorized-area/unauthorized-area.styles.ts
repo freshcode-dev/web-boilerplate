@@ -50,7 +50,7 @@ export const outletContainerStyles: SxProps<Theme> = [
 
 export const headerStyles: SxProps<Theme> = [
 	{
-		pb: 7,
+		pb: 3,
 		pt: 5,
 		display: 'flex',
 		justifyContent: 'space-between',

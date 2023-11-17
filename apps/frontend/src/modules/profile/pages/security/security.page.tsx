@@ -1,36 +1,13 @@
-import React, { FC, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Box, Container, Typography } from '@mui/material';
-import { CoreNavTabs, NavTab } from '../../../_core/components/_ui/core-nav-tabs';
-import { ProfileRoutes } from '../../constants';
+import React, { FC } from 'react';
+import { Box } from '@mui/material';
 import { SessionsTable } from '../../components/sessions-table';
 import { useFetchSessionsData } from '../../hooks/fetch-sessions-data.hook';
 import { SessionCard } from '../../components/session-card/session-card.component';
-import { CoreButton } from '../../../_core/components/_ui/core-button';
 import { usePrepareSessionsData } from '../../hooks/prepare-session-data.hook';
+import { ProfileNavigation } from '../../components/profile-nav';
+import { contentWrapperStyles } from './security-page.styles';
 
 export const ProfileSecurityPage: FC = () => {
-	const [t] = useTranslation();
-
-
-	const tabs = useMemo<NavTab[]>(
-		() => [
-			{
-				to: ProfileRoutes.Root,
-				label: t('nav.profile'),
-				id: 'auth-sign-in-panel',
-				replace: true,
-			},
-			{
-				to: ProfileRoutes.SecuritySettings,
-				label: t('nav.security'),
-				id: 'auth-sign-up-panel',
-				replace: true,
-			},
-		],
-		[t]
-	);
-
 	const {
 		currentSession: currentSessionData,
 		sessionsList: sessionsListData,
@@ -52,19 +29,20 @@ export const ProfileSecurityPage: FC = () => {
 	const loading = isGetCurrentSessionLoading || isListLoading || isInterruptSessionLoading;
 
 	return (
-		<Container component="main" maxWidth="xl">
-			<CoreNavTabs tabs={tabs} />
+		<Box>
+			<ProfileNavigation />
 
-			<Box>
-				<Typography variant="h5">Current session</Typography>
-				<SessionCard session={currentSession} />
+			<Box sx={contentWrapperStyles}>
+				<SessionCard
+					session={currentSession}
+					isInterruptOtherSessionsLoading={isInterruptOtherSessionsLoading}
+					handleInterruptOtherSessions={handleInterruptOtherSessions}
+				/>
+
+				{sessionsList && (
+					<SessionsTable data={sessionsList} loading={loading} onDeleteSession={handleInterruptSession} />
+				)}
 			</Box>
-
-			<CoreButton loading={isInterruptOtherSessionsLoading} onClick={handleInterruptOtherSessions}>
-				{t('profile.sessions.signOutAllSessions')}
-			</CoreButton>
-
-			{sessionsList && <SessionsTable data={sessionsList} loading={loading} onDeleteSession={handleInterruptSession} />}
-		</Container>
+		</Box>
 	);
 };

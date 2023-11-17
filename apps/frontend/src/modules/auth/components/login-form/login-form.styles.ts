@@ -2,7 +2,7 @@ import { SxProps, Theme } from '@mui/material';
 
 export const titleStyles: SxProps<Theme> = [
 	{
-		mt: 6,
+		mt: 3,
 		mb: 4,
 		textAlign: 'center',
 	},
@@ -15,7 +15,7 @@ export const titleStyles: SxProps<Theme> = [
 
 export const formElementStyles: SxProps<Theme> = [
 	{
-		mb: 1,
+		mb: 2,
 	},
 	({ breakpoints }) => ({
 		[breakpoints.down('sm')]: {

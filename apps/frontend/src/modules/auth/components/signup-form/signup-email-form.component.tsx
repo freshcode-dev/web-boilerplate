@@ -20,7 +20,7 @@ const resolver = classValidatorResolver(SignUpWithEmailFormData);
 export interface SignUpWithEmailFormProps {
 	error?: FetchBaseQueryError | SerializedError;
 	profile: Partial<SignUpWithEmailFormData>;
-	onSubmit(values: SignUpWithEmailFormData, markError: () => void): void;
+	onSubmit(values: SignUpWithEmailFormData, markError: (field?: string) => void): void;
 }
 
 export const SignUpWithEmailForm: FC<SignUpWithEmailFormProps> = (props) => {
@@ -108,7 +108,7 @@ export const SignUpWithEmailForm: FC<SignUpWithEmailFormProps> = (props) => {
 			<SignupErrorLabel error={error} />
 			<FormControlsContainer>
 				<CoreButton loading={isSubmitting} type="submit" disabled={disableSubmit} sx={{ minWidth: 104 }}>
-					{t('sign-up.registration-form.confirm')}
+					{t('sign-up.registration-form.next')}
 				</CoreButton>
 			</FormControlsContainer>
 		</Box>

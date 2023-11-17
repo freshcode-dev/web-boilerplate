@@ -20,7 +20,7 @@ const Root: FC = () => {
 	 * The function is supposed to contain any routes restriction logic
 	 */
 	const getAppRouters = () => [
-		{ index: true, element: <Navigate to="/profile" /> },
+		{ index: true, element: <Navigate to="/demo" /> },
 		{ path: `${RootRoutes.StylesExamples}/*`, children: StyledExamplesRouter, handle: { title: 'nav.styled' } },
 		{
 			children: ProfileModuleRouter,

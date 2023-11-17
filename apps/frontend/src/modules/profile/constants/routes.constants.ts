@@ -1,4 +1,5 @@
 export const ProfileRoutes = {
-	Root: '/profile',
+	Root: '/demo',
+	Profile: '/profile',
 	SecuritySettings: '/profile/security',
 };

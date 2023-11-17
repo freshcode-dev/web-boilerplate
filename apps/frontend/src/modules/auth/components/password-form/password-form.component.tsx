@@ -11,6 +11,7 @@ import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
 import { titleStyles } from '../login-form/login-form.styles';
 import { LoginErrorLabel } from '../login-form';
 import { CorePasswordInput } from '../../../_core/components/_ui/core-password-input';
+import { errorMessage } from '../../../_core/utils/lang.utils';
 
 const resolver = classValidatorResolver(PasswordDto);
 
@@ -37,14 +38,14 @@ export const PasswordForm: FC<PasswordFormProps> = (props) => {
 	const handleFormSubmit = useCallback(
 		async (values: PasswordDto) =>
 			onSubmit(values, () => {
-				setError('password', { type: 'invalidPassword' });
+				setError('password', { type: 'isValidCredentials' });
 			}),
 		[onSubmit, setError]
 	);
 
 	return (
 		<Box component="form" noValidate onSubmit={handleSubmit(handleFormSubmit)}>
-			<Typography variant="h1" sx={titleStyles}>
+			<Typography variant="h3" sx={titleStyles}>
 				{t('sign-in.enter-password')}
 			</Typography>
 			<CorePasswordInput
@@ -55,6 +56,7 @@ export const PasswordForm: FC<PasswordFormProps> = (props) => {
 				label={t('sign-in.sign-in-form.password')}
 				{...register('password')}
 				error={!!errors.password}
+				helperText={errorMessage(t, errors.password?.type)}
 			/>
 			<LoginErrorLabel error={error} />
 			<FormControlsContainer>
@@ -62,7 +64,7 @@ export const PasswordForm: FC<PasswordFormProps> = (props) => {
 					{t('sign-in.sign-in-form.back')}
 				</CoreButton>
 				<CoreButton sx={{ ml: 1.5, width: 115 }} type="submit" loading={isSubmitting} disabled={disableSubmit}>
-					{t('sign-in.sign-in-form.confirm')}
+					{t('sign-in.sign-in-form.next')}
 				</CoreButton>
 			</FormControlsContainer>
 		</Box>

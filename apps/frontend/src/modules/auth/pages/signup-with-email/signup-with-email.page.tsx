@@ -1,6 +1,5 @@
 import React, { FC, useCallback, useEffect, useState } from 'react';
 import { Box, Container } from '@mui/material';
-import { DocumentTitle } from '../../../_core/components/_ui/document-title';
 import { useRegisterWithEmailMutation } from '../../../../store/api/auth.api';
 import { REGISTER_CACHE_KEY } from '../../constants/auth-cache.constants';
 import { containerStyles } from './signup-with-email.styles';
@@ -9,6 +8,7 @@ import { SignUpWithEmailFormData } from '../../models/sign-up-form.dto';
 import { SignUpWithEmailForm } from '../../components/signup-form';
 import { GoogleAuthButton } from '../../components/_ui/google-auth-button';
 import { googleAuthRowStyles } from '../login-with-email/login-with-email.styles';
+import { getErrorStatusCode, getFieldFromConflictError } from '../../../_core/utils/error.utils';
 
 interface FormsState {
 	profile: Partial<SignUpWithEmailFormData>;
@@ -17,9 +17,11 @@ interface FormsState {
 export const SignUpWithEmailPage: FC = () => {
 	useLangParam();
 
-	const [register, { error: registerError, reset: resetRegister }] = useRegisterWithEmailMutation({
+	const [register, { reset: resetRegister }] = useRegisterWithEmailMutation({
 		fixedCacheKey: REGISTER_CACHE_KEY,
 	});
+
+	const [signUpError, setSignUpError] = useState<Error | null>(null);
 
 	const [{ profile }] = useState<FormsState>({
 		profile: {
@@ -35,8 +37,18 @@ export const SignUpWithEmailPage: FC = () => {
 				await register({
 					...(profile as SignUpWithEmailFormData),
 				}).unwrap();
-			} catch {
-				markError();
+			} catch (error) {
+				const status = getErrorStatusCode(error as Error);
+
+				if (status === 409) {
+					const field = getFieldFromConflictError(error as Error);
+
+					markError(field ?? '');
+				} else {
+					markError();
+				}
+
+				setSignUpError(error as Error);
 			}
 		},
 		[register]
@@ -51,9 +63,7 @@ export const SignUpWithEmailPage: FC = () => {
 
 	return (
 		<Container sx={containerStyles}>
-			<DocumentTitle />
-
-			<SignUpWithEmailForm profile={profile} onSubmit={handleSignupSubmit} error={registerError} />
+			<SignUpWithEmailForm profile={profile} onSubmit={handleSignupSubmit} error={signUpError ?? undefined} />
 
 			<Box sx={googleAuthRowStyles}>
 				<GoogleAuthButton />

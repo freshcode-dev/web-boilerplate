@@ -77,7 +77,7 @@ export const LoginWithPhoneForm: FC<LoginWithPhoneFormProps> = (props) => {
 			<LoginErrorLabel error={error} />
 			<FormControlsContainer>
 				<CoreButton type="submit" disabled={disableSubmit} loading={isSubmitting} sx={{ minWidth: 104 }}>
-					{t('sign-in.sign-in-form.confirm')}
+					{t('sign-in.sign-in-form.next')}
 				</CoreButton>
 			</FormControlsContainer>
 		</Box>

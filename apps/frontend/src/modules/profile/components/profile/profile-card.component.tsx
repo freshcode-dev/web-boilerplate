@@ -15,23 +15,30 @@ export const ProfileCard: FC<ProfileCardProps> = (props) => {
 	const { profile, onLogout } = props;
 
 	return (
-		<Card>
+		<Card sx={{ mb: 3 }}>
 			<CardContent>
 				<Typography variant="h5" sx={{ mb: 1 }}>
 					{t('profile.title')}
 				</Typography>
+
+				<hr />
+
 				<Typography gutterBottom>
 					{t('profile.name')}: {profile.name}
 				</Typography>
-				{(profile.email) && <Typography gutterBottom>
-					{t('profile.email')}: {profile.email}
-				</Typography>}
-				{profile.phoneNumber && <Typography gutterBottom>
-					{t('profile.phone')}: {profile.phoneNumber}
-				</Typography>}
+				{profile.email && (
+					<Typography gutterBottom>
+						{t('profile.email')}: {profile.email}
+					</Typography>
+				)}
+				{profile.phoneNumber && (
+					<Typography gutterBottom>
+						{t('profile.phone')}: {profile.phoneNumber}
+					</Typography>
+				)}
 			</CardContent>
 			<CardActions>
-				<CoreButton onClick={onLogout}>Logout</CoreButton>
+				<CoreButton onClick={onLogout}>{t('profile.logout')}</CoreButton>
 			</CardActions>
 		</Card>
 	);

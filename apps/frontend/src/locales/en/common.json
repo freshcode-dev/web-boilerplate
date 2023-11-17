@@ -8,14 +8,19 @@
 		"sign-in-with-email": "Login with email",
 		"sign-in-with-phone": "Login with phone",
 		"sign-up": "Register",
+		"demo": "Demo",
 		"profile": "Profile",
-		"security": "Security"
+		"security": "Security",
+		"open-menu": "Open menu",
+		"close-menu": "Close menu"
 	},
 	"profile": {
+		"my-profile": "My profile",
 		"title": "Profile",
 		"name": "Name",
 		"email": "Email",
 		"phone": "Phone",
+		"logout": "Logout",
 		"sessions": {
 			"signOutAllSessions": "Sign out other sessions",
 			"table": {
@@ -46,6 +51,7 @@
 			"password": "Password",
 			"confirmPassword": "Confirm Password",
 			"email": "Email",
+			"next": "Next",
 			"confirm": "Next"
 		}
 	},
@@ -65,7 +71,8 @@
 			"forgot-password": "Forgot password?",
 			"remember-me": "Remember me",
 			"back": "Back",
-			"confirm": "Next"
+			"next": "Next",
+			"confirm": "Confirm"
 		}
 	},
 	"auth-confirmation": {
@@ -76,7 +83,8 @@
 		"confirmation-flow-description": "You should receive a text message (SMS) on your phone with a confirmation code",
 		"confirm-form": {
 			"back": "Back",
-			"confirm": "Next"
+			"confirm": "Next",
+			"next": "Next"
 		}
 	},
 	"defaults": {
@@ -86,5 +94,14 @@
 			"confirm-button": "Confirm",
 			"cancel-button": "Cancel"
 		}
+	},
+	"errors": {
+		"phone-error": "Invalid phone number",
+		"email-error": "Invalid email",
+		"password-error": "Invalid password",
+		"passwords-not-match-error": "Passwords do not match",
+		"phone-unique-error": "Phone number is already in use",
+		"email-unique-error": "Email is already in use",
+		"invalid-credentials-error": "Invalid credentials"
 	}
 }

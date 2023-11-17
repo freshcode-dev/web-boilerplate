@@ -8,16 +8,19 @@ export interface NavTab {
 	id: string;
 	to: string;
 	label: string;
+	icon?: React.ReactNode;
 	replace?: boolean;
 	disabled?: boolean;
+	minWidth?: number | string;
 }
 
 interface CoreNavTabsProps {
 	tabs: NavTab[];
+	minTabWidth?: number | string;
 }
 
 export const CoreNavTabs: FC<CoreNavTabsProps> = memo((props) => {
-	const { tabs } = props;
+	const { tabs, minTabWidth } = props;
 
 	const routes = useMemo(() => tabs.map(tab => tab.to), [tabs]);
 	const match = useRouteMatch(routes);
@@ -30,12 +33,12 @@ export const CoreNavTabs: FC<CoreNavTabsProps> = memo((props) => {
 			variant="fullWidth"
 			TabIndicatorProps={{ sx: tabIndicatorStyles }}
 		>
-			{tabs.map(({ label, id, to, replace, disabled }) => (
+			{tabs.map(({ icon, label, id, to, replace, disabled, minWidth }) => (
 				<Tab
 					id={id}
 					aria-controls={id}
 					key={id}
-					sx={tabStyle}
+					sx={{ ...tabStyle, minWidth: minWidth ?? minTabWidth }}
 					value={to}
 					disabled={disabled}
 					replace={replace}
@@ -46,9 +49,13 @@ export const CoreNavTabs: FC<CoreNavTabsProps> = memo((props) => {
 							variant="h5"
 							className="nav-tabs-label"
 							sx={{
+								display: 'flex',
+								alignItems: 'center',
+								columnGap: 1,
 								textTransform: 'none'
 							}}
 						>
+							{icon}
 							{label}
 						</Typography>
 					}

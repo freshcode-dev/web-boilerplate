@@ -10,7 +10,7 @@ import {
 	UserDto
 } from '@boilerplate/shared';
 import api from '.';
-import { updateSessionAction } from '../../modules/auth';
+import { signOutAction, updateSessionAction } from '../../modules/auth';
 
 const authApi = api.injectEndpoints({
 	endpoints: builder => ({
@@ -128,6 +128,21 @@ const authApi = api.injectEndpoints({
 				skipAuth: true,
 			},
 		}),
+		signOut: builder.mutation<void, string>({
+			query: (refreshToken) => ({
+				url: `auth/sign-out`,
+				method: 'POST',
+				body: {
+					refreshToken,
+				}
+			}),
+			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+				try {
+					await queryFulfilled;
+					dispatch(signOutAction());
+				} catch { /* empty */ }
+			},
+		}),
 	}),
 });
 
@@ -140,5 +155,6 @@ export const {
 	useSignInWithEmailMutation,
 	useRegisterWithPhoneMutation,
 	useRegisterWithEmailMutation,
-	useAuthWithGoogleTokenMutation
+	useAuthWithGoogleTokenMutation,
+	useSignOutMutation,
 } = authApi;

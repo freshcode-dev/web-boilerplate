@@ -105,6 +105,7 @@ const UnauthorizedArea: FC = () => {
 						content="width=device-width, maximum-scale=1, minimum-scale=1, initial-scale=1, user-scalable=no"
 					/>
 				</Helmet>
+
 				<Grid component="main" container columnSpacing={1} sx={gridContainerStyles}>
 					<Grid item xs={showWallImage ? 6 : 12} sx={{ maxHeight: '100%' }}>
 						<Box sx={paperStyles}>
@@ -112,6 +113,7 @@ const UnauthorizedArea: FC = () => {
 								<Box sx={headerStyles}>
 									<Box component={AppLogo} sx={appLogoStyles} />
 								</Box>
+
 								<Box sx={tabsStyles}>
 									<CoreNavTabs tabs={tabs} />
 								</Box>
