@@ -5,6 +5,7 @@ import { EcrRepositoryStack } from './stacks/ecr-repository.stack';
 import { ApplicationStage, getSettingsForStageByName } from './environments';
 import { LoadBalancerStack } from './stacks/load-balancer.stack';
 import { getStacksTags } from './utils/tags-generation.utils';
+import { SesStack } from './stacks/ses.stack';
 
 const {
 	NX_CDK_DEFAULT_ACCOUNT: accountId = '[AWS ACCOUNT ID]',
@@ -13,7 +14,8 @@ const {
 	NX_CDK_STAGE: stage = 'test',
 	NX_CDK_CERTIFICATE_ARN: certificateArn = undefined,
 	NX_CDK_DOCKER_IMAGE_TAG: dockerImageTag = undefined,
-	NX_CDK_DEPLOYMENT_REPOSITORY_URL: deploymentRepositoryUrl = 'local'
+	NX_CDK_DEPLOYMENT_REPOSITORY_URL: deploymentRepositoryUrl = 'local',
+	NX_CDK_EMAIL_IDENTITY_DOMAIN: emailIdentityDomain = undefined,
 } = process.env;
 
 
@@ -49,15 +51,15 @@ new LoadBalancerStack(
 	}
 );
 
-// new SesStack(app,
-// 	`${applicationName}-ses-stack`,
-// 	applicationName,
-// 	{
-// 		env,
-// 		emailIdentityDomain,
-// 		terminationProtection: true,
-// 		description: `Shared domain-based email identity`
-// 	});
+new SesStack(app,
+	`${stackPrefix}-ses-stack`,
+	applicationName,
+	{
+		env,
+		emailIdentityDomain,
+		terminationProtection: true,
+		description: `Shared domain-based email identity`
+	});
 
 /**
  * Most of the ECR-related resources are defined in a separate stack, so the pipeline can be split

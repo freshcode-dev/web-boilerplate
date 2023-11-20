@@ -38,5 +38,3 @@ export const CoreCircleButton: StyledComponent<CoreCircleButtonProps> = styled(C
 		...getButtonSize(size)
 	})
 );
-
-export default CoreCircleButton;

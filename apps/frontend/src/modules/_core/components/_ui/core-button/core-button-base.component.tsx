@@ -66,4 +66,3 @@ export const CoreButtonBase: StyledComponent<CoreButtonBaseProps> = styled(Butto
 		}
 	};
 });
- export default CoreButtonBase;

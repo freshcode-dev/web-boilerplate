@@ -2,12 +2,13 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { CreateUserDto, IdDto, UserDto } from '@boilerplate/shared';
 import { User } from '@boilerplate/data';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Not, QueryFailedError, Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, Not, QueryFailedError, Repository } from 'typeorm';
 import { hash } from 'argon2';
 import { argon2DefaultConfig, DbErrorCodes } from '../constants';
 import { DatabaseError } from 'pg';
 import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
+import { pick } from 'lodash';
 
 interface FindUserOptions {
 	doMapping?: boolean;
@@ -20,8 +21,11 @@ export class UsersService {
 		@InjectMapper() private readonly mapper: Mapper
 	) {}
 
-	public async findOne(instance: Partial<UserDto>, { doMapping = true }: FindUserOptions = {}): Promise<User | null> {
-		const user = await this.usersRepository.findOne({ where: instance });
+	public async findOneUser(
+		where: FindOptionsWhere<User>[] | FindOptionsWhere<User>,
+		{ doMapping = true }: FindUserOptions = {}
+	): Promise<UserDto | null> {
+		const user = await this.usersRepository.findOne({ where });
 
 		if (!user) {
 			return null;
@@ -34,8 +38,11 @@ export class UsersService {
 		return user;
 	}
 
-	public async getOne(instance: Partial<UserDto>, options?: FindUserOptions): Promise<UserDto> {
-		const user = await this.findOne(instance, options);
+	public async getOneUser(
+		where: FindOptionsWhere<User>[] | FindOptionsWhere<User>,
+		options?: FindUserOptions
+	): Promise<UserDto> {
+		const user = await this.findOneUser(where, options);
 
 		if (!user) {
 			throw new NotFoundException('This user does not exist');
@@ -44,15 +51,30 @@ export class UsersService {
 		return user;
 	}
 
-	public async registerUser(userDto: CreateUserDto): Promise<UserDto> {
+	public async getOneUserEntity(
+		where: FindOptionsWhere<User>[] | FindOptionsWhere<User>,
+		options?: FindUserOptions
+	): Promise<User> {
+		const user = await this.findOneUser(where, { ...options, doMapping: false });
+
+		if (!user) {
+			throw new NotFoundException('This user does not exist');
+		}
+
+		return user;
+	}
+
+	public async createUser(userData: CreateUserDto): Promise<UserDto> {
 		try {
-			const createUser = await this.prepareUserToCreate(userDto);
+			await this.verifyUserUniqueData(userData);
+
+			const createUser = await this.prepareUserToCreate(userData);
 
 			const {
 				identifiers: [{ id }],
 			} = await this.usersRepository.insert(createUser);
 
-			return this.getOne({ id });
+			return this.getOneUser({ id: id as string });
 		} catch (exception) {
 			if (!(exception instanceof QueryFailedError)) {
 				throw exception;
@@ -75,6 +97,22 @@ export class UsersService {
 		}
 	}
 
+	public async updateUser(
+		userId: string,
+		userData: Partial<User>,
+		options: { isChangeSecure?: boolean } = {}
+	): Promise<UserDto> {
+		const user = await this.getOneUserEntity({ id: userId });
+
+		await this.verifyUserUniqueData(userData, userId);
+
+		const userToUpdate = await this.prepareUserToUpdate(userData, user, options.isChangeSecure);
+
+		await this.usersRepository.update(user.id, userToUpdate);
+
+		return this.getOneUser({ id: userId });
+	}
+
 	public async verifyIsPhoneUnique(phoneNumber: string, phoneBlacklistUserId?: string): Promise<IdDto> {
 		const user = await this.usersRepository.findOne({
 			where: {
@@ -92,10 +130,10 @@ export class UsersService {
 		};
 	}
 
-	public async verifyIsEmailUnique(email: string, phoneBlacklistUserId?: string): Promise<IdDto> {
+	public async verifyIsEmailUnique(email: string, emailBlacklistUserId?: string): Promise<IdDto> {
 		const user = await this.usersRepository.findOne({
 			where: {
-				id: phoneBlacklistUserId ? Not(phoneBlacklistUserId) : undefined,
+				id: emailBlacklistUserId ? Not(emailBlacklistUserId) : undefined,
 				email: ILike(email),
 			},
 		});
@@ -109,10 +147,10 @@ export class UsersService {
 		};
 	}
 
-	public async verifyIsGoogleEmailUnique(googleEmail: string, phoneBlacklistUserId?: string): Promise<IdDto> {
+	public async verifyIsGoogleEmailUnique(googleEmail: string, googleEmailBlacklistUserId?: string): Promise<IdDto> {
 		const user = await this.usersRepository.findOne({
 			where: {
-				id: phoneBlacklistUserId ? Not(phoneBlacklistUserId) : undefined,
+				id: googleEmailBlacklistUserId ? Not(googleEmailBlacklistUserId) : undefined,
 				googleEmail: ILike(googleEmail),
 			},
 		});
@@ -126,14 +164,50 @@ export class UsersService {
 		};
 	}
 
-	private async prepareUserToCreate(userDto: CreateUserDto): Promise<User> {
+	private async prepareUserToCreate(createUser: CreateUserDto): Promise<User> {
 		const user = new User();
-		user.name = userDto.name;
-		user.phoneNumber = userDto.phoneNumber;
-		user.email = userDto.email;
-		user.googleEmail = userDto.googleEmail;
-		user.password = userDto.password ? await hash(userDto.password, argon2DefaultConfig) : undefined;
+		Object.assign(user, createUser);
+
+		if (user.password) {
+			user.password = await hash(user.password, argon2DefaultConfig);
+		}
 
 		return user;
+	}
+
+	private async prepareUserToUpdate(
+		user: Partial<User>,
+		initialData: User,
+		isChangeSecure = false
+	): Promise<Partial<User>> {
+		const userToUpdate: Partial<User> = {
+			...pick(initialData, ['id']),
+			...pick(user, ['name']),
+			...(isChangeSecure
+				? {
+						...pick(user, ['password', 'email', 'phoneNumber', 'googleEmail']),
+				  }
+				: {}),
+		};
+
+		if (userToUpdate.password) {
+			userToUpdate.password = await hash(userToUpdate.password, argon2DefaultConfig);
+		}
+
+		return userToUpdate;
+	}
+
+	private async verifyUserUniqueData(newData: Partial<User>, userId?: string): Promise<void> {
+		if (newData.email) {
+			await this.verifyIsEmailUnique(newData.email, userId);
+		}
+
+		if (newData.phoneNumber) {
+			await this.verifyIsPhoneUnique(newData.phoneNumber, userId);
+		}
+
+		if (newData.googleEmail) {
+			await this.verifyIsGoogleEmailUnique(newData.googleEmail, userId);
+		}
 	}
 }

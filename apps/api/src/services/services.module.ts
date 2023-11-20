@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
-import { HttpModule } from '@nestjs/axios';
-import { DatabaseModule, Session, User } from '@boilerplate/data';
+import { DatabaseModule, modelsToInclude } from '@boilerplate/data';
 import { PassportModule } from '@nestjs/passport';
+import { ConfigModule } from '@nestjs/config';
+import { HttpModule } from '@nestjs/axios';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersService } from './users.service';
 import { AuthService } from './auth.service';
@@ -12,16 +13,16 @@ import { TokensService } from './tokens.service';
 import { JwtRefreshGuard } from './guard/jwt-refresh.guard';
 import { JwtRefreshStrategy } from './strategy/jwt-refresh.strategy';
 import { UserProfile } from './profiles/user.profile';
-import { PhoneVerificationService } from './phone-verification.service';
+import { TwilioService } from './twillio.service';
 import { LoggingModule } from '../core/logging/logging.module';
 import { GoogleAuthService } from './google-auth.service';
-import { ExternalApisService } from './external.service';
-import { ConfigModule } from '@nestjs/config';
+import { OTPService } from './otp.service';
+import { MailerService } from './mailer.service';
+import { ExternalApiService } from './external-api.service';
 
 @Module({
 	imports: [
-		ConfigModule,
-		DatabaseModule.forFeature([User, Session]),
+		DatabaseModule.forFeature(modelsToInclude),
 		PassportModule,
 		LoggingModule,
 		ConfigModule,
@@ -38,10 +39,12 @@ import { ConfigModule } from '@nestjs/config';
 		TokensService,
 		JwtRefreshGuard,
 		JwtRefreshStrategy,
-		PhoneVerificationService,
+		TwilioService,
 		GoogleAuthService,
-		ExternalApisService
+		OTPService,
+		MailerService,
+		ExternalApiService,
 	],
-	exports: [UsersService, AuthService, SessionsService, PhoneVerificationService, ExternalApisService],
+	exports: [UsersService, AuthService, SessionsService, TwilioService, ExternalApiService],
 })
 export class ServicesModule {}

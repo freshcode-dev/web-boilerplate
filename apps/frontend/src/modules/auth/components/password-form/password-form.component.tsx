@@ -8,21 +8,23 @@ import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { PasswordDto } from '@boilerplate/shared';
 import { SerializedError } from '@reduxjs/toolkit';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
-import { titleStyles } from '../login-form/login-form.styles';
+import { formElementStyles, titleStyles } from '../login-form/login-form.styles';
 import { LoginErrorLabel } from '../login-form';
 import { CorePasswordInput } from '../../../_core/components/_ui/core-password-input';
+import { ForgotPasswordLabel } from '../_ui/forgot-password-label';
 import { errorMessage } from '../../../_core/utils/lang.utils';
 
 const resolver = classValidatorResolver(PasswordDto);
 
 export interface PasswordFormProps {
 	error?: SerializedError | FetchBaseQueryError;
+	showAdditionalActions?: boolean;
 	onSubmit(value: PasswordDto, markError: () => void): Promise<void> | void;
-	onBack(): void;
+	onBack?(): void;
 }
 
 export const PasswordForm: FC<PasswordFormProps> = (props) => {
-	const { error, onBack, onSubmit } = props;
+	const { error, onBack, onSubmit, showAdditionalActions = true } = props;
 
 	const [t] = useTranslation();
 
@@ -31,14 +33,19 @@ export const PasswordForm: FC<PasswordFormProps> = (props) => {
 		setError,
 		register,
 		formState: { errors, isSubmitting, isDirty, isSubmitted, isValid },
-	} = useForm<PasswordDto>({ resolver });
+	} = useForm<PasswordDto>({
+		defaultValues: {
+			password: '',
+		},
+		resolver,
+	});
 
 	const disableSubmit = !isValid && (isDirty || isSubmitted);
 
 	const handleFormSubmit = useCallback(
 		async (values: PasswordDto) =>
-			onSubmit(values, () => {
-				setError('password', { type: 'isValidCredentials' });
+			onSubmit({ ...values }, () => {
+				setError('password', { type: 'invalidPassword' });
 			}),
 		[onSubmit, setError]
 	);
@@ -49,20 +56,28 @@ export const PasswordForm: FC<PasswordFormProps> = (props) => {
 				{t('sign-in.enter-password')}
 			</Typography>
 			<CorePasswordInput
+				{...register('password')}
+				sx={formElementStyles}
 				fullWidth
 				id="password"
 				onlyShowOnMouseDown
 				requiredMark
 				label={t('sign-in.sign-in-form.password')}
-				{...register('password')}
 				error={!!errors.password}
 				helperText={errorMessage(t, errors.password?.type)}
 			/>
-			<LoginErrorLabel error={error} />
+			{showAdditionalActions && (
+				<Box sx={formElementStyles}>
+					<ForgotPasswordLabel />
+				</Box>
+			)}
+			<LoginErrorLabel error={error} errorI18nKey="sign-in.check-password-or-register" />
 			<FormControlsContainer>
-				<CoreButton variant="secondary" sx={{ mr: 1.5, width: 115 }} onClick={onBack} disabled={isSubmitting}>
-					{t('sign-in.sign-in-form.back')}
-				</CoreButton>
+				{onBack && (
+					<CoreButton variant="secondary" sx={{ mr: 1.5, width: 115 }} onClick={onBack} disabled={isSubmitting}>
+						{t('sign-in.sign-in-form.back')}
+					</CoreButton>
+				)}
 				<CoreButton sx={{ ml: 1.5, width: 115 }} type="submit" loading={isSubmitting} disabled={disableSubmit}>
 					{t('sign-in.sign-in-form.next')}
 				</CoreButton>

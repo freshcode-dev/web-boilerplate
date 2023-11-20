@@ -1,4 +1,4 @@
-import { forwardRef, useState } from 'react';
+import { forwardRef, useCallback, useState } from 'react';
 import { CoreTextField, CoreTextFieldProps } from '../core-textfield';
 import { IconButton, InputAdornment } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -12,36 +12,38 @@ export interface CorePasswordInputProps extends CoreTextFieldProps {
 }
 
 export const CorePasswordInput = forwardRef<unknown, CorePasswordInputProps>((props, ref) => {
-	const [showPassword, setShowPassword] = useState(props.defaultShowPassword ?? false);
+	const { defaultShowPassword, iconHidePassword, iconShowPassword, onlyShowOnMouseDown, ...inputProps } = props;
 
-	const showIcon = props.iconShowPassword ?? <VisibilityIcon />;
-	const hideIcon = props.iconHidePassword ?? <VisibilityOffIcon />;
+	const [showPassword, setShowPassword] = useState(defaultShowPassword ?? false);
+
+	const showIcon = iconShowPassword ?? <VisibilityIcon />;
+	const hideIcon = iconHidePassword ?? <VisibilityOffIcon />;
 
 	const handleClickShowPassword = () => {
-		if (props.onlyShowOnMouseDown) return;
+		if (onlyShowOnMouseDown) return;
 
 		setShowPassword((s) => !s);
 	};
 
-	const handleMouseUpPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+	const handleMouseUpPassword = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
 		event.preventDefault();
 
-		if (props.onlyShowOnMouseDown) {
+		if (onlyShowOnMouseDown) {
 			setShowPassword(false);
 		}
-	};
+	}, [onlyShowOnMouseDown]);
 
-	const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+	const handleMouseDownPassword = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
 		event.preventDefault();
 
-		if (props.onlyShowOnMouseDown) {
+		if (onlyShowOnMouseDown) {
 			setShowPassword(true);
 		}
-	};
+	}, [onlyShowOnMouseDown]);
 
 	return (
 		<CoreTextField
-			{...props}
+			{...inputProps}
 			endAdornment={
 				<InputAdornment position="end">
 					<IconButton

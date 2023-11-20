@@ -1,18 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Session } from '@boilerplate/data';
 import { MoreThan, Not, Repository } from 'typeorm';
 import { randomUUID } from 'crypto';
-import { SessionDto } from '@boilerplate/shared';
+import { SessionDto, SessionFilter } from '@boilerplate/shared';
+import { Session } from '@boilerplate/data';
 import { TokensService } from '../services/tokens.service';
-import { ExternalApisService } from './external.service';
+import { ExternalApiService } from './external-api.service';
 
 @Injectable()
 export class SessionsService {
 	constructor(
 		@InjectRepository(Session) private readonly sessionRepository: Repository<Session>,
 		private readonly tokensService: TokensService,
-		private readonly externalApiService: ExternalApisService
+		private readonly externalApiService: ExternalApiService
 	) {}
 
 	public async updateSessionToken(
@@ -58,7 +58,7 @@ export class SessionsService {
 		return session;
 	}
 
-	public async listUserSessions(userId: string, filters?: { withIpDetails?: boolean }): Promise<SessionDto[]> {
+	public async listUserSessions(userId: string, filters?: SessionFilter): Promise<SessionDto[]> {
 		const sessionsList = await this.sessionRepository.find({
 			where: {
 				userId,
@@ -80,7 +80,7 @@ export class SessionsService {
 		return sessionsList;
 	}
 
-	public async findSessionById(id: string, filters?: { withIpDetails?: boolean }): Promise<SessionDto | null> {
+	public async findSessionById(id: string, filters?: SessionFilter): Promise<SessionDto | null> {
 		const session = await this.sessionRepository.findOne({ where: { id } });
 
 		if (filters?.withIpDetails && session) {
@@ -90,7 +90,7 @@ export class SessionsService {
 		return session;
 	}
 
-	public async getSessionById(id: string, filters?: { withIpDetails?: boolean }): Promise<SessionDto> {
+	public async getSessionById(id: string, filters?: SessionFilter): Promise<SessionDto> {
 		const session = await this.findSessionById(id, filters);
 
 		if (!session) {

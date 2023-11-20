@@ -2,7 +2,7 @@ import React, { FC, useCallback, useRef, useState } from "react";
 import Flags, { FlagComponent } from "country-flag-icons/react/3x2";
 import { Country } from "react-phone-number-input";
 import Input from 'react-phone-number-input/react-hook-form';
-import { CoreFormControlProps } from "../core-form-control/core-form-control.component";
+import { CoreFormControlProps } from "../core-form-control";
 import PhoneForwardedTextField from "./phone-forwarded-text-field.component";
 import CountriesMenu from "./countries-menu.component";
 import { CountryPhoneOptions } from "../../../constants/country-phone.constants";

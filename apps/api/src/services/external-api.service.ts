@@ -8,7 +8,7 @@ import { IApiConfigParams } from "../interfaces/api-config-params";
 import { AxiosResponse } from "@nestjs/terminus/dist/health-indicator/http/axios.interfaces";
 
 @Injectable()
-export class ExternalApisService {
+export class ExternalApiService {
 	constructor(private readonly httpService: HttpService, private readonly configService: ConfigService<IApiConfigParams>) {}
 
 	public async getIpAddressDetails(ipAddress: string): Promise<IpAddressDetails | undefined> {

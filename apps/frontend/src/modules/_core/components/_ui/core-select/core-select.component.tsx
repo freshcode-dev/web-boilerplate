@@ -1,5 +1,5 @@
 import React, { ElementType, FC, forwardRef, useRef } from "react";
-import { CoreFormControlProps, CoreFormControl } from "../core-form-control";
+import { CoreFormControl, CoreFormControlProps } from "../core-form-control";
 import { InputBaseProps, Select, SelectProps, SxProps, Theme } from "@mui/material";
 import { selectPaperStyles } from "./core-select.styles";
 import { DropdownArrow } from "./dropdown-arrow.component";

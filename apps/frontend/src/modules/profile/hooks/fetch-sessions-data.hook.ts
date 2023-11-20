@@ -6,9 +6,9 @@ import {
 	useInterruptOtherSessionsMutation,
 } from '../../../store/api/sessions.api';
 import { useCurrentRefreshTokenSelector } from '../../auth';
-import { SessionDto } from '@boilerplate/shared';
+import { SessionDto, SessionFilter } from '@boilerplate/shared';
 
-export const useFetchSessionsData = (filters?: { withIpDetails?: boolean }) => {
+export const useFetchSessionsData = (filters?: SessionFilter) => {
 	const refreshToken = useCurrentRefreshTokenSelector();
 
 	const { data: currentSession, isLoading: isGetCurrentSessionLoading } = useGetCurrentSessionQuery({ refreshToken: refreshToken?.token ?? '', withIpDetails: filters?.withIpDetails });

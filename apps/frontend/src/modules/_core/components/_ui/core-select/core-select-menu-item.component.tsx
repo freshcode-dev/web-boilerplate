@@ -1,7 +1,7 @@
 import { FC, forwardRef } from "react";
 import { styled } from "@mui/material/styles";
 import { MenuItem, MenuItemProps, Typography } from "@mui/material";
-import { CoreCheckbox } from "../core-checkbox/core-checkbox.component";
+import { CoreCheckbox } from "../core-checkbox";
 import { selectCheckboxStyles } from "./core-select.styles";
 
 interface CoreSelectMenuItemProps extends MenuItemProps {

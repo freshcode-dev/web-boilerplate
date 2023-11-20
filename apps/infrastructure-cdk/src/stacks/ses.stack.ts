@@ -2,7 +2,7 @@ import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ses from 'aws-cdk-lib/aws-ses';
 
-interface LoadBalancerStackProps extends StackProps {
+interface SesStackProps extends StackProps {
 	emailIdentityDomain: string | undefined;
 }
 
@@ -11,7 +11,7 @@ export class SesStack extends Stack {
 	constructor(scope: Construct,
 							id: string,
 							applicationName: string,
-							props?: LoadBalancerStackProps) {
+							props?: SesStackProps) {
 		super(scope, id, props);
 
 		if (!props?.emailIdentityDomain) {

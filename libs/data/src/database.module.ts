@@ -1,6 +1,6 @@
 import { DynamicModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { User, Session } from './models';
+import { User, Session, OTPEntity } from './models';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
 	TypeOrmModuleAsyncOptions,
@@ -13,7 +13,8 @@ import { DbMigration } from './models/db-migration.entity';
 export const modelsToInclude = [
 	DbMigration,
 	User,
-	Session
+	Session,
+	OTPEntity,
 ];
 
 type DatabaseModuleOptions = TypeOrmModuleOptions & {

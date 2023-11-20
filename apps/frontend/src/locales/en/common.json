@@ -12,17 +12,30 @@
 		"profile": "Profile",
 		"security": "Security",
 		"open-menu": "Open menu",
-		"close-menu": "Close menu"
+		"close-menu": "Close menu",
+		"restore-password": "Reset Password"
 	},
 	"profile": {
 		"my-profile": "My profile",
+		"edit": "Edit",
+		"confirm": "Confirm",
+		"user-data": "User Data",
+		"contact-info": "Contact Info",
 		"title": "Profile",
 		"name": "Name",
 		"email": "Email",
 		"phone": "Phone",
 		"logout": "Logout",
+		"google-account": "Google account",
+		"google-account-not-connected": "Not connected",
+		"google-auth": "Auth with Google",
+		"change-user-data-ph": "Change user data",
+		"change-email-ph": "Change login email",
+		"change-phone-ph": "Change login phone",
+		"change-password-ph": "Change password",
 		"sessions": {
-			"signOutAllSessions": "Sign out other sessions",
+			"current-session": "Current session",
+			"sign-out-all-sessions": "Sign out other sessions",
 			"table": {
 				"empty-title": "",
 				"empty-description": "No sessions",
@@ -48,8 +61,8 @@
 			"full-name": "Full name",
 			"phone-number": "Phone number",
 			"password-ph": "Enter Password",
-			"password": "Password",
-			"confirmPassword": "Confirm Password",
+			"new-password": "New password",
+			"confirm-password": "Confirm Password",
 			"email": "Email",
 			"next": "Next",
 			"confirm": "Next"
@@ -60,8 +73,10 @@
 		"account-sign-in": "Login to Personal Account",
 		"login-via-email": "Login via email",
 		"login-via-phone": "Login via phone",
-		"check-number-or-register": "Please check if the entered phone number is correct, or <0>Register</0>",
+		"check-phone-or-register": "Please check if the entered phone number is correct, or <0>Register</0>",
 		"check-email-or-register": "Please check if the entered email is correct, or <0>Register</0>",
+		"check-password-or-register": "Please check if the entered password is correct, or <0>Register</0>",
+		"check-password": "Entered password is incorrect",
 		"register-link": "Don't have an account? <0>Register</0>",
 		"enter-password": "Enter your password",
 		"sign-in-form": {
@@ -78,16 +93,39 @@
 	"auth-confirmation": {
 		"too-many-requests": "Too many attempts. Please try again in 5 minutes",
 		"enter-code": "Enter the Verification Code",
-		"resend-code": "Didn't receive a verification code? Click <0>Resend</0>",
+		"resend-code": "Didn't receive a verification code? <0>Resend</0>",
 		"check-and-resend-code": "Incorrect code. Please check if the entered code is correct or click <0>Resend</0>",
-		"confirmation-flow-description": "You should receive a text message (SMS) on your phone with a confirmation code",
+		"confirmation-flow-description": "You should receive a text message (SMS or Email) on your phone or email with a confirmation code",
 		"confirm-form": {
 			"back": "Back",
 			"confirm": "Next",
 			"next": "Next"
 		}
 	},
+	"restore-password": {
+		"title": "Restore password",
+		"forgot-password-ph": "Forgot password?",
+		"forgot-password-link": "<0>Forgot password?</0>",
+		"enter-email-ph": "Enter your email address to reset your password",
+		"user-not-found": "User with this email is not found",
+		"invalid-token": "Invalid token",
+		"too-many-requests": "Too many attempts. Please try again in 5 minutes",
+		"check-email-or-register": "Please check if the entered email is correct, or <0>Register</0>",
+		"new-password": "Set up a new password",
+		"receive-email": "You should receive an email with a link to reset your password. If you don't receive it, please check your spam folder",
+		"restore-complete": "Your password has been successfully changed. <0>Log in</0>"
+	},
+	"errors": {
+		"phone-error": "Phone is required",
+		"email-error": "Email is required",
+		"password-error": "Password is required",
+		"name-error": "Name is required",
+		"phone-unique-error": "Phone number is already in use",
+		"email-unique-error": "Email is already in use"
+	},
 	"defaults": {
+		"seconds": "seconds",
+		"seconds_short": "s",
 		"modals": {
 			"confirmation-title": "Confirmation is required",
 			"confirmation-description": "Please confirm the action. This can't be undone!",

@@ -2,9 +2,10 @@ import React, { FC } from 'react';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
 import { SerializedError } from '@reduxjs/toolkit';
 import { Trans, useTranslation } from 'react-i18next';
-import CoreLinkButton from '../../../_core/components/_ui/core-button/core-link-button.component';
+import { CoreLinkButton } from '../../../_core/components/_ui/core-button';
 import { Typography } from '@mui/material';
 import { AuthRoutes } from '../../constants';
+import { errorLabelTextStyles } from './login-form.styles';
 
 interface LoginErrorLabelProps {
 	error?: FetchBaseQueryError | SerializedError;
@@ -25,7 +26,7 @@ export const LoginErrorLabel: FC<LoginErrorLabelProps> = (props) => {
 
 		return (
 			<Trans
-				i18nKey={errorI18nKey ?? 'sign-in.check-number-or-register'}
+				i18nKey={errorI18nKey ?? 'sign-in.check-phone-or-register'}
 				components={[<CoreLinkButton to={AuthRoutes.SignUp} />]}
 			/>
 		);
@@ -38,18 +39,7 @@ export const LoginErrorLabel: FC<LoginErrorLabelProps> = (props) => {
 	return (
 		<Typography
 			variant="body2"
-			sx={[
-				{
-					textAlign: 'center',
-					mt: 4,
-					color: ({ colors }) => (status === 429 ? colors.red : colors.black),
-				},
-				({ breakpoints }) => ({
-					[breakpoints.down('sm')]: {
-						mt: 3,
-					},
-				}),
-			]}
+			sx={errorLabelTextStyles(status === 429)}
 		>
 			{getErrorText()}
 		</Typography>

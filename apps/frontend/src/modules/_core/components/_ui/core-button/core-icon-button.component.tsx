@@ -22,5 +22,3 @@ export const CoreIconButton: StyledComponent<ButtonBaseProps> = styled(ButtonBas
 		color: theme.colors.blueTransparent
 	}
 }));
-
-export default CoreIconButton;

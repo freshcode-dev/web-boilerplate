@@ -9,22 +9,23 @@ import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { AuthReasonEnum, ConfirmationCodeDto, VERIFICATION_CODE_LENGTH } from '@boilerplate/shared';
 import { SerializedError } from '@reduxjs/toolkit';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
-import { ConfirmationErrorLabel } from './phone-confirmation-error-label.component';
-import { labelStyles } from './phone-confirmation-form.styles';
+import { ConfirmationErrorLabel } from './code-confirmation-error-label.component';
+import { titleStyles, labelStyles } from './code-confirmation-form.styles';
 import { useSendOtpMutation } from '../../../../store/api/auth.api';
-import { titleStyles } from '../login-form/login-form.styles';
 
 const resolver = classValidatorResolver(ConfirmationCodeDto);
 
-interface PhoneConfirmationFormProps {
+interface CodeConfirmationFormProps {
+	reason: AuthReasonEnum;
 	phoneNumber?: string | null;
+	email?: string | null;
 	error?: SerializedError | FetchBaseQueryError;
 	onSubmit(value: ConfirmationCodeDto, markError: () => void): Promise<void> | void;
-	onBack(): void;
+	onBack?(): void;
 }
 
-export const PhoneConfirmationForm: FC<PhoneConfirmationFormProps> = (props) => {
-	const { phoneNumber, error, onBack, onSubmit } = props;
+export const CodeConfirmationForm: FC<CodeConfirmationFormProps> = (props) => {
+	const { reason, email, phoneNumber, error, onBack, onSubmit } = props;
 
 	const [t] = useTranslation();
 
@@ -32,44 +33,39 @@ export const PhoneConfirmationForm: FC<PhoneConfirmationFormProps> = (props) => 
 		handleSubmit,
 		control,
 		setError,
-		formState: {
-			errors,
-			isSubmitting,
-			isDirty,
-			isSubmitted,
-			isValid
-		}
+		formState: { errors, isSubmitting, isDirty, isSubmitted, isValid },
 	} = useForm<ConfirmationCodeDto>({ resolver });
 
 	const [sendOtp, { error: otpError, isLoading: isOtpSending, reset }] = useSendOtpMutation();
 
 	const disableSubmit = !isValid && (isDirty || isSubmitted);
 
-	const handleFormSubmit = useCallback(async (values: ConfirmationCodeDto) => {
-		reset();
+	const handleFormSubmit = useCallback(
+		async (values: ConfirmationCodeDto) => {
+			reset();
 
-		return onSubmit(
-			values,
-			() => {
+			return onSubmit({ ...values }, () => {
 				setError('code', { type: 'invalidCodeError' });
-			},
-		);
-	}, [onSubmit, reset, setError]);
+			});
+		},
+		[onSubmit, reset, setError]
+	);
 
 	const handleResend = useCallback(async () => {
 		try {
-			if (!phoneNumber) {
+			if (!phoneNumber || !email) {
 				return;
 			}
 
 			await sendOtp({
-				reason: AuthReasonEnum.Resend,
-				phoneNumber
+				reason,
+				email,
+				phoneNumber,
 			}).unwrap();
 		} catch {
 			setError('code', { type: 'otpResendError' });
 		}
-	}, [phoneNumber, sendOtp, setError]);
+	}, [email, phoneNumber, reason, sendOtp, setError]);
 
 	return (
 		<Box
@@ -83,22 +79,14 @@ export const PhoneConfirmationForm: FC<PhoneConfirmationFormProps> = (props) => 
 			>
 				{t('auth-confirmation.enter-code')}
 			</Typography>
-			<Typography
-				variant="body2"
-				sx={labelStyles}
-			>
+			<Typography variant="body2" sx={labelStyles}>
 				{t('auth-confirmation.confirmation-flow-description')}
 			</Typography>
 			<Controller
 				control={control}
 				name="code"
 				render={({ field: { onChange, value } }) => (
-					<OtpInput
-						numInputs={VERIFICATION_CODE_LENGTH}
-						onChange={onChange}
-						value={value}
-						error={!!errors.code}
-					/>
+					<OtpInput numInputs={VERIFICATION_CODE_LENGTH} onChange={onChange} value={value} error={!!errors.code} />
 				)}
 			/>
 			<ConfirmationErrorLabel
@@ -108,20 +96,12 @@ export const PhoneConfirmationForm: FC<PhoneConfirmationFormProps> = (props) => 
 				submitting={isSubmitting || isOtpSending}
 			/>
 			<FormControlsContainer>
-				<CoreButton
-					variant="secondary"
-					sx={{ mr: 1.5, width: 115 }}
-					onClick={onBack}
-					disabled={isSubmitting}
-				>
-					{t('auth-confirmation.confirm-form.back')}
-				</CoreButton>
-				<CoreButton
-					sx={{ ml: 1.5, width: 115 }}
-					type="submit"
-					loading={isSubmitting}
-					disabled={disableSubmit}
-				>
+				{onBack && (
+					<CoreButton variant="secondary" sx={{ mr: 1.5, width: 115 }} onClick={onBack} disabled={isSubmitting}>
+						{t('auth-confirmation.confirm-form.back')}
+					</CoreButton>
+				)}
+				<CoreButton sx={{ ml: 1.5, width: 115 }} type="submit" loading={isSubmitting} disabled={disableSubmit}>
 					{t('auth-confirmation.confirm-form.next')}
 				</CoreButton>
 			</FormControlsContainer>

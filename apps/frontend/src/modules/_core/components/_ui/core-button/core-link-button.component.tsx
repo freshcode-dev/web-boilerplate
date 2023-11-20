@@ -6,7 +6,7 @@ interface CoreLinkButtonProps extends ButtonBaseProps {
 	to?: string;
 }
 
-const CoreLinkButton: FC<CoreLinkButtonProps> = (props) => {
+export const CoreLinkButton: FC<CoreLinkButtonProps> = (props) => {
 	const { to, sx, ...buttonProps } = props;
 
 	const theme = useTheme();
@@ -33,5 +33,3 @@ const CoreLinkButton: FC<CoreLinkButtonProps> = (props) => {
 		/>
 	);
 };
-
-export default CoreLinkButton;

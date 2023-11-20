@@ -1,17 +1,20 @@
 import React, { FC, useCallback, useEffect, useState } from 'react';
 import { Box, Container } from '@mui/material';
-import { useRegisterWithEmailMutation } from '../../../../store/api/auth.api';
-import { REGISTER_CACHE_KEY } from '../../constants/auth-cache.constants';
-import { containerStyles } from './signup-with-email.styles';
+import { useRegisterWithEmailMutation, useSendOtpMutation } from '../../../../store/api/auth.api';
+import { REGISTER_CACHE_KEY, VERIFY_CACHE_KEY } from '../../constants/auth-cache.constants';
+import { containerStyles, googleAuthRowStyles, wrapperStyles } from './signup-with-email.styles';
 import { useLangParam } from '../../hooks/use-lang-param.hook';
-import { SignUpWithEmailFormData } from '../../models/sign-up-form.dto';
 import { SignUpWithEmailForm } from '../../components/signup-form';
 import { GoogleAuthButton } from '../../components/_ui/google-auth-button';
-import { googleAuthRowStyles } from '../login-with-email/login-with-email.styles';
+import { AuthReasonEnum, ConfirmationCodeDto, SignUpWithEmailDto } from '@boilerplate/shared';
 import { getErrorStatusCode, getFieldFromConflictError } from '../../../_core/utils/error.utils';
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
+import { SerializedError } from '@reduxjs/toolkit';
+import { CodeConfirmationForm } from '../../components/code-confirmation-form';
 
 interface FormsState {
-	profile: Partial<SignUpWithEmailFormData>;
+	activeForm: 'data' | 'code';
+	profile: Partial<SignUpWithEmailDto>;
 }
 
 export const SignUpWithEmailPage: FC = () => {
@@ -21,9 +24,15 @@ export const SignUpWithEmailPage: FC = () => {
 		fixedCacheKey: REGISTER_CACHE_KEY,
 	});
 
-	const [signUpError, setSignUpError] = useState<Error | null>(null);
+	const [sendOtp, { reset: resetOtp }] = useSendOtpMutation({
+		fixedCacheKey: VERIFY_CACHE_KEY,
+	});
 
-	const [{ profile }] = useState<FormsState>({
+	const [otpError, setOtpError] = useState<FetchBaseQueryError | SerializedError | undefined>();
+	const [registerError, setRegisterError] = useState<FetchBaseQueryError | SerializedError | undefined>();
+
+	const [{ activeForm, profile }, setFormsState] = useState<FormsState>({
+		activeForm: 'data',
 		profile: {
 			email: '',
 			name: '',
@@ -31,12 +40,24 @@ export const SignUpWithEmailPage: FC = () => {
 		},
 	});
 
-	const handleSignupSubmit = useCallback(
-		async (profile: SignUpWithEmailFormData, markError: (field?: string) => void) => {
+	const handleRegisterFormSubmit = useCallback(
+		async (form: SignUpWithEmailDto, markError: (field?: string) => void) => {
 			try {
-				await register({
-					...(profile as SignUpWithEmailFormData),
+				const { email, phoneNumber } = form;
+
+				await sendOtp({
+					reason: AuthReasonEnum.SignUp,
+					phoneNumber,
+					email,
 				}).unwrap();
+
+				setFormsState((state) => ({
+					activeForm: 'code',
+					profile: {
+						...state.profile,
+						...form,
+					},
+				}));
 			} catch (error) {
 				const status = getErrorStatusCode(error as Error);
 
@@ -48,22 +69,61 @@ export const SignUpWithEmailPage: FC = () => {
 					markError();
 				}
 
-				setSignUpError(error as Error);
+				setOtpError(error as Error);
 			}
 		},
-		[register]
+		[sendOtp]
 	);
+
+	const handleCodeSubmit = useCallback(
+		async ({ code }: ConfirmationCodeDto, markError: (field?: string) => void) => {
+			try {
+				await register({
+					...(profile as SignUpWithEmailDto),
+					code,
+				}).unwrap();
+			} catch (error) {
+				markError();
+
+				setRegisterError(error as Error);
+			}
+		},
+		[register, profile]
+	);
+
+	const goToRegisterForm = useCallback(() => {
+		setFormsState((state) => ({
+			...state,
+			activeForm: 'data',
+		}));
+		setOtpError(undefined);
+		setRegisterError(undefined);
+	}, []);
 
 	useEffect(
 		() => () => {
+			resetOtp();
 			resetRegister();
 		},
-		[resetRegister]
+		[resetOtp, resetRegister]
 	);
 
 	return (
 		<Container sx={containerStyles}>
-			<SignUpWithEmailForm profile={profile} onSubmit={handleSignupSubmit} error={signUpError ?? undefined} />
+			<Box sx={wrapperStyles}>
+				{activeForm === 'data' && (
+					<SignUpWithEmailForm profile={profile} onSubmit={handleRegisterFormSubmit} error={otpError} />
+				)}
+				{activeForm === 'code' && (
+					<CodeConfirmationForm
+						reason={AuthReasonEnum.SignUp}
+						email={profile.email}
+						error={registerError}
+						onSubmit={handleCodeSubmit}
+						onBack={goToRegisterForm}
+					/>
+				)}
+			</Box>
 
 			<Box sx={googleAuthRowStyles}>
 				<GoogleAuthButton />

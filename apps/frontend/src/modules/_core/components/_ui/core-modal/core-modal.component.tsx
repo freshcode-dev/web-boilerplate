@@ -124,9 +124,9 @@ export const CoreModal: FC<CoreModalProps> = (props) => {
 				)}
 				{!headerComponent && modalTitle && (
 					<Typography
-						variant="h1"
+						variant="h4"
 						sx={[
-							{ mb: 2, px: 5 },
+							{ mb: 2, px: 4 },
 							({ breakpoints }) => ({
 								[breakpoints.down('sm')]: { px: 3 }
 							}),

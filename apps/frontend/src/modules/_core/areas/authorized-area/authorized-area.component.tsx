@@ -11,6 +11,8 @@ import SystemBottomTabs from '../../components/system-bottom-tabs/system-bottom-
 import SystemHeaderMobile from '../../components/system-header-mobile/system-header-mobile.component';
 import SystemHeader from '../../components/system-header/system-header.component';
 import SystemDrawer from '../../components/system-drawer/system-drawer.component';
+import { GSIClientContextProvider, assignGoogleAccount } from '../../../auth';
+import { googleApiClientId, isGoogleAuthEnabled } from '../../../../constants';
 
 const AuthorizedArea: FC = () => {
 	const pageTitle = usePageTitle();
@@ -18,37 +20,43 @@ const AuthorizedArea: FC = () => {
 	const isMobile = useIsMobile();
 
 	return (
-		<AreaProviders>
-			<Helmet title={pageTitle}>
-				<meta
-					name="viewport"
-					content="width=device-width, maximum-scale=1, minimum-scale=1, initial-scale=1, user-scalable=no"
-				/>
-			</Helmet>
+		<GSIClientContextProvider
+			isEnabled={isGoogleAuthEnabled}
+			clientId={googleApiClientId}
+			callback={assignGoogleAccount}
+		>
+			<AreaProviders>
+				<Helmet title={pageTitle}>
+					<meta
+						name="viewport"
+						content="width=device-width, maximum-scale=1, minimum-scale=1, initial-scale=1, user-scalable=no"
+					/>
+				</Helmet>
 
-			<Box
-				sx={{
-					display: 'flex',
-					flexDirection: 'column',
-					height: '100%',
-				}}
-			>
-				<Box sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-					{!isMobile && <SystemDrawer />}
-					<Box sx={getAppWrapperStyles(isMobile)}>
-						<Box component="header">{isMobile ? <SystemHeaderMobile /> : <SystemHeader />}</Box>
-						<Box component="main" sx={getMainStyles(isMobile)}>
-							<Paper elevation={0} sx={getMainPaperStyles(isMobile)}>
-								<Suspense fallback={<SuspenseSpinner full />}>
-									<Outlet />
-								</Suspense>
-							</Paper>
+				<Box
+					sx={{
+						display: 'flex',
+						flexDirection: 'column',
+						height: '100%',
+					}}
+				>
+					<Box sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+						{!isMobile && <SystemDrawer />}
+						<Box sx={getAppWrapperStyles(isMobile)}>
+							<Box component="header">{isMobile ? <SystemHeaderMobile /> : <SystemHeader />}</Box>
+							<Box component="main" sx={getMainStyles(isMobile)}>
+								<Paper elevation={0} sx={getMainPaperStyles(isMobile)}>
+									<Suspense fallback={<SuspenseSpinner full />}>
+										<Outlet />
+									</Suspense>
+								</Paper>
+							</Box>
 						</Box>
 					</Box>
+					{isMobile && <SystemBottomTabs />}
 				</Box>
-				{isMobile && <SystemBottomTabs />}
-			</Box>
-		</AreaProviders>
+			</AreaProviders>
+		</GSIClientContextProvider>
 	);
 };
 
