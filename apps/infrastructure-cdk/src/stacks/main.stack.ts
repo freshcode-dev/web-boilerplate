@@ -503,6 +503,8 @@ export class MainStack extends Stack {
 				NX_FRONTEND_URL: `https://${this.stageSettings.ecsAppHost}`,
 				NX_REDIS_HOST: this.redisDefinition.namespaceDnsName!,
 				NX_REDIS_PORT: String(this.redisDefinition.port!),
+				NX_SES_SMTP_HOST: `email-smtp.${this.region}.amazonaws.com`,
+				NX_SES_SMTP_PORT: '587',
 			},
 			secrets: {
 				NX_REDIS_PASSWORD: ecs.Secret.fromSecretsManager(this.redisDefinition.passwordSecret!, 'password'),

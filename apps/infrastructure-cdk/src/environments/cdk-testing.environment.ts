@@ -2,9 +2,6 @@ import { ICdkEnvironmentSettings } from './types';
 import { RemovalPolicy } from 'aws-cdk-lib';
 import { InstanceClass, InstanceSize } from 'aws-cdk-lib/aws-ec2';
 
-const { NX_CDK_MAINTAINERS_EMAILS } = process.env;
-
-const maintenersEmails: string[] = [...(JSON.parse(NX_CDK_MAINTAINERS_EMAILS ?? '[]') as string[])];
 
 export const cdkTestingEnvironmentSettings: ICdkEnvironmentSettings = {
 	withMaintenanceSchedule: true,
@@ -29,6 +26,8 @@ export const cdkTestingEnvironmentSettings: ICdkEnvironmentSettings = {
 		NX_FRONT_STAGE_NAME_TO_DISPLAY: 'dev',
 		NX_USE_AWS_CREDENTIALS: 'false',
 		NX_DATABASE_REJECT_UNAUTHORIZED: 'true',
+		NX_SES_ACCESS_KEY_ID: '',
+		NX_SES_SECRET_ACCESS_KEY: '',
 	},
 	ecsApplicationTaskCpu: 256,
 	ecsApplicationTaskMemory: 512,
@@ -36,7 +35,9 @@ export const cdkTestingEnvironmentSettings: ICdkEnvironmentSettings = {
 	ecsRedisTaskCpu: 256,
 	ecsRedisTaskMemory: 512,
 
-	maintenersEmails: maintenersEmails ?? [],
+	maintenersEmails: [
+		"pavlo.radiev@freshcodeit.net"
+	],
 	alarmsParams: {
 		tooManyErrors: {
 			period: 15,
