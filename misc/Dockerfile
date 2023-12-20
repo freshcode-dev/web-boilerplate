@@ -16,8 +16,7 @@ COPY ./misc/env.sh /app/client/misc/
 COPY ./apps/frontend/.env /app/client/
 
 RUN apk add --no-cache bash && chmod +x /app/client/misc/env.sh
-RUN sed -i -e 's/\r$//' /app/client/misc/env.sh
 
 EXPOSE 3000
 
-CMD ["/bin/bash", "-c", "cd /app/ && node main.js"]
+CMD ["/bin/bash", "-c", "cd /app/client/ && ./misc/env.sh && cd /app/ && node main.js"]

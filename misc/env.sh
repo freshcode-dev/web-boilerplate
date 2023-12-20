@@ -14,7 +14,7 @@ do
   # Split env variables by character `=`
   if printf '%s\n' "$line" | grep -q -e '='; then
     varname=$(printf '%s\n' "$line" | sed -e 's/=.*//')
-    varvalue=$(printf '%s\n' "$line" | sed -e 's/^[^=]*=//')
+    varvalue=$(printf '%s\n' "$line" | sed -E -e 's/^[^=]*=["]?//' | sed -E -e 's/"$//')
   fi
 
   # Read value of current variable if exists as Environment variable
