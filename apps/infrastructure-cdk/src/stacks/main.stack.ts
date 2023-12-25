@@ -117,13 +117,15 @@ export class MainStack extends Stack {
 			this.registerMaintenanceLambda(stackPrefix);
 		}
 
-		defineSystemOverviewDashboard(this, stackPrefix, {
-			dashboardPrefix: 'back',
-			region: this.region,
-			loadBalancer: this.coreLoadBalancer,
-			databaseIdentifier: this.rdsDb.instanceIdentifier,
-			appDefinition: this.appDefinition,
-		});
+		if (this.stageSettings.enableAdvancedMonitoring) {
+			defineSystemOverviewDashboard(this, stackPrefix, {
+				dashboardPrefix: 'back',
+				region: this.region,
+				loadBalancer: this.coreLoadBalancer,
+				databaseIdentifier: this.rdsDb.instanceIdentifier,
+				appDefinition: this.appDefinition,
+			});
+		}
 	}
 
 	private registerNamespace(stackPrefix: string) {
@@ -460,7 +462,7 @@ export class MainStack extends Stack {
 		this.ecsCluster = new ecs.Cluster(this, clusterName, {
 			clusterName,
 			vpc: this.vpc,
-			containerInsights: true,
+			containerInsights: this.stageSettings.enableAdvancedMonitoring,
 		});
 	}
 
@@ -613,42 +615,47 @@ export class MainStack extends Stack {
 			exportName: `${stackPrefix}-ecsServiceName`,
 		});
 
-		const {
-			errorsCount: errorsCountFilter,
-			warningsCount: warningsCountFilter,
-			apiResponseTime: apiResponseTimeFilter,
-			dimensionsMap: customMetricsDimensionsMap,
-			customMetricsNamespace,
-		} = defineCommonEcsAppMetricFilters(this, {
-			applicationArn: ecsService.serviceArn,
-			applicationName: ecsService.serviceName,
-			logGroup,
-			stackPrefix,
-		});
-
-		const alarms = this.createAlarms(
-			'backend',
-			customMetricsNamespace,
-			customMetricsDimensionsMap,
-			errorsCountFilter.metric().metricName,
-			ecsService.serviceName,
-			ecsService.cluster.clusterName,
-		);
-
-		return {
+		const result: EcsServiceDefinition = {
 			service: ecsService,
 			task: taskDefinition,
 			targetGroup,
 			logGroup,
 			portMappingName,
-			metricFilters: {
+		}
+
+		if (this.stageSettings.enableAdvancedMonitoring) {
+			const {
+				errorsCount: errorsCountFilter,
+				warningsCount: warningsCountFilter,
+				apiResponseTime: apiResponseTimeFilter,
+				dimensionsMap: customMetricsDimensionsMap,
+				customMetricsNamespace,
+			} = defineCommonEcsAppMetricFilters(this, {
+				applicationArn: ecsService.serviceArn,
+				applicationName: ecsService.serviceName,
+				logGroup,
+				stackPrefix,
+			});
+
+
+			result.alarms = this.createAlarms(
+				'backend',
+				customMetricsNamespace,
+				customMetricsDimensionsMap,
+				errorsCountFilter.metric().metricName,
+				ecsService.serviceName,
+				ecsService.cluster.clusterName,
+			);
+
+			result.metricFilters = {
 				logsErrorsCount: errorsCountFilter,
 				logsWarningsCount: warningsCountFilter,
 				apiResponseTime: apiResponseTimeFilter,
 				dimensionsMap: customMetricsDimensionsMap,
-			},
-			alarms,
-		};
+			};
+		}
+
+		return result;
 	}
 
 	private createStackSnsTopic(stackPrefix: string, emails: string[]): sns.Topic {
@@ -675,6 +682,10 @@ export class MainStack extends Stack {
 		serviceName: string,
 		clusterName: string,
 	): { [alarmName: string]: cw.Alarm } {
+		if (!this.stageSettings.enableAdvancedMonitoring) {
+			return {};
+		}
+
 		if (!this.snsTopic) {
 			return {};
 		}

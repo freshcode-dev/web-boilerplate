@@ -67,14 +67,10 @@ export type ICdkEnvironmentSettings = {
 	 * User Emails for SNS topic to send notifications to
 	 */
 	maintenersEmails: string[];
-
-	// alarms
-	alarmsParams: {
-		[alarmName: string]: AlarmParams;
-	};
 }
 & (WithAutoScalingEnvironmentSettings | WithoutAutoScalingEnvironmentSettings)
-& (WithDatabaseCreationEnvironmentSettings | WithDatabaseReusingEnvironmentSettings);
+& (WithDatabaseCreationEnvironmentSettings | WithDatabaseReusingEnvironmentSettings)
+& (WithoutMonitoringEnvironmentSettings | WithMonitoringEnvironmentSettings);
 
 type WithAutoScalingEnvironmentSettings = {
 	/**
@@ -112,6 +108,25 @@ type WithDatabaseReusingEnvironmentSettings = {
 		enablePerformanceInsights: boolean;
 		rdsInstanceClass: InstanceClass;
 		rdsInstanceSize: InstanceSize;
+	};
+};
+
+type WithoutMonitoringEnvironmentSettings = {
+	/**
+	 * If false, saves money by utilizing less CloudWatch resources
+	 */
+	enableAdvancedMonitoring: false;
+};
+
+type WithMonitoringEnvironmentSettings = {
+	/**
+	 * If true, enables ECS containers insights, metric filters, alarms, and custom dashboard
+	 */
+	enableAdvancedMonitoring: true;
+
+	// alarms
+	alarmsParams: {
+		[alarmName: string]: AlarmParams;
 	};
 };
 

@@ -70,4 +70,5 @@ export const cdkTestingEnvironmentSettings: ICdkEnvironmentSettings = {
 		envStop: { minute: '0', hour: '11', weekDay: 'MON-FRI', month: '*', year: '*' },
 	},
 	mediaConvertRoleRemovalPolicy: RemovalPolicy.DESTROY,
+	enableAdvancedMonitoring: true
 };
