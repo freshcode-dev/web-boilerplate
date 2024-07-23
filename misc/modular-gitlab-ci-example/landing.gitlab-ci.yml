@@ -1,0 +1,95 @@
+# ============================================
+# LANDING APP
+# ============================================
+
+# REGEXES EXAMPLES:
+# Landing (Production) tags        |  /^landing-\d+.\d+.\d+-main/             |  landing-1.0.0, landing-1.10.123, landing-1.0.0-main
+# Landing (Staging) tags           |  /^landing-\d+.\d+.\d+-staging(-[\d])?$/ |  landing-1.0.0-staging, landing-1.0.0-staging-1
+
+include:
+  - local: misc/gitlab-ci/shared/scripts.gitlab-ci.yml
+  - local: misc/gitlab-ci/shared/jobs.gitlab-ci.yml
+
+variables:
+  LANDING_SENTRY_PROJECT: landing
+
+# Executes on merge requests
+landing_app_verify:
+  stage: prepare-deployment
+  interruptible: true
+  before_script:
+    - !reference [.install_dependencies_job, script]
+  script:
+    - export NODE_OPTIONS="--max-old-space-size=4096"
+    - yarn nx lint landing
+    - yarn nx build landing
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - misc/**/*
+      - apps/landing/**/*
+      - apps/infrastructure-cdk/**/*
+      - libs/shared/**/*
+
+# Repeatable steps of the landing deployment. Rely on environment variables
+.base_landing_deployment_job:
+  stage: deployment
+  interruptible: false
+  before_script:
+    - !reference [.install_bash_and_prepare_version_variable, script]
+    - !reference [.install_dependencies_job, script]
+    - !reference [.install_and_prepare_aws_cli_job, script]
+    - !reference [.install_and_prepare_docker, script]
+    - !reference [.install_docker, script]
+  script:
+    - apk add git
+    - export SENTRY_PROJECT=$LANDING_SENTRY_PROJECT
+    - mv $LANDING_ENV_FILE apps/landing/.env
+    - export NX_PUBLIC_SENTRY_ENVIRONMENT=$NX_CDK_STAGE
+#   ToDo: parse version from pipeline variables
+    - export SENTRY_RELEASE=$PREPARED_RELEASE_VERSION
+    - export NX_PUBLIC_RELEASE_DIST=$CI_COMMIT_REF_NAME
+#    - yarn nx run landing:lint
+    - yarn nx run landing:build
+    - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REGISTRY
+    - docker build -t $LANDING_REPOSITORY_REGISTRY -f ./apps/landing/misc/Dockerfile .
+    - docker tag $LANDING_REPOSITORY_REGISTRY:latest $REGISTRY/$LANDING_REPOSITORY_REGISTRY:latest
+    - docker push $REGISTRY/$LANDING_REPOSITORY_REGISTRY:latest
+    - aws ecs update-service --cluster $LANDING_CLUSTER_NAME --service $LANDING_SERVICE_NAME_APP --force-new-deployment
+    - yarn sentry-cli releases new $SENTRY_RELEASE
+    - mkdir -p dist/landing-transformed/app
+    - cp -a dist/apps/landing/. dist/landing-transformed/app/
+    - yarn sentry-cli sourcemaps inject dist/landing-transformed
+    - yarn sentry-cli sourcemaps upload --release=$SENTRY_RELEASE dist/landing-transformed --dist=$NX_PUBLIC_RELEASE_DIST
+    - yarn sentry-cli releases set-commits "$SENTRY_RELEASE" --commit "$SENTRY_RELEASE_COMMIT"
+
+# Deploy production version of landing. Runs when production tag is created
+deploy-landing-main:
+  extends: .base_landing_deployment_job
+  environment:
+    name: main-landing
+  only:
+    refs:
+      - /^landing-\d+.\d+.\d+(-main.*)?$/
+  variables:
+    NX_CDK_STAGE: main
+    LANDING_REPOSITORY_REGISTRY: sweatpals-main-landing-app-registry
+    LANDING_CLUSTER_NAME: sweatpals-main-landing-app-cluster
+    LANDING_SERVICE_NAME_APP: sweatpals-main-landing-app-service
+    LANDING_ENV_FILE: 'apps/landing/.env.main'
+
+# Deploy production version of landing. Runs when staging tag is created
+deploy-landing-staging:
+  extends: .base_landing_deployment_job
+  environment:
+    name: staging-landing
+  only:
+    refs:
+      - /^landing-\d+.\d+.\d+(-staging)(-[\d]+)?$/
+  variables:
+    NX_CDK_STAGE: staging
+    LANDING_REPOSITORY_REGISTRY: sweatpals-staging-landing-app-registry
+    LANDING_CLUSTER_NAME: sweatpals-staging-landing-app-cluster
+    LANDING_SERVICE_NAME_APP: sweatpals-staging-landing-app-service
+    LANDING_ENV_FILE: 'apps/landing/.env.staging'

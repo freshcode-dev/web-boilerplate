@@ -1,0 +1,13 @@
+.job_with_cached_deps:
+  cache:
+    key:
+      files:
+        - yarn.lock
+    paths:
+      - yarn.lock
+      - node_modules
+      - apps/*/node_modules
+      - libs/*/node_modules
+      - .yarn
+      - .nx
+    policy: pull-push

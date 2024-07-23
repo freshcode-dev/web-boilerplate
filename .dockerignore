@@ -23,6 +23,9 @@ yarn-error.log*
 # Cache
 .eslintcache
 
+# Volumes
+.data/
+
 # IDE - VSCode
 .vscode/*
 !.vscode/settings.json

@@ -1,0 +1,168 @@
+diff --git a/dist/query/rtk-query.legacy-esm.js b/dist/query/rtk-query.legacy-esm.js
+index ba909b460c723bf5266a378570cbb765260022d3..4056221f5e8e84a2e5c0696de49773458fc81caa 100644
+--- a/dist/query/rtk-query.legacy-esm.js
++++ b/dist/query/rtk-query.legacy-esm.js
+@@ -560,7 +560,27 @@ You must add the middleware for RTK-Query to function correctly!`);
+           async unwrap() {
+             const result = await statePromise;
+             if (result.isError) {
+-              throw result.error;
++              if (result.error instanceof Error) {
++                throw result.error;
++              }
++  
++              let errorMessage = '';
++  
++              if (result.error && result.error.data && result.error.status) {
++                errorMessage = `RTK Query responded with ${result.error.status} when requesting ${result.error.data.path}`;
++              } else {
++                errorMessage = result.error.message || result.error.name || 'RTK Query Error';
++              }
++  
++              const errorToThrow = new Error(errorMessage);
++              for(var prop in result.error) {
++                errorToThrow[prop] = result.error[prop];
++              }
++              errorToThrow.custom_type = 'RtkQueryError';
++              errorToThrow.custom_message = result.error.message;
++              errorToThrow.custom_data = result.error.data;
++  
++              throw errorToThrow;
+             }
+             return result.data;
+           },
+diff --git a/dist/query/rtk-query.modern.mjs b/dist/query/rtk-query.modern.mjs
+index ffecb197157ea7e50bd3b46affba5ac4145ec4b0..89939d4a8488835e95d212bc3891ea03774d7bf0 100644
+--- a/dist/query/rtk-query.modern.mjs
++++ b/dist/query/rtk-query.modern.mjs
+@@ -508,7 +508,27 @@ You must add the middleware for RTK-Query to function correctly!`);
+         async unwrap() {
+           const result = await statePromise;
+           if (result.isError) {
+-            throw result.error;
++						if (result.error instanceof Error) {
++							throw result.error;
++						}
++
++						let errorMessage = '';
++
++						if (result.error && result.error.data && result.error.status) {
++							errorMessage = `RTK Query responded with ${result.error.status} when requesting ${result.error.data.path}`;
++						} else {
++							errorMessage = result.error.message || result.error.name || 'RTK Query Error';
++						}
++
++						const errorToThrow = new Error(errorMessage);
++						for(var prop in result.error) {
++							errorToThrow[prop] = result.error[prop];
++						}
++						errorToThrow.custom_type = 'RtkQueryError';
++						errorToThrow.custom_message = result.error.message;
++						errorToThrow.custom_data = result.error.data;
++
++						throw errorToThrow;
+           }
+           return result.data;
+         },
+diff --git a/dist/redux-toolkit.legacy-esm.js b/dist/redux-toolkit.legacy-esm.js
+index d2cf42102dd6699a1de51830b8cb4243b587a2ca..af48685a40b0fcd07fc31b45a674d69ef51ae1a1 100644
+--- a/dist/redux-toolkit.legacy-esm.js
++++ b/dist/redux-toolkit.legacy-esm.js
+@@ -1020,9 +1020,17 @@ function unwrapResult(action) {
+   if (action.meta && action.meta.rejectedWithValue) {
+     throw action.payload;
+   }
+-  if (action.error) {
+-    throw action.error;
+-  }
++	if (action.error) {
++		const errorToThrow = new Error(action.error.message || action.error.name || 'Redux Thunk Error');
++		for(var prop in action.error) {
++			errorToThrow[prop] = action.error[prop];
++		}
++		errorToThrow.custom_type = 'ReduxActionError';
++		errorToThrow.custom_message = action.error.message;
++		errorToThrow.custom_data = action.error.data;
++
++		throw errorToThrow;
++	}
+   return action.payload;
+ }
+ function isThenable(value) {
+diff --git a/dist/redux-toolkit.modern.mjs b/dist/redux-toolkit.modern.mjs
+index 94e55d54f39499f214ea36781e63ae4a11db8da6..3a3d67c5c5e7139397f8278e5da5a2547ac65d61 100644
+--- a/dist/redux-toolkit.modern.mjs
++++ b/dist/redux-toolkit.modern.mjs
+@@ -989,8 +989,16 @@ function unwrapResult(action) {
+     throw action.payload;
+   }
+   if (action.error) {
+-    throw action.error;
+-  }
++		const errorToThrow = new Error(action.error.message || action.error.name || 'Redux Thunk Error');
++		for(var prop in action.error) {
++			errorToThrow[prop] = action.error[prop];
++		}
++		errorToThrow.custom_type = 'ReduxActionError';
++		errorToThrow.custom_message = action.error.message;
++		errorToThrow.custom_data = action.error.data;
++
++		throw errorToThrow;
++	}
+   return action.payload;
+ }
+ function isThenable(value) {
+diff --git a/src/createAsyncThunk.ts b/src/createAsyncThunk.ts
+index e7ee39a05ab64ea5d0f5d44a61b78e835999cc3b..6d5616674e394eebdbfc78df12ded624c15b9f88 100644
+--- a/src/createAsyncThunk.ts
++++ b/src/createAsyncThunk.ts
+@@ -735,7 +735,17 @@ export function unwrapResult<R extends UnwrappableAction>(
+     throw action.payload
+   }
+   if (action.error) {
+-    throw action.error
++		const errorToThrow = new Error(action.error.message || action.error.name || 'Redux Thunk Error');
++		for(var prop in action.error) {
++			if (!errorToThrow[prop]) {
++				errorToThrow[prop] = action.error[prop];
++			}
++		}
++		errorToThrow.custom_type = 'ReduxActionError';
++		errorToThrow.custom_message = action.error.message;
++		errorToThrow.custom_data = action.error.data;
++
++		throw errorToThrow;
+   }
+   return action.payload
+ }
+diff --git a/src/query/core/buildInitiate.ts b/src/query/core/buildInitiate.ts
+index 3823b14d79abad346c6820af1bc11e3d9a4568ce..ecd2eba683eb6d44fa96a1accbffab517868b7cf 100644
+--- a/src/query/core/buildInitiate.ts
++++ b/src/query/core/buildInitiate.ts
+@@ -366,7 +366,25 @@ You must add the middleware for RTK-Query to function correctly!`,
+               const result = await statePromise
+ 
+               if (result.isError) {
+-                throw result.error
++								let errorMessage = '';
++
++								if (result.error && result.error.data && result.error.status) {
++									errorMessage = `RTK Query responded with ${result.error.status} when requesting ${result.error.data.path}`;
++								} else {
++									errorMessage = result.error.message || result.error.name || 'RTK Query Error';
++								}
++
++								const errorToThrow = new Error(errorMessage);
++								for(var prop in result.error) {
++									if (!errorToThrow[prop]) {
++										errorToThrow[prop] = result.error[prop];
++									}
++								}
++								errorToThrow.custom_type = 'RtkQueryError';
++								errorToThrow.custom_message = result.error.message;
++								errorToThrow.custom_data = result.error.data;
++
++								throw errorToThrow;
+               }
+ 
+               return result.data

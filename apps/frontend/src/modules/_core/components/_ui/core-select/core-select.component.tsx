@@ -1,4 +1,4 @@
-import React, { ElementType, FC, forwardRef, useRef } from "react";
+import React, { ElementType, FC, forwardRef, RefAttributes, useRef } from 'react';
 import { CoreFormControl, CoreFormControlProps } from "../core-form-control";
 import { InputBaseProps, Select, SelectProps, SxProps, Theme } from "@mui/material";
 import { selectPaperStyles } from "./core-select.styles";
@@ -16,7 +16,7 @@ export interface CoreSelectProps extends CoreFormControlProps, InputBaseProps, C
 	onClose?(): void;
 }
 
-export const CoreSelect: FC<CoreSelectProps> = forwardRef((props, ref) => {
+export const CoreSelect: FC<Omit<CoreSelectProps, "ref"> & RefAttributes<unknown>> = forwardRef((props, ref) => {
 	const {
 		menuMinWidth,
 		children,

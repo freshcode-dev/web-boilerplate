@@ -1,0 +1,111 @@
+# ============================================
+# COMMUNITY MANAGEMENT APP
+# ============================================
+
+# REGEXES EXAMPLES:
+# Admin App (Production) tags      |  /^admin-\d+.\d+.\d+-main/                  |  admin-1.0.0, admin-1.10.123, admin-1.0.0-main
+# Admin App (Staging) tags         |  /^admin-(\d+[\.]?)+(-staging)(-[\d])?$/    |  admin-1.0.0-staging, admin-1.0.0-staging-1
+# Release branches                 |  /^release-.*$/                             |  release-1, release-initial
+
+
+include:
+  - local: misc/gitlab-ci/shared/variables.gitlab-ci.yml
+  - local: misc/gitlab-ci/shared/scripts.gitlab-ci.yml
+
+variables:
+  ADMIN_WEB_APP_SENTRY_PROJECT: admin-web-app
+
+# Executes on merge requests
+community_management_app_verify:
+  stage: prepare-deployment
+  extends:
+    - .job_with_cached_deps
+  interruptible: true
+  before_script:
+    - !reference [.install_dependencies_job, script]
+  script:
+    - export NODE_OPTIONS="--max-old-space-size=4096"
+    - yarn nx lint frontend
+    - yarn nx build frontend
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - misc/**/*
+      - apps/frontend/**/*
+      - apps/infrastructure-cdk/**/*
+      - libs/shared/**/*
+
+# Repeatable steps to deploy dashboard app
+.base_admin_app_deployment_job:
+  stage: deployment
+  interruptible: true
+  extends:
+    - .job_with_cached_deps
+  before_script:
+    - !reference [.install_bash_and_prepare_version_variable, script]
+    - !reference [.install_dependencies_job, script]
+    - !reference [.install_and_prepare_aws_cli_job, script]
+  script:
+    - export SENTRY_PROJECT=$ADMIN_WEB_APP_SENTRY_PROJECT
+    - mv $STAGE_SPECIFIC_ENV_FILE apps/frontend/.env
+    - export NX_FRONT_SENTRY_ENVIRONMENT=$NX_CDK_STAGE
+    - export SENTRY_RELEASE=$PREPARED_RELEASE_VERSION
+    - export NX_RELEASE_VERSION=$SENTRY_RELEASE
+    - export NX_RELEASE_DIST=$CI_COMMIT_REF_NAME
+    - yarn nx build frontend
+    - yarn sentry-cli releases new $SENTRY_RELEASE
+    - yarn sentry-cli sourcemaps inject dist/apps/frontend
+    - yarn sentry-cli sourcemaps upload --release=$SENTRY_RELEASE --dist=$NX_RELEASE_DIST dist/apps/frontend
+    - yarn sentry-cli releases set-commits "$SENTRY_RELEASE" --commit "$SENTRY_RELEASE_COMMIT"
+    - rm ./dist/apps/frontend/*.js.map
+#   CDK builds all the stacks, so requires web-app dist folder to contain files
+    - mkdir ./dist/apps/web-app && echo "" > ./dist/apps/web-app/empty.txt
+    - yarn nx deploy infrastructure-cdk $CDK_STACK_PREFIX-admin-web-app-stack --require-approval never
+
+# Executes when pushing to main
+admin_app_dev_deploy:
+  extends: .base_admin_app_deployment_job
+  variables:
+    NX_CDK_STAGE: dev
+    CDK_STACK_PREFIX: $NX_CDK_APP_NAME-$NX_CDK_STAGE
+    STAGE_SPECIFIC_ENV_FILE: 'apps/frontend/.env.dev'
+  environment:
+    name: admin-app-dev
+    url: https://admin.dev.sweatpals.com
+  only:
+    refs:
+      - main
+    changes:
+      - misc/**/*
+      - apps/frontend/**/*
+      - apps/infrastructure-cdk/**/*
+      - libs/shared/**/*
+
+# Executes when creating staging tag
+admin_app_staging_deploy:
+  extends: .base_admin_app_deployment_job
+  variables:
+    NX_CDK_STAGE: staging
+    CDK_STACK_PREFIX: $NX_CDK_APP_NAME-$NX_CDK_STAGE
+    STAGE_SPECIFIC_ENV_FILE: 'apps/frontend/.env.staging'
+  environment:
+    name: admin-app-staging
+    url: https://admin.staging.sweatpals.com
+  only:
+    refs:
+      - /^admin-(\d+[\.]?)+(-staging)(-[\d]+)?$/
+
+# Executes when creating production
+admin_app_prod_deploy:
+  extends: .base_admin_app_deployment_job
+  variables:
+    NX_CDK_STAGE: prod
+    CDK_STACK_PREFIX: $NX_CDK_APP_NAME-$NX_CDK_STAGE
+    STAGE_SPECIFIC_ENV_FILE: 'apps/frontend/.env.prod'
+  environment:
+    name: admin-app-prod
+    url: https://admin.sweatpals.com
+  only:
+    refs:
+      - /^admin-\d+.\d+.\d+(-main.*)?$/

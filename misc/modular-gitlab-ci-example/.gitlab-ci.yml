@@ -1,0 +1,19 @@
+image: node:18-alpine3.17
+
+variables:
+  REGISTRY: 625032307702.dkr.ecr.us-east-1.amazonaws.com
+
+stages:
+  - prepare-deployment
+  - deployment
+
+include:
+  - local: misc/gitlab-ci/shared/variables.gitlab-ci.yml
+  - local: misc/gitlab-ci/shared/scripts.gitlab-ci.yml
+  - local: misc/gitlab-ci/shared/jobs.gitlab-ci.yml
+  - local: misc/gitlab-ci/web-app.gitlab-ci.yml
+  - local: misc/gitlab-ci/landing.gitlab-ci.yml
+  - local: misc/gitlab-ci/backend.gitlab-ci.yml
+  - local: misc/gitlab-ci/mobile.gitlab-ci.yml
+  - local: misc/gitlab-ci/admin-web-app.gitlab-ci.yml
+

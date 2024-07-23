@@ -1,0 +1,24 @@
+# ============================================
+# MOBILE APP linting (other jobs are executed by codemagic)
+# ============================================
+
+include:
+  - local: misc/gitlab-ci/shared/variables.gitlab-ci.yml
+  - local: misc/gitlab-ci/shared/scripts.gitlab-ci.yml
+
+# Executes on merge requests
+mobile_verify:
+  stage: prepare-deployment
+  extends:
+    - .job_with_cached_deps
+  interruptible: true
+  before_script:
+    - !reference [.install_dependencies_job, script]
+  script:
+    - yarn nx lint mobile
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - apps/mobile/**/*
+      - libs/shared/**/*

@@ -1,6 +1,6 @@
-import { FC, forwardRef } from "react";
+import { FC, forwardRef, RefAttributes } from 'react';
 import { styled } from "@mui/material/styles";
-import { MenuItem, MenuItemProps, Typography } from "@mui/material";
+import { MenuItem, MenuItemProps, Theme, Typography } from '@mui/material';
 import { CoreCheckbox } from "../core-checkbox";
 import { selectCheckboxStyles } from "./core-select.styles";
 
@@ -11,7 +11,7 @@ interface CoreSelectMenuItemProps extends MenuItemProps {
 	forceSelected?: boolean;
 }
 
-export const CoreSelectMenuItem: FC<CoreSelectMenuItemProps> = styled(
+export const CoreSelectMenuItem: FC<Omit<CoreSelectMenuItemProps, "ref"> & RefAttributes<HTMLLIElement>> = styled(
 	forwardRef<HTMLLIElement, CoreSelectMenuItemProps>((props, ref) => {
 	const {
 		forceSelected,

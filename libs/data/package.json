@@ -5,21 +5,18 @@
 		"create-migration": "ts-node ./src/migration.ts"
 	},
 	"dependencies": {
-		"@nestjs/common": "^10.2.5",
-		"@nestjs/config": "^3.1.1",
-		"@nestjs/core": "^10.2.5",
-		"@nestjs/typeorm": "^10.0.0",
-		"@nestjs/swagger": "^7.1.11",
-		"pg": "^8.11.3",
-		"rxjs": "^7.8.1",
-		"typeorm": "^0.3.17",
-		"umzug": "^3.3.1",
-		"reflect-metadata": "^0.1.13"
+		"@nestjs/common": "10.3.10",
+		"@nestjs/config": "3.2.3",
+		"@nestjs/core": "10.3.10",
+		"@nestjs/typeorm": "10.0.2",
+		"@nestjs/swagger": "7.4.0",
+		"pg": "8.12.0",
+		"rxjs": "7.8.1",
+		"typeorm": "0.3.20",
+		"umzug": "3.8.1",
+		"reflect-metadata": "0.2.2"
 	},
 	"devDependencies": {
-		"@nestjs/schematics": "^10.0.2",
-		"@nestjs/testing": "^10.2.5",
-		"minimist": "^1.2.8",
-		"typescript": "^4.9.5"
+		"minimist": "1.2.8"
 	}
 }

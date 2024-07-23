@@ -1,0 +1,126 @@
+# ============================================
+# BACKEND APP with global admin frontend
+# ============================================
+
+# REGEXES EXAMPLES:
+# Web (Production) tags            |  /^web-\d+.\d+.\d+-main/                 |  web-1.0.0, web-1.10.123, web-1.0.0-main
+# Web (Staging) tags               |  /^web-(\d+[\.]?)+(-staging)(-[\d])?$/   |  web-1.0.0-staging, web-1.0.0-staging-1
+# Release branches                 |  /^release-.*$/                          |  release-1, release-initial
+
+include:
+  - local: misc/gitlab-ci/shared/variables.gitlab-ci.yml
+  - local: misc/gitlab-ci/shared/scripts.gitlab-ci.yml
+
+variables:
+  BACKEND_SENTRY_PROJECT: backend
+
+# Executes on merge requests
+backend_verify:
+  stage: prepare-deployment
+  extends:
+    - .job_with_cached_deps
+  interruptible: true
+  before_script:
+    - !reference [.install_dependencies_job, script]
+  script:
+    #    ToDo: UNCOMMENT WHEN LINT OUT OF MEMORY PROBLEM IS FIXED
+    #    - yarn nx run-many --all --target=lint --parallel --max-parallel=3
+    #    - yarn nx run-many --all --target=test --parallel --max-parallel=3
+    - yarn nx build backend
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - misc/**/*
+      - apps/backend/**/*
+      - apps/infrastructure-cdk/**/*
+      - libs/**/*
+
+# repeatable steps of application deployment process
+.base_web_deployment_job:
+  extends:
+    - .job_with_cached_deps
+  stage: deployment
+  interruptible: false
+  before_script:
+    - apk add git
+    - !reference [.install_bash_and_prepare_version_variable, script]
+    - !reference [.install_dependencies_job, script]
+    - !reference [.install_and_prepare_aws_cli_job, script]
+    - !reference [.install_docker, script]
+  script:
+    - export SENTRY_PROJECT=$BACKEND_SENTRY_PROJECT
+    - export SENTRY_RELEASE=$PREPARED_RELEASE_VERSION
+    - export NX_RELEASE_DIST=$CI_COMMIT_REF_NAME
+#   Build the app
+    - yarn nx build backend
+    - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REGISTRY
+    - docker build --build-arg RELEASE_VERSION=$PREPARED_RELEASE_VERSION --build-arg RELEASE_DIST=$NX_RELEASE_DIST -t $REPOSITORY_REGISTRY -f ./misc/Dockerfile .
+    - docker tag $REPOSITORY_REGISTRY:latest $REGISTRY/$REPOSITORY_REGISTRY:latest
+    - docker push $REGISTRY/$REPOSITORY_REGISTRY:latest
+    - aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME_APP --force-new-deployment
+#   Upload sourcemaps for backend
+    - yarn sentry-cli releases new $PREPARED_RELEASE_VERSION
+    - yarn sentry-cli sourcemaps inject dist/apps/backend
+    - yarn sentry-cli sourcemaps upload --release=$PREPARED_RELEASE_VERSION --dist=$NX_RELEASE_DIST dist/apps/backend
+    - yarn sentry-cli releases set-commits "$SENTRY_RELEASE" --commit "$SENTRY_RELEASE_COMMIT"
+#   CDK builds all the stacks, so requires frontend dist folder to contain files
+    - mkdir ./dist/apps/frontend && echo "" > ./dist/apps/frontend/empty.txt
+    - mkdir ./dist/apps/web-app && echo "" > ./dist/apps/web-app/empty.txt
+#   Sync backend infrastructure
+    - yarn nx deploy infrastructure-cdk $CDK_STACK_PREFIX-backend-stack --require-approval never
+
+# Production version of the backend and admin panel deployment
+# Triggers when production tag is created
+backend_deploy_main:
+  extends: .base_web_deployment_job
+  environment:
+    name: main
+    url: https://ilove.sweatpals.com/
+  only:
+    refs:
+      - /^web-\d+.\d+.\d+(-main.*)?$/
+  variables:
+    NX_CDK_STAGE: main
+    CDK_STACK_PREFIX: $NX_CDK_APP_NAME-$NX_CDK_STAGE
+    REPOSITORY_REGISTRY: sweatpals-main-app-registry
+    CLUSTER_NAME: sweatpals-main-cluster
+    SERVICE_NAME_APP: sweatpals-main-app-service
+
+# Staging version of the backend and admin panel deployment
+# Triggers when staging tag is created
+backend_deploy_staging:
+  extends: .base_web_deployment_job
+  environment:
+    name: staging
+    url: http://sweatpals-staging-lb-687196691.us-east-1.elb.amazonaws.com/
+  only:
+    refs:
+      - /^web-(\d+[\.]?)+(-staging)(-[\d]+)?$/
+  variables:
+    NX_CDK_STAGE: staging
+    CDK_STACK_PREFIX: $NX_CDK_APP_NAME-$NX_CDK_STAGE
+    REPOSITORY_REGISTRY: sweatpals-staging-app-registry
+    CLUSTER_NAME: sweatpals-staging-cluster
+    SERVICE_NAME_APP: sweatpals-staging-app-service
+
+# Dev version of the backend and admin panel deployment
+# Triggers when pushing any changes to main branch
+backend_deploy_dev:
+  extends: .base_web_deployment_job
+  environment:
+    name: dev
+    url: http://sweatpals-dev-lb-1269763667.us-east-1.elb.amazonaws.com/
+  only:
+    refs:
+      - main
+    changes:
+      - misc/**/*
+      - apps/backend/**/*
+      - libs/**/*
+  variables:
+    NX_CDK_STAGE: dev
+    CDK_STACK_PREFIX: $NX_CDK_APP_NAME-$NX_CDK_STAGE
+    REPOSITORY_REGISTRY: sweatpals-dev-app-registry
+    CLUSTER_NAME: sweatpals-dev-cluster
+    SERVICE_NAME_APP: sweatpals-dev-app-service

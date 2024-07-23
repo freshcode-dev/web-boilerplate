@@ -6,7 +6,7 @@ import { VirtualItem } from "@tanstack/react-virtual";
 import { CoreTableCellWithTooltip } from "./core-table-cell-with-tooltip.component";
 
 interface CoreTableVirtualRowProps<TData extends RowData> {
-	virtualRow: VirtualItem;
+	virtualRow: VirtualItem<Element>;
 	row?: Row<TData>;
 	measureElement(node: (Element | null)): void;
 }
