@@ -1,0 +1,228 @@
+{
+	"lang": {
+		"en": "English"
+	},
+	"nav": {
+		"root-title": "Boilerplate",
+		"styled": "Styled Examples",
+		"sign-in-with-phone": "Login",
+		"account-sign-in": "Log In",
+		"sign-up": "Sign up",
+		"profile": "Profile",
+		"my-profile": "My profile",
+		"information": "Information",
+		"about-company": "About company",
+		"security": "Security"
+	},
+	"seo": {
+		"siteTitle": "Boilerplate",
+		"siteDescription": "Tradomatic.io is a convenient platform for finding the best conditions for buying / selling grain, oil and other crops around the world. Use the map to track offers in real time.",
+		"loginPageTitle": "Authorization",
+		"loginPageDescription": "",
+		"signupPageTitle": "Sign up",
+		"userByIdPageTitle": "User",
+		"userByIdPageDescription": "",
+		"profilePageTitle": "Profile",
+		"profilePageDescription": "",
+		"profileSettingsPageTitle": "Profile settings",
+		"profileDeleteMePageTitle": "Delete my user",
+		"profileDeleteMePageDescription": "Delete all the information about my user",
+		"profileSettingsPageDescription": ""
+	},
+	"notifications": {
+		"pwaModal": {
+			"title": "Request to launch the application from the phone screen",
+			"description": "Allow the system to launch the site from the phone screen?",
+			"confirm": "Yes, allow it",
+			"cancel": "No, don't allow it"
+		},
+		"pwaAndroid": {
+			"header": "Instructions for running a PWA on Android",
+			"step1": "Go to the site in the Chrome browser. Click on the three dots in the upper right corner to open the menu.",
+			"step2": "Select \"Add to Home Screen\".",
+			"step3": "Click the \"Add\" button in the pop-up window. The PWA is now installed and available on your home screen."
+		},
+		"pwaIos": {
+			"header": "Instructions for running a PWA on iOS",
+			"step1": "Go to the site in the Safari browser and click the \"Share\" button.",
+			"step2": "In the pop-up window, select \"Add to Home Screen\".",
+			"step3": "Click \"Add\" in the upper right corner to complete the installation. The PWA will now be on your home screen."
+		}
+	},
+	"snackbar": {
+		"title-success": "Done",
+		"title-error": "Error",
+		"coreUpdateSuccess": "Data was successfully updated",
+		"coreUpdateError": "Error while updating data",
+		"photo-loading-error": "Error while uploading photo",
+		"copy-success": "Copied",
+		"copy-error": "Error copying"
+	},
+	"map": {
+		"title": "Map",
+		"eastSiberianOcean": "East-Siberian ocean"
+	},
+	"logout-modal": {
+		"logout-question": "Are you sure you want to log out?"
+	},
+	"loading": "Loading...",
+	"backToSite": "До головного сайту",
+	"stage-banner-text": "Environment: {{stage}}. This is a unstable development environment. Do not use real data.",
+	"table": {
+		"empty-title": "No data yet",
+		"empty-description": "Add new rows and they will appear here",
+		"empty-search-title": "No search results",
+		"empty-search-description": "Try to change your filters or search query"
+	},
+	"action": {
+		"search": "Search",
+		"open": "Open",
+		"close": "Collapse",
+		"closeForm": "Close form",
+		"back": "Back",
+		"next": "Next",
+		"confirm": "Confirm",
+		"deny": "Refuse",
+		"submit": "Submit",
+		"save": "Save",
+		"saveChanges": "Save changes",
+		"delete": "Delete",
+		"cancel": "Cancel",
+		"cancel2": "Cancel",
+		"googleAuth": "Auth with Google",
+		"logout": "Log out",
+		"edit": "Edit",
+		"showOnMap": "Show on map",
+		"showDetails": "Full details",
+		"applyChanges": "Save changes",
+		"ban": "Ban",
+		"unban": "Unban",
+		"retryInviteToCompany": "Resend invitation",
+		"invite": "Invite",
+		"excludeFromCompany": "Exclude from company",
+		"disconnect": "Unlink",
+		"contact": "Contact us",
+		"toMap": "To Map",
+		"decline": "Decline",
+		"accept": "Accept",
+		"join": "Join",
+		"goToAccount": "account page",
+		"understand": "Okay",
+		"create": "Create",
+		"createCompany": "Create company",
+		"confirmClose": "Confirm",
+		"confirmClose2": "Close",
+		"repeat": "Repeat",
+		"sendFeedback": "Send feedback"
+	},
+	"filters": {
+		"search": "Search..."
+	},
+	"auth-confirmation": {
+		"too-many-requests": "Too many attempts. Please try again in 5 minutes",
+		"enter-code": "Enter the Verification Code",
+		"resend-code": "Didn't receive a verification code? <0>Resend</0>",
+		"check-and-resend-code": "Incorrect code. Please check if the entered code is correct or click <0>Resend</0>",
+		"confirmation-flow-description": "You should receive a text message (SMS or Email) on your phone or email with a confirmation code",
+		"confirm-form": {
+			"back": "Back",
+			"confirm": "Next",
+			"next": "Next"
+		}
+	},
+	"auth-change-phone-contact": "Need to change your account phone number? Contact us using following contact\n details: Phone: +38 (111)-111-11-11",
+	"confirm-close-modal": {
+		"title": "Confirm close form",
+		"title-edit": "Closing without saving changes?",
+		"title-unsaved-changes": "You have unsaved changes",
+		"description": "Are you sure you want to close the form? All unsaved changes will be lost.",
+		"description-public": "Are you sure you want to close the form?\nIn this case, all unsaved data will be lost.",
+		"saveAndClose": "Save and exit",
+		"closeForm": "Don't save"
+	},
+	"support-modal": {
+		"title": "Thank You!",
+		"description": "Thank you for your feedback. It has been successfully sent, and we are already processing it.\nPlease expect a response from our managers soon.",
+		"error-create-support-message": "Failed to send feedback"
+	},
+	"defaults": {
+		"seconds": "seconds",
+		"seconds_short": "s",
+		"modals": {
+			"confirmation-title": "Confirmation is required",
+			"confirmation-description": "Please confirm the action. This can't be undone!"
+		}
+	},
+	"operator-select": {
+		"or": "AND",
+		"and": "OR",
+		"logic": "Logic:"
+	},
+	"autocomplete": {
+		"no-options": "No options"
+	},
+	"form-input-labels": {
+		"from": "From",
+		"to": "To",
+		"full-name": "Full name",
+		"first-name": "First name",
+		"last-name": "Last name",
+		"phone-number": "Phone number",
+		"email": "Email",
+		"code": "Code"
+	},
+	"dropzone": {
+		"default-label": "Drag and drop your files here or upload manually (Maximum upload file size: {{maxFileSize}})",
+		"mobile-label": "Choose the files (Maximum size {{maxFileSize}})",
+		"one-file-label": "Drag and drop a file here or choose manually \n(Only 1 file allowed, maximum size {{maxFileSize}})",
+		"button-label": "Upload files",
+		"portal-button-label": "Upload files",
+		"one-file-portal-button-label": "Upload file",
+		"upload-error": "Loading ({{reason}}) ",
+		"error": {
+			"too-large": "File exceeds max size",
+			"invalid-type": "Invalid file type",
+			"unknown": "Unspecified error"
+		}
+	},
+	"errors": {
+		"required-error": "No data entered",
+		"mandatory-field-error": "Required field",
+		"phone-error": "Incorrect phone number",
+		"email-error": "Incorrect email",
+		"captcha-error": "Please enter the captcha.",
+		"name-unique-error": "Name is already in use",
+		"phone-unique-error": "Phone number is already in use",
+		"email-unique-error": "Email is already in use",
+		"invalid-credentials-error": "Invalid credentials",
+		"not-enough-access-error-title": "Not enough rights",
+		"not-enough-access-error-message": "You do not have enough rights to view this page",
+		"ukrainian-only-error": "Ukrainian text only",
+		"latin-only-error": "Latin characters only",
+		"url-error": "Incorrect URL",
+		"user-not-found-error": "User doesn’t exist in the system",
+		"user-in-other-company-error": "User is already in another company",
+		"user-already-in-company-error": "User is already in your company"
+	},
+	"fields": {
+		"firstName": {
+			"label": "First Name",
+			"placeholder": "Enter first name"
+		},
+		"lastName": {
+			"label": "Last Name",
+			"placeholder": "Enter last name"
+		},
+		"phoneNumber": {
+			"label": "Phone number"
+		},
+		"email": {
+			"label": "Email",
+			"placeholder": "Enter email"
+		},
+		"comment": {
+			"label": "Comment",
+			"placeholder": "Enter comment"
+		}
+	}
+}

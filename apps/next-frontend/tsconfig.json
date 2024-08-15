@@ -1,0 +1,38 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"jsx": "preserve",
+		"allowJs": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"strict": true,
+		"forceConsistentCasingInFileNames": true,
+		"noEmit": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"incremental": true,
+		"noImplicitOverride": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"plugins": [
+			{
+				"name": "next"
+			}
+		],
+		"baseUrl": ".",
+		"types": ["jest", "node"],
+		"paths": {
+			"@/modules/*": ["src/modules/*"],
+			"@/store": ["src/store/index.ts"],
+			"@/store/*": ["src/store/*"],
+			"@/utils/*": ["src/utils/*"],
+			"@/public/*": ["public/*"],
+			"@/constants": ["src/constants/index.ts"],
+			"@/constants/*": ["src/constants/*"],
+			"@boilerplate/shared": ["../../libs/shared/src/index.ts"]
+		}
+	},
+	"include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "next-env.d.ts"],
+	"exclude": ["node_modules", "jest.config.ts", "**/*.spec.ts", "**/*.test.ts"]
+}

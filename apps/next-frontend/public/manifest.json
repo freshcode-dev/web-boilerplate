@@ -1,0 +1,11 @@
+{
+	"name": "Boilerplate",
+	"short_name": "Boilerplate",
+	"start_url": "/",
+	"display": "standalone",
+	"theme_color": "#007cff",
+	"background_color": "#1788ff",
+	"orientation": "portrait-primary",
+	"description": "Boilerplate - early version",
+	"icons": []
+}

@@ -65,3 +65,6 @@ Thumbs.db
 # not sure, but will add for now
 cdk.context.json
 cdk.out
+
+# next
+**/.next/**

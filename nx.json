@@ -32,6 +32,11 @@
 					"codeCoverage": true
 				}
 			}
+		},
+		"@nx/next:build": {
+			"cache": true,
+			"dependsOn": ["^build"],
+			"inputs": ["production", "^production"]
 		}
 	},
 	"namedInputs": {
@@ -58,6 +63,12 @@
 				"style": "@emotion/styled"
 			},
 			"library": {
+				"style": "@emotion/styled",
+				"linter": "eslint"
+			}
+		},
+		"@nx/next": {
+			"application": {
 				"style": "@emotion/styled",
 				"linter": "eslint"
 			}

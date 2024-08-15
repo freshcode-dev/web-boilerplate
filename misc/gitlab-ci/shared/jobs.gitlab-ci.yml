@@ -1,0 +1,9 @@
+.job_with_cached_deps:
+  cache:
+    - key: shared-pnpm-store-cache
+      paths:
+        - .pnpm-store
+      policy: pull-push
+    - key: $CI_JOB_NAME
+      paths:
+        - node_modules/.cache

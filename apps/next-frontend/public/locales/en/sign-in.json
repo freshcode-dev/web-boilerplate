@@ -1,0 +1,27 @@
+{
+	"too-many-requests": "Too many attempts. Please try again in 5 minutes",
+	"account-sign-in": "Enter your phone number",
+	"login-via-email": "Login via email",
+	"login-via-phone": "Login via phone",
+	"check-phone-or-register": "Please check if the entered phone number is correct, or <0>Register</0>",
+	"check-email-or-register": "Please check if the entered email is correct, or <0>Register</0>",
+	"register-link": "Don't have an account? <0>Register</0>",
+	"auth-services-description": "Log in by phone number or select one of the alternative \nauthorization methods below.",
+	"sign-in-modal": {
+		"service-error": {
+			"title": "Failed to log into\n personal account",
+			"description": "Selected authorization method isn’t linked to Your profile, try \nanother authorization method.",
+			"description-mobile": "The selected login method is not linked to your profile, please try to log in using another method."
+		}
+	},
+	"sign-in-form": {
+		"phone-number": "Phone number",
+		"email": "Email",
+		"password": "Password",
+		"forgot-password": "Forgot password?",
+		"remember-me": "Remember me",
+		"back": "Back",
+		"next": "Next",
+		"confirm": "Confirm"
+	}
+}

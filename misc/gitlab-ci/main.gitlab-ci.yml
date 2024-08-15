@@ -1,0 +1,145 @@
+# ============================================
+# WEB APP
+# ============================================
+
+# REGEXES EXAMPLES:
+# Web (Production) tags            |  /^release-\d+.\d+.\d+-main/                 |  release-1.0.0, release-1.10.123, release-1.0.0-main
+# Web (Staging) tags               |  /^release-(\d+[\.]?)+(-staging)(-[\d])?$/   |  release-1.0.0-staging, release-1.0.0-staging-1
+# Release branches                 |  /^release-.*$/                          |  release-1, release-initial
+
+include:
+  - local: misc/gitlab-ci/shared/variables.gitlab-ci.yml
+  - local: misc/gitlab-ci/shared/scripts.gitlab-ci.yml
+
+# Executes on merge requests
+web_verify:
+  stage: pre-deployment
+  extends:
+    - .job_with_cached_deps
+  interruptible: true
+  before_script:
+    - !reference [.install_dependencies_job, script]
+    - !reference [.set_node_environment_variables, script]
+  script:
+    - pnpm nx run-many --all --target=lint --parallel --max-parallel=3
+    - pnpm nx build api
+    - pnpm nx build frontend
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - misc/**/*
+      - apps/api/**/*
+      - apps/frontend/**/*
+      - apps/infrastructure-cdk/**/*
+      - libs/**/*
+
+# repeatable steps of application deployment process
+.base_web_deployment_job:
+  extends:
+    - .job_with_cached_deps
+  stage: deployment
+  interruptible: false
+  before_script:
+    - apk add git
+    - !reference [.install_bash_and_prepare_version_variable, script]
+    - !reference [.install_and_prepare_aws_cli_job, script]
+    - !reference [.install_dependencies_job, script]
+    - !reference [.install_docker, script]
+    - !reference [.set_node_environment_variables, script]
+  script:
+#   👇 Pass CI environment variables
+    - export NX_CDK_DEPLOYMENT_REPOSITORY_URL=$CI_PROJECT_URL
+    - export NX_RELEASE_DIST=$CI_COMMIT_REF_NAME
+    - export DOCKER_BUILDKIT=1
+#   👇 Deploy or update ECR repositories and get outputs for docker to push
+    - pnpm nx deploy infrastructure-cdk $CDK_STACK_PREFIX-ecr-stack --outputs-file /cdk-outputs.json
+    - echo $CDK_STACK_PREFIX_TRIM
+    - echo $CDK_STACK_PREFIX
+    - ECR_BACKEND_REPO_URL=$(jq -r "."\""${CDK_STACK_PREFIX}-ecr-stack"\""."\""${CDK_STACK_PREFIX_TRIM}BackendEcrRepoUrl"\""" /cdk-outputs.json)
+    - ECR_BACKEND_REPO_NAME=$(jq -r "."\""${CDK_STACK_PREFIX}-ecr-stack"\""."\""${CDK_STACK_PREFIX_TRIM}BackendEcrRepoName"\""" /cdk-outputs.json)
+    - ECR_FRONTEND_REPO_URL=$(jq -r "."\""${CDK_STACK_PREFIX}-ecr-stack"\""."\""${CDK_STACK_PREFIX_TRIM}FrontendEcrRepoUrl"\""" /cdk-outputs.json)
+    - ECR_FRONTEND_REPO_NAME=$(jq -r "."\""${CDK_STACK_PREFIX}-ecr-stack"\""."\""${CDK_STACK_PREFIX_TRIM}FrontendEcrRepoName"\""" /cdk-outputs.json)
+    - echo $ECR_BACKEND_REPO_URL
+    - echo $ECR_BACKEND_REPO_NAME
+    - echo $ECR_FRONTEND_REPO_URL
+    - echo $ECR_FRONTEND_REPO_NAME
+#   👇 Build and push BACKEND docker image to ECR registry
+    - pnpm nx build api
+    - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_BACKEND_REPO_URL
+    - docker pull $ECR_BACKEND_REPO_URL:latest
+    - |
+      docker build --build-arg BUILDKIT_INLINE_CACHE=1 \
+                    --build-arg RELEASE_DIST=$NX_RELEASE_DIST \
+                    --build-arg RELEASE_VERSION=$PREPARED_RELEASE_VERSION \
+                    --cache-from=$ECR_BACKEND_REPO_URL:latest \
+                    -t $ECR_BACKEND_REPO_URL:latest \
+                    -t $ECR_BACKEND_REPO_URL:$CI_COMMIT_SHORT_SHA \
+                    -f ./apps/api/misc/Dockerfile .
+    - docker push $ECR_BACKEND_REPO_URL:latest
+    - docker push $ECR_BACKEND_REPO_URL:$CI_COMMIT_SHORT_SHA
+    #   👇 Build and push FRONTEND docker image to ECR registry
+    - mv $FRONTEND_ENV_FILE apps/frontend/.env
+    - pnpm nx build frontend
+    - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_FRONTEND_REPO_URL
+    - docker pull $ECR_FRONTEND_REPO_URL:latest
+    - |
+      docker build --build-arg BUILDKIT_INLINE_CACHE=1 \
+                    --build-arg RELEASE_DIST=$NX_RELEASE_DIST \
+                    --build-arg RELEASE_VERSION=$PREPARED_RELEASE_VERSION \
+                    --cache-from=$ECR_FRONTEND_REPO_URL:latest \
+                    -t $ECR_FRONTEND_REPO_URL:latest \
+                    -t $ECR_FRONTEND_REPO_URL:$CI_COMMIT_SHORT_SHA \
+                    -f ./apps/frontend/misc/Dockerfile .
+    - docker push $ECR_FRONTEND_REPO_URL:latest
+    - docker push $ECR_FRONTEND_REPO_URL:$CI_COMMIT_SHORT_SHA
+#   Sync backend infrastructure. (Rolls back automatically, if any part of the deployment fails)
+    - export NX_CDK_DOCKER_IMAGE_TAG=$CI_COMMIT_SHORT_SHA
+    - pnpm nx deploy infrastructure-cdk $CDK_STACK_PREFIX-stack
+
+# Production version of the backend and admin panel deployment
+# Triggers when production tag is created
+backend_deploy_main:
+  extends: .base_web_deployment_job
+  tags:
+    - outsource-stable-m6a-large
+  only:
+    refs:
+      - /^web-\d+.\d+.\d+(-main.*)?$/
+  variables:
+    NX_CDK_STAGE: prod
+    CDK_STACK_PREFIX: $NX_CDK_APP_NAME-$NX_CDK_STAGE
+    CDK_STACK_PREFIX_TRIM: "${NX_CDK_APP_NAME}${NX_CDK_STAGE}"
+    FRONTEND_ENV_FILE: "./apps/frontend/.env.${NX_CDK_STAGE}"
+
+# Staging version of the backend and admin panel deployment
+# Triggers when staging tag is created
+backend_deploy_staging:
+  extends: .base_web_deployment_job
+  tags:
+    - outsource-stable-m6a-large
+  only:
+    refs:
+      - /^release-(\d+[\.]?)+(-staging)(-[\d]+)?$/
+  variables:
+    NX_CDK_STAGE: staging
+    CDK_STACK_PREFIX: $NX_CDK_APP_NAME-$NX_CDK_STAGE
+    CDK_STACK_PREFIX_TRIM: "${NX_CDK_APP_NAME}${NX_CDK_STAGE}"
+    FRONTEND_ENV_FILE: "./apps/frontend/.env.${NX_CDK_STAGE}"
+
+# Dev version of the backend and admin panel deployment
+# Triggers when pushing any changes to main branch
+backend_deploy_dev:
+  extends: .base_web_deployment_job
+  only:
+    refs:
+      - main
+    changes:
+      - misc/**/*
+      - apps/**/*
+      - libs/**/*
+  variables:
+    NX_CDK_STAGE: dev
+    CDK_STACK_PREFIX: $NX_CDK_APP_NAME-$NX_CDK_STAGE
+    CDK_STACK_PREFIX_TRIM: "${NX_CDK_APP_NAME}${NX_CDK_STAGE}"
+    FRONTEND_ENV_FILE: "./apps/frontend/.env.${NX_CDK_STAGE}"

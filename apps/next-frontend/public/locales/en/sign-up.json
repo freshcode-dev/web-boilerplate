@@ -1,0 +1,22 @@
+{
+	"account-register": "Sign up",
+	"user-already-registered": "The user with the entered data is already registered in the system.",
+	"too-many-requests": "Too many attempts. Please try again in 5 minutes",
+	"login-link": "Already have an account? <0>Login</0>",
+	"check-data-or-login": "Registration is not possible. Please correct the entered data\nor <0>Log in</0>",
+	"registration-consent": "By clicking Sign up, you agree to our <0>Terms & Conditions</0> and <1>Privacy \npolicy</1>.",
+	"registration-form": {
+		"first-name-ph": "Enter your first name...",
+		"last-name-ph": "Enter your last name...",
+		"email-ph": "Enter your email...",
+		"full-name-ph": "Enter the full name...",
+		"full-name": "Full name",
+		"phone-number": "Phone number",
+		"password-ph": "Enter Password",
+		"new-password": "New password",
+		"confirm-password": "Confirm Password",
+		"email": "Email",
+		"next": "Next",
+		"confirm": "Next"
+	}
+}

@@ -1,0 +1,71 @@
+{
+	"title": "Profile",
+	"oauth-services": "Authorization methods",
+	"my-profile": "My profile",
+	"user-data": "User Data",
+	"profile-data": "Personal information",
+	"contact-info": "Contact Info",
+	"google-account": "Google account",
+	"google-account-not-connected": "Not connected",
+	"change-user-data-ph": "Change user data",
+	"change-email-ph": "Change login email",
+	"change-phone-ph": "Change login phone",
+	"sessions": {
+		"current-session": "Current session",
+		"sign-out-all-sessions": "Sign out other sessions",
+		"table": {
+			"empty-title": "",
+			"empty-description": "No sessions",
+			"columns": {
+				"ipAddress": "IP Address",
+				"userAgent": "Device",
+				"createdAt": "Logged in at",
+				"updatedAt": "Last Activity",
+				"actions": "Actions"
+			}
+		}
+	},
+	"service-modal": {
+		"disconnect-from-service": {
+			"title": "Confirm authorization method unlink",
+			"description": "Do you really want to unlink {{serviceName}} authorization method?\nYou can link this authorization method again any moment in the future."
+		},
+		"service-error-not-unique": {
+			"title": "Account already linked",
+			"description": "Selected account is already linked to another user, try to link another account\n or choose another authorization method."
+		}
+	},
+	"snackbar": {
+		"service-success-disconnected": "Service disconnected",
+		"service-error-disconnected": "Error disconnecting from service",
+		"service-success-connected": "{{name}} account successfully linked",
+		"service-error-connected": "Error connecting to service"
+	},
+	"profile-modal": {
+		"save-personal-data": {
+			"description": "Are you sure that you want to close personal info edit form?\nIn that case, all the unsaved changes will be lost."
+		},
+		"update-phone-number":{
+			"title": "Confirm phone number change",
+			"description": "Are you sure that you want to change your account phone number?",
+			"confirm": "Change"
+		}
+	},
+	"greeting-new-user-modal": {
+		"connect-to-service": {
+			"title": "Be active and stay in the system no matter what",
+			"description": "To have constant access to you account even if you have no access to your phone, link \nalternative authorization method from the list below."
+		},
+		"greeting": {
+			"title": "We are happy to see You there!",
+			"description": "At the moment product is in the beta state, and some functions are limited. But Tradomatic \nTeam actively develops the product, and soon there will be new and useful features."
+		},
+		"step": "Step {{currentStep}} of {{numberOfSteps}}"
+	},
+	"delete-my-user-button": "Delete my account",
+	"confirm-delete-my-user-modal": {
+		"title": "Are you sure?",
+		"description": "This will delete your account and all related data. This action cannot be undone.",
+		"confirm-deletion": "Delete my account"
+	}
+}
